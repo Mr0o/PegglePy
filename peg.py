@@ -13,6 +13,7 @@ class Peg:
 
         self.mass = 20 # magic number, just pulled this one out of thin air
 
+        self.posAdjust = self.radius # this is used to draw the image for the peg in the correct position
         self.isHit = False
         self.isVisible = True
         self.isPowerUp = False
@@ -30,6 +31,7 @@ class Peg:
     def update_color(self):
         # set the appropiate color peg image if it is has been hit or not
         if self.isHit:
+            self.posAdjust = 25 #the image for hit pegs is actually slightly larger, so this variable is to adjust for this
             if self.color == "blue":
                 self.pegImg = hitBluePegImg
             if self.color == "orange":

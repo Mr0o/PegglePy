@@ -30,6 +30,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs, collision = False, dep
                     return fakeBalls
 
         fakeBall.applyForce(gravity)
+        fakeBall.vel.limitMag(7) #stop the ball from going crazy, this resolves the occasional physics glitches
         fakeBall.update()
         
         if fakeBall.pos.vy > HEIGHT:

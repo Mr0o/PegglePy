@@ -11,11 +11,13 @@ class Ball:
         self.acc = Vector(0, 0)  # acceleration
         self.vel = Vector(0, 0)  # velocity
 
+        self.mass = 6
         self.radius = 8
+        
         self.isLaunch = False
         self.isAlive = False
         
-        self.mass = 6
+        
 
     # F = M*A 
     # Adds a force(Vector) to the velocity
@@ -37,8 +39,8 @@ class Ball:
         if self.pos.vy < self.radius:
             self.vel.vy *= -1
         if self.pos.vy > (HEIGHT + self.radius):
-            self.reset()
-    
+            self.isAlive = False
+
     def reset(self):
         self.vel.mult(0)
         self.acc.mult(0)
