@@ -18,15 +18,11 @@ class Peg:
         self.isVisible = True
         self.isPowerUp = False
         self.isOrange = False
-
+        
         self.color = color
-        # set the appropiate color peg image
-        if self.color == "blue":
-            self.pegImg = bluePegImg
-        if self.color == "orange":
-            self.pegImg = orangePegImg
-        if self.color == "green":
-            self.pegImg = greenPegImg  
+        self.points = 10
+
+        self.pegImg = bluePegImg
 
     def update_color(self):
         # set the appropiate color peg image if it is has been hit or not
@@ -42,7 +38,9 @@ class Peg:
             if self.color == "blue":
                 self.pegImg = bluePegImg
             if self.color == "orange":
+                self.points = 100
                 self.pegImg = orangePegImg
             if self.color == "green":
                 self.pegImg = greenPegImg
+                self.points = 10
             
