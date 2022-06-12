@@ -4,16 +4,16 @@ from vectors import Vector
 from config import WIDTH, HEIGHT
 
 class Ball:
-    def __init__(self, x, y, mass = 1):
+    def __init__(self, x, y, mass = 6):
         self.originX=x; self.originY=y # origin position for the reset method
 
         self.pos = Vector(x, y)  # position
         self.acc = Vector(0, 0)  # acceleration
         self.vel = Vector(0, 0)  # velocity
 
-        self.mass = 6
+        self.mass = mass
         self.radius = 8
-        
+
         self.isLaunch = False
         self.isAlive = False
         
