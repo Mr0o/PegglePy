@@ -9,6 +9,9 @@ class Bucket:
     def __init__(self):
         self.bucketBackImg = pygame.image.load("resources/images/bucket/back150x28.png")
         self.bucketFrontImg = pygame.image.load("resources/images/bucket/front150x28.png")
+        #increase the width by twice its original width
+        self.bucketBackImg = pygame.transform.scale(self.bucketBackImg, (self.bucketBackImg.get_width()*2, self.bucketBackImg.get_height()))
+        self.bucketFrontImg = pygame.transform.scale(self.bucketFrontImg, (self.bucketFrontImg.get_width()*2, self.bucketFrontImg.get_height()))
 
         self.bucketCenterX = self.bucketBackImg.get_width() / 2
 
@@ -19,11 +22,8 @@ class Bucket:
         self.pos.add(self.vel)
 
         # if bucket collided with wall
-        if self.pos.vx > (WIDTH - self.bucketBackImg.get_width()) or self.pos.vx < self.bucketBackImg.get_width() - 150:
+        if self.pos.vx > (WIDTH - self.bucketBackImg.get_width()) or self.pos.vx < self.bucketBackImg.get_width() - 300:
             self.vel.vx *= -1
     
     def isInBucket(self, x, y):
-        if (y > HEIGHT - self.bucketBackImg.get_height() and (x > self.pos.vx - self.bucketBackImg.get_width() + 165 and x < self.pos.vx + self.bucketBackImg.get_width() - 15)):
-            return True
-        else:
-            return False
+        return (y > HEIGHT - self.bucketBackImg.get_height()-10 and (x > self.pos.vx - self.bucketBackImg.get_width() + 165*2 and x < self.pos.vx + self.bucketBackImg.get_width() - 30))
