@@ -4,7 +4,7 @@ from peg import Peg
 
 
 def isBallTouchingPeg(b1x, b1y, b1r, b2x, b2y, b2r):
-    return abs((b1x-b2x)*(b1x-b2x) + (b1y-b2y)*(b1y-b2y)) < (b1r+b2r)*(b1r+b2r)
+    return ((b1x-b2x)*(b1x-b2x) + (b1y-b2y)*(b1y-b2y)) < (b1r+b2r)*(b1r+b2r)
 
 
 def resolveCollision(ball : Ball, peg : Peg):
@@ -46,5 +46,6 @@ def resolveCollision(ball : Ball, peg : Peg):
     #update velocity of the ball
     ball.vel.vx = tx * dpTan + nx * m
     ball.vel.vy = ty * dpTan + ny * m
+
 
     return ball

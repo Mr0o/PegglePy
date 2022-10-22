@@ -1,11 +1,18 @@
+from cgitb import reset
 import sys # used to exit the program immediately
-import pygame # used for input, audio and graphics
+
+## disable pygame init message - "Hello from the pygame community..." ##
+import contextlib
+with contextlib.redirect_stdout(None):
+    import pygame # used for input, audio and graphics
+
 from random import randint
 
 ##### local imports #####
-from config import WIDTH, HEIGHT, gravity, LAUNCH_FORCE, trajectoryDepth, powerUpType, ballsRemaining, ballImg, freeBall, powerUpActive, powerUpCount, pitch, pitchRaiseCount, previousAim, shouldClear, debug
+from config import *
 from trajectory import calcTrajectory, findBestTrajectory
 from audio import playSoundPitch
+from load_level import loadData
 
 # refer to the vectors.py module for information on these functions
 from vectors import Vector, subVectors
@@ -36,15 +43,15 @@ freeBallSound = pygame.mixer.Sound("resources/audio/sounds/freeball2.ogg")
 failSound = pygame.mixer.Sound("resources/audio/sounds/fail.ogg")
 
 
-# play random music
-r = randint(1, 3)
-if r == 1:
-    pygame.mixer.music.load("resources/audio/music/peggle_music_1.wav")
-if r == 2:
-    pygame.mixer.music.load("resources/audio/music/peggle_music_2.wav")
-if r == 3:
-    pygame.mixer.music.load("resources/audio/music/peggle_music_9.wav")
-pygame.mixer.music.play(-1) # looping forever
+def loadRandMusic():
+    # play random music
+    r = randint(1, 3)
+    if r == 1:
+        pygame.mixer.music.load("resources/audio/music/peggle_music_1.wav")
+    if r == 2:
+        pygame.mixer.music.load("resources/audio/music/peggle_music_2.wav")
+    if r == 3:
+        pygame.mixer.music.load("resources/audio/music/peggle_music_9.wav")
 
 #Background image
 backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
@@ -53,7 +60,7 @@ backgroundImg =  pygame.transform.scale(backgroundImg, (WIDTH, HEIGHT))
 #font
 ballCountFont = pygame.font.Font("resources/fonts/Evogria.otf", 30)
 infoFont = pygame.font.Font("resources/fonts/Evogria.otf", 16)
-debugFont = pygame.font.Font("resources/fonts/Evogria.otf", 12)
+debugFont = pygame.font.Font("resources/fonts/Evogria.otf", 14)
 
 ##### drawing functions #####
 def drawCircle(x, y, rad, rgb):
@@ -66,35 +73,32 @@ def drawLine(x1,y1,x2,y2):
 balls = []
 balls.append(Ball(WIDTH/2, HEIGHT/25))
 ball = balls[0]
-# create pegs
-orangeCount = 35
-pegs = []
-def createPegs(orangeCount):
-    for j in range(7):
-        for i in range(23):
-            if (j%2):
-                newPeg = Peg((WIDTH-i * 50) - 50, 50 + HEIGHT - j*(HEIGHT/8) - 120)
-            else:
-                newPeg = Peg((25 + WIDTH-i * 50) - 50, 50 + HEIGHT - j*(HEIGHT/8) - 120)
-            
-            pegs.append(newPeg)
 
-    #create orange pegs
-    for _ in range(orangeCount):
-        i = randint(0, len(pegs)-1)
-        p = pegs[i]
-        p.color = "orange"
-        p.isOrang = True
-        p.update_color()
-    #create green pegs
-    for _ in range(2):
-        i = randint(0, len(pegs)-1)
-        p = pegs[i]
-        p.color = "green"
-        p.isPowerUp = True
-        p.update_color()
+# iterate through each peg x,y position to determine its location on the screen
+def assignPegScreenLocation(pegs, segmentCount):
+    segmentWidth = WIDTH/segmentCount
+    for p in pegs:
+        for i in range(segmentCount+1):
+            if p.pos.vx >= segmentWidth*(i-1) and p.pos.vx <= segmentWidth*i:
+                p.pegScreenLocation = i
+        
+        # second check for cases where the peg is on the segment boundary from the right
+        for i in range(segmentCount+1):
+            if p.pegScreenLocation == i and (p.pos.vx >= segmentWidth*i -p.radius*2 and p.pos.vx <= segmentWidth*(i+1) +p.radius*2): 
+                p.pegScreenLocation2 = i+1
+                break
+        # third check for cases where the peg is on the segment boundary from the left
+        for i in range(segmentCount+1):
+            if p.pegScreenLocation == i+1 and (p.pos.vx >= segmentWidth*(i-1) -p.radius*2 and p.pos.vx <= segmentWidth*i +p.radius*2): 
+                p.pegScreenLocation2 = i
+                break
 
-createPegs(orangeCount)
+
+def getBallScreenLocation(p, segmentCount):
+    segmentWidth = WIDTH/segmentCount
+    for i in range(segmentCount+1):
+        if p.pos.vx > segmentWidth*(i-1) -p.radius and p.pos.vx < segmentWidth*i +p.radius:
+            return i
 
 def getScoreMultiplier(remainingOrangePegs, pegsHit = 0):
     #first multiplier based on remaining orange pegs
@@ -111,18 +115,93 @@ def getScoreMultiplier(remainingOrangePegs, pegsHit = 0):
         multiplier = 500
     elif remainingOrangePegs >= 1 and remainingOrangePegs < 2:
         multiplier = 2000
+
     #second multiplier based on number of pegs hit by the current ball
-    if pegsHit >= 5 and pegsHit < 8:
+    if pegsHit >= 10 and pegsHit < 15:
         multiplier *= 2
-    elif pegsHit >= 8 and pegsHit < 12:
+    elif pegsHit >= 15 and pegsHit < 18:
         multiplier *= 5
-    elif pegsHit >= 12 and pegsHit < 16:
+    elif pegsHit >= 18 and pegsHit < 22:
         multiplier *= 8
-    elif pegsHit >= 16 and pegsHit < 25:
+    elif pegsHit >= 22 and pegsHit < 25:
         multiplier *= 10
-    elif pegsHit >= 25:
+    elif pegsHit >= 25 and pegsHit < 35:
         multiplier *= 20
+    elif pegsHit >= 35: # if you are hitting this many pegs with one ball, you are either very lucky or cheating but this is the reward either way
+        multiplier *= 100
     return multiplier
+
+
+def createPegColors(pegs):
+    orangeCount = 35
+
+    #create orange pegs
+    for _ in range(orangeCount):
+        i = randint(0, len(pegs)-1)
+        p = pegs[i]
+        p.color = "orange"
+        p.isOrang = True
+        p.update_color()
+    #create green pegs
+    for _ in range(2):
+        i = randint(0, len(pegs)-1)
+        p = pegs[i]
+        p.color = "green"
+        p.isPowerUp = True
+        p.update_color()
+
+    return pegs
+
+
+def loadLevel(createPegColors):
+    # load the pegs from a level file (pickle)
+    pegs = loadData()
+    originPegs = pegs.copy()
+
+    pegs = createPegColors(pegs)
+
+    orangeCount = 0
+    for peg in pegs:
+        if peg.color == "orange": orangeCount += 1
+
+    return pegs, originPegs, orangeCount
+
+
+def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
+    #reset everything
+    shouldClear = False
+    balls.clear() # clear all the balls
+    balls.append(Ball(WIDTH/2, HEIGHT/25)) # recreate the original ball
+    ball = balls[0]
+    ball.reset()
+    pitch = 1.0
+    pitchRaiseCount = 0
+    done = False
+    powerUpActive = False
+    powerUpCount = 0
+    ball = balls[0]
+    pegs.clear()
+    pegs = originPegs.copy()
+    for peg in pegs: 
+        peg.reset()
+    pegs = createPegColors(pegs)
+    assignPegScreenLocation(pegs, segmentCount)
+    orangeCount = 0
+    for peg in pegs:
+        if peg.color == "orange": orangeCount += 1
+    score = 0
+    ballsRemaining = 10
+    pegsHit = 0
+    bucket.reset()
+    lastHitPeg = None
+    # change the song
+    pygame.mixer.music.stop()
+    loadRandMusic()
+    pygame.mixer.music.play(-1) # looping forever
+    return ballsRemaining,powerUpActive,powerUpCount,pitch,pitchRaiseCount,ball,score,pegsHit,pegs,orangeCount
+
+
+# some extra global variable initialization stuff
 
 bucket = Bucket()
 pointsEarned = []
@@ -138,6 +217,16 @@ fineTuneAmount = 0
 trajectory = []
 launchAim = Vector(0,0)
 
+debugCollision = False
+
+pegs, originPegs, orangeCount = loadLevel(createPegColors)
+
+#createPegs(orangeCount) # must create pegs BEFORE locations are assigned
+assignPegScreenLocation(pegs, segmentCount)
+
+loadRandMusic()
+pygame.mixer.music.play(-1) # looping forever
+
 ##### main loop #####
 while True:
     for event in pygame.event.get():  # check events and quit if the program is closed
@@ -146,35 +235,48 @@ while True:
             sys.exit()
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
-                #reset everything
-                shouldClear = False
-                balls.clear() # clear all the balls
-                balls.append(Ball(WIDTH/2, HEIGHT/25)) # recreate the original ball
-                ball = balls[0]
-                ball.reset()
-                pitch = 1.0
-                pitchRaiseCount = 0
-                freeBall = False
-                done = False
-                powerUpActive = False
-                powerUpCount = 0
-                ball = balls[0]
-                pegs.clear()
-                orangeCount = 30
-                createPegs(orangeCount)
-                score = 0
-                ballsRemaining = 10
-                pegsHit = 0
-            if event.key == pygame.K_1:
+                # horrifying function that resets the game
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+            if event.key == pygame.K_1: # enable or disable debug features
                 if debug == False:
                     debug = True
                 else:
                     debug = False
+            if event.key == pygame.K_2: # enable or disable cheats
+                if cheats == False:
+                    cheats = True
+                else:
+                    cheats = False
+            if event.key == pygame.K_3: # cycle through all powerpegs, originPegs = loadLevel(createPegColors) up types
+                if powerUpType == "spooky":
+                    powerUpType = "multiball"
+                elif powerUpType == "multiball":
+                    powerUpType = "zenball"
+                elif powerUpType == "zenball":
+                    powerUpType = "guideball"
+                elif powerUpType == "guideball":
+                    powerUpType = "spooky-multiball"
+                elif powerUpType == "spooky-multiball":
+                    powerUpType = "spooky"
+            if event.key == pygame.K_4: # enable or disable debug view of collision segments
+                if debugCollision == False:
+                    debugCollision = True
+                else:
+                    debugCollision = False
+            if event.key == pygame.K_5: # debug - decrease collision segment count
+                segmentCount -= 1
+                assignPegScreenLocation(pegs, segmentCount) # reassign each pegs segment location
+            if event.key == pygame.K_6: # debug - increase collision segment count
+                segmentCount += 1
+                assignPegScreenLocation(pegs, segmentCount) # reassign each pegs segment location
+
+            if event.key == pygame.K_l: # load a new level
+                pygame.mixer.music.stop()
+                pegs, originPegs, orangeCount = loadLevel(createPegColors)
+                # horrifying function that resets the game
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
         if event.type == pygame.MOUSEWHEEL:
             fineTuneAmount += event.y
-
-
-    elapsedTime = clock.get_time()
 
     mouseClicked = pygame.mouse.get_pressed() # get the mouse click state
     mx, my =  pygame.mouse.get_pos()  # get mouse position as 'mx' and 'my'
@@ -192,8 +294,10 @@ while True:
             trajectoryDepth = 750 #powerup
         else:
             trajectoryDepth = 75 #normal
+            if debug:
+                trajectoryDepth = 2500
         if previousAim.vx != launchAim.vx or previousAim.vy != launchAim.vy: # only calculate the trajectory if the mouse has been moved - reduces cpu time
-            trajectory = calcTrajectory(launchAim, ball.pos, pegs, (powerUpType == "guideball" and powerUpActive), trajectoryDepth)
+            trajectory = calcTrajectory(launchAim, ball.pos, pegs, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debug)
     previousAim = Vector(launchAim.vx, launchAim.vy)
 
     #if mouse clicked then trigger ball launch 
@@ -223,18 +327,22 @@ while True:
             shouldClear = True
             drawTrajectory = False
     
+    # cheats (force enable power up)
+    if cheats:
+        powerUpActive = True
+
     # if active zenball powerup - launch
     if ball.isLaunch and ball.isAlive and powerUpType == "zenball" and powerUpActive:
         # find the best shot
-        playSoundPitch(powerUpZenBall, 0.94)
-        bestAim, bestScore, bestTrajectory = bestShotLaunch = findBestTrajectory(launchAim, ball.pos, pegs)
+        playSoundPitch(powerUpZenBall, 0.93)
+        bestAim, bestScore, bestTrajectory = bestShotLaunch = findBestTrajectory(launchAim, ball.pos, pegs, 80, 1800)
 
-        if bestScore > 0: 
-            playSoundPitch(powerUpZenBall, 0.98)
+        if bestScore >= 10: 
+            playSoundPitch(powerUpZenBall, 0.99)
             ball.applyForce(bestAim)
-        elif bestScore < 1: # if there is no possible shot with the zen ball to earn points then it has failed
+        elif bestScore < 10: # if there is no possible shot with the zen ball to earn points then it has failed
             playSoundPitch(failSound)
-            ball.applyForce(bestAim)
+            ball.applyForce(subVectors(launchAim, ball.pos)) # apply original launch aim
 
         #for debug
         drawTrajectory = True
@@ -249,79 +357,133 @@ while True:
     #update balls physics
     for b in balls:
         if b.isAlive:
+            ballScreenPos = getBallScreenLocation(b, segmentCount)
             #### collision ####
             for p in pegs:
-                if(isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)):
-                    b = resolveCollision(b, p)
-
-                    #Peg hit sounds and peg color update
-                    if not p.isHit: 
-                        p.isHit = True
-                        pegsHit += 1
-                        p.update_color() # change the color to signify it has been hit
-                        pitchRaiseCount += 1
-                        if p.color == "orange":
-                            orangeCount -= 1
-                        if p.isPowerUp:
-                            if powerUpType == "spooky": 
-                                playSoundPitch(powerUpSpooky1)
-                            if powerUpType == "multiball": 
-                                playSoundPitch(powerUpMultiBall)
-                                addNewBall = True
-                            if powerUpType == "zenball":
-                                playSoundPitch(powerUpZenBallHit)
-                            if powerUpType == "guideball":
-                                playSoundPitch(powerUpGuideBall)
-                                powerUpCount += 2
-                            powerUpCount += 1   
-                            powerUpActive = True
-                        if pitchRaiseCount <= 7:
-                            if not p.isPowerUp: playSoundPitch(low_hit_sound, pitch)
-                            pitch -= 0.05 #magic number
-                        if pitchRaiseCount == 7: pitch = 1.32 #magic number
-                        elif pitchRaiseCount > 7 and pitchRaiseCount < 26:
-                            if not p.isPowerUp: playSoundPitch(normal_hit_sound, pitch)
-                            pitch -= 0.045 #magic number
-                        elif pitchRaiseCount >= 26:
-                            if not p.isPowerUp: playSoundPitch(normal_hit_sound, pitch)
+                if ballScreenPos == p.pegScreenLocation or ballScreenPos == p.pegScreenLocation2:
+                    if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius):
+                        b = resolveCollision(b, p) # resolve the collision between the ball and peg
                         
-                        #keep track of points earned
-                        #pointsEarned.append(p.points)
-                        score += (p.points * getScoreMultiplier(orangeCount, pegsHit))
+                        # automatically remove pegs that a ball is stuck on
+                        if autoRemovePegs:
+                            # save the peg that was last hit, so that it can be removed in case the ball is stuck
+                            b.lastHitPeg = p
+
+                            p.ballStuckTimer.update()
+                            # when timer has triggered, remove the last hit peg
+                            if p.ballStuckTimer.isTriggered and b.lastHitPeg != None:
+                                pegs.remove(b.lastHitPeg) # remove the peg
+                                b.lastHitPeg = None
+                                p.ballStuckTimer.cancleTimer()
+
+                            # if the velocity is less than 0.2 then it must be stuck, wait a few seconds and remove the peg its stuck on
+                            if b.vel.getMag() <= 0.2 and p.ballStuckTimer.isActive == False:
+                                p.ballStuckTimer.setTimer(0.5)
+                            elif b.vel.getMag() > 0.2:
+                                p.ballStuckTimer.cancleTimer()
+                                b.lastPegHit = None
+                        
+
+                        #peg color update and powerup sounds
+                        if not p.isHit: 
+                            p.isHit = True
+                            pegsHit += 1
+                            p.update_color() # change the color to signify it has been hit
+                            pitchRaiseCount += 1
+                            if p.color == "orange":
+                                orangeCount -= 1
+                            if p.isPowerUp:
+                                if powerUpType == "spooky": 
+                                    playSoundPitch(powerUpSpooky1)
+                                if powerUpType == "multiball": 
+                                    playSoundPitch(powerUpMultiBall)
+                                    addNewBall = True
+                                if powerUpType == "zenball":
+                                    playSoundPitch(powerUpZenBallHit)
+                                if powerUpType == "guideball":
+                                    playSoundPitch(powerUpGuideBall)
+                                    powerUpCount += 2
+                                if powerUpType == "spooky-multiball": 
+                                    playSoundPitch(powerUpMultiBall)
+                                    addNewBall = True
+                                    powerUpCount += 1
+                                powerUpCount += 1   
+                                powerUpActive = True
                             
-            b.applyForce(gravity)
-            b.vel.limitMag(5) #stop the ball from going crazy, this resolves the occasional physics glitches
+                            # peg hit sounds
+                            if pitchRaiseCount <= 7:
+                                if not p.isPowerUp: playSoundPitch(low_hit_sound, pitch)
+                                pitch -= 0.05 #magic number
+                            if pitchRaiseCount == 7: pitch = 1.32 #magic number
+                            elif pitchRaiseCount > 7 and pitchRaiseCount < 26:
+                                if not p.isPowerUp: playSoundPitch(normal_hit_sound, pitch)
+                                pitch -= 0.045 #magic number
+                            elif pitchRaiseCount >= 26:
+                                if not p.isPowerUp: playSoundPitch(normal_hit_sound, pitch)
+                            
+                            #cheats
+                            if cheats:
+                                if powerUpType == "spooky": 
+                                    playSoundPitch(powerUpSpooky1)
+                                    powerUpCount += 1 
+                                if powerUpType == "multiball": 
+                                    playSoundPitch(powerUpMultiBall)
+                                    addNewBall = True
+                                    powerUpCount += 1 
+                                if powerUpType == "guideball":
+                                    powerUpCount += 2
+                                if powerUpType == "spooky-multiball":
+                                    playSoundPitch(powerUpMultiBall)
+                                    playSoundPitch(powerUpSpooky1)
+                                    addNewBall = True
+                                    powerUpCount += 2 
+
+
+                            #keep track of points earned
+                            #pointsEarned.append(p.points)
+                            score += (p.points * getScoreMultiplier(orangeCount, pegsHit))
+       
             b.update()
+            
 
             # if active spooky powerup
-            if powerUpActive and powerUpType == "spooky":
+            if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
                 if b.pos.vy + b.radius > HEIGHT:
                     b.pos.vy = 0 + b.radius 
+                    b.inBucket = False
                     powerUpCount -= 1
                     playSoundPitch(powerUpSpooky2)
                     if powerUpCount < 1:
                         powerUpActive = False 
 
             # if active multiball powerup
-            if addNewBall and powerUpType == "multiball":
+            if addNewBall and (powerUpType == "multiball" or powerUpType == "spooky-multiball"):
                 newBall =  Ball(b.pos.vx, b.pos.vy)
                 newBall.vel.vx = b.vel.vx * -1
                 newBall.vel.vy = b.vel.vy * -1
                 newBall.isAlive = True
                 balls.append(newBall)
                 addNewBall = False
-                
-                    
-            if not freeBall and bucket.isInBucket(b.pos.vx, b.pos.vy):
-                playSoundPitch(freeBallSound)
-                freeBall = True
-                ballsRemaining += 1
 
-    # this little loop and if statement will determine if any of the balls are still alive and therfore if it is done or not     
+            # if ball went in the bucket
+            if not b.inBucket and bucket.isInBucket(b.pos.vx, b.pos.vy):
+                b.inBucket = True # prevent the ball from triggering it multiple times
+                playSoundPitch(freeBallSound)
+                ballsRemaining += 1
+        
+        # remove any 'dead' balls
+        elif not b.isAlive and b != ball:
+            balls.remove(b)
+
+    
+
+    # this little loop and if statement will determine if any of the balls are still alive and therfore if everything should be cleared/reset or not     
     done = True
     for b in balls:
         if b.isAlive:
             done = False
+            break
+        
     #reset everything and remove hit pegs
     if done and shouldClear:
         shouldClear = False
@@ -335,17 +497,16 @@ while True:
         done = False
         ballsRemaining -= 1
         pegsHit = 0
-        previousAim = Vector(0,1)
-        if powerUpType == "multiball":
+        previousAim = Vector(0,1) # forces the trajectory to be recalculated in case the mouse aim has not changed
+        if powerUpType == "multiball" or powerUpType == "spooky-multiball":
             powerUpActive = False
             powerUpCount = 0
-        for _ in range(5): # temporary fix to bug with pegs not being removed
+        for _ in range(8): # temporary fix to bug with pegs not being removed
             for p in pegs:
                 if p.isHit:
                     pegs.remove(p)
         for s in pointsEarned:
             score += s
-        print(score)
 
     ##bucket
     bucket.update()
@@ -370,13 +531,13 @@ while True:
             done = False
     if done:
         for fb in trajectory:
-            drawCircle(fb.pos.vx, fb.pos.vy, 5, (0 ,75 ,153))
+            drawCircle(fb.pos.vx, fb.pos.vy, 4, (10 ,70 ,163))
     #draw text
     #show how many balls are left
     ballText = ballCountFont.render(str(ballsRemaining), False, (200, 200, 200))
     screen.blit(ballText,(50, 50))
     #show the score
-    scoreText = ballCountFont.render(str(score), False, (255, 60, 20))
+    scoreText = ballCountFont.render(str(score), False, (20, 60, 255))
     screen.blit(scoreText,(150, 50))
     #show the powerup information
     if powerUpActive:
@@ -388,27 +549,43 @@ while True:
     
     #debugging stuff
     if debug:
-        if (elapsedTime < 10): # decide whether green text or red text
+        if (clock.get_rawtime() < 10): # decide whether green text or red text
             frameColor = (0, 255, 50) # green
         else:
             frameColor = (255, 50, 0) #red
         #print frametime
-        frameTime = debugFont.render(str(elapsedTime) + " ms" , False, (frameColor))
+        frameTime = debugFont.render(str(clock.get_rawtime()) + " ms" , False, (frameColor))
         screen.blit(frameTime,(5, 10))
+        framesPerSec = debugFont.render(str(round(clock.get_fps())) + " fps" , False, (255,255,255))
+        screen.blit(framesPerSec,(5, 25))
         #print number of orange pegs remaining and score multiplier
         orangeCountText = debugFont.render(str(orangeCount) + " orange pegs left" , False, (255,255,255))
         screen.blit(orangeCountText,(100, 35))
         scoreMultiplierText = debugFont.render("x"+str(getScoreMultiplier(orangeCount, pegsHit)) , False, (255,255,255))
         screen.blit(scoreMultiplierText,(100, 50))
+        #print total number of pegs in the pegs list
+        pegCountText = debugFont.render(str(len(pegs)) + " total pegs left" , False, (255,255,255))
+        screen.blit(pegCountText,(245, 35))
         #print ball velocity
-        ballPosText = debugFont.render("Velocity: X:" + str(ball.vel.vx) +" Y:"+str(ball.vel.vy), False, (255,255,255))
-        screen.blit(ballPosText, (100,20))
+        ballVelText = debugFont.render("Velocity: " + str(ball.vel.getMag()), False, (255,255,255))
+        screen.blit(ballVelText, (100,20))
         #draw zenball trajectory
         if drawTrajectory and not done and powerUpType == "zenball":
             for fb in bestTrajectory:
                 drawCircle(fb.pos.vx, fb.pos.vy, 1, (0 ,153 ,10))
-                
-            
+        
+        if debugCollision:
+            collSegmentDisp = debugFont.render("Collision Segments: " + str(segmentCount), False, (0,255,255))
+            screen.blit(collSegmentDisp, (230,7))
+            #draw collision sections
+            segmentWidth = WIDTH/segmentCount
+            for i in range(segmentCount):
+                drawLine(segmentWidth*i, 0, segmentWidth*i, HEIGHT)
+
+    # display red text indicating if cheats are enabled       
+    if cheats:
+        cheatsIcon = debugFont.render("CHEATS ENABLED" , False, (255,0,0))
+        screen.blit(cheatsIcon,(100, 6))
 
     pygame.display.update()
     clock.tick(144)  # lock game framerate to 144 fps

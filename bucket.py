@@ -25,5 +25,9 @@ class Bucket:
         if self.pos.vx > (WIDTH - self.bucketBackImg.get_width()) or self.pos.vx < self.bucketBackImg.get_width() - 300:
             self.vel.vx *= -1
     
+    def reset(self):
+        self.pos = Vector(WIDTH/2, HEIGHT - self.bucketBackImg.get_height())  # position
+        self.vel = Vector(bucketVelocity, 0)  # velocity
+
     def isInBucket(self, x, y):
-        return (y > HEIGHT - self.bucketBackImg.get_height()-10 and (x > self.pos.vx - self.bucketBackImg.get_width() + 165*2 and x < self.pos.vx + self.bucketBackImg.get_width() - 30))
+        return (y > HEIGHT - self.bucketBackImg.get_height() and (x > self.pos.vx - self.bucketBackImg.get_width() + 165*2 and x < self.pos.vx + self.bucketBackImg.get_width() - 30))

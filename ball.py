@@ -1,7 +1,7 @@
 # refer to the vectors.py module for information on these functions
 from vectors import Vector
 
-from config import WIDTH, HEIGHT
+from config import WIDTH, HEIGHT, gravity
 
 class Ball:
     def __init__(self, x, y, mass = 6):
@@ -17,6 +17,9 @@ class Ball:
         self.isLaunch = False
         self.isAlive = False
         
+        self.inBucket = False
+
+        self.lastPegHit = None # used for when the ball gets stuck
         
 
     # F = M*A 
@@ -28,15 +31,24 @@ class Ball:
         self.vel.add(fcopy)
 
     def update(self):
-        #self.vel.mult(0.999) #drag
+        self.applyForce(gravity)
+
+        self.vel.limitMag(5) #stop the ball from going crazy, this resolves the occasional physics glitches
+
+        self.vel.vx *= 0.9993 #drag
         self.vel.add(self.acc)
         self.pos.add(self.vel)
         self.acc.mult(0)
 
-        # if ball colided with wall or has fallen through the floor
+        self.vel.limitMag(5) #stop the ball from going crazy, this resolves the occasional physics glitches
+
+        # if ball collided with wall or has fallen through the floor
         if self.pos.vx > (WIDTH - self.radius) or self.pos.vx < self.radius:
+            if self.pos.vx > (WIDTH - self.radius): self.pos.vx = WIDTH - self.radius
+            elif self.pos.vx < self.radius: self.pos.vx = self.radius
             self.vel.vx *= -1
         if self.pos.vy < self.radius:
+            self.pos.vy = self.radius
             self.vel.vy *= -1
         if self.pos.vy > (HEIGHT + self.radius):
             self.isAlive = False
@@ -47,3 +59,4 @@ class Ball:
         self.pos = Vector(self.originX, self.originY)
         self.isLaunch = False
         self.isAlive = False
+        self.inBucket = False
