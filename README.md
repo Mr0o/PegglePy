@@ -1,6 +1,8 @@
 # PegglePy
 A clone of peggle written in python using pygame
 
+The code itself is quite messy and I plan to eventually rewrite/refactor most of the project to clean it up
+However, this will take a long time, and I don't know when I will ever get around to this
 
 # Installation instructions
 *Windows*
