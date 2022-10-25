@@ -13,7 +13,7 @@ powerUpType = "spooky"
 cheats = False
 
 # debugging (displays debugging information to the screen)
-debug = True
+debug = False
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 4.5

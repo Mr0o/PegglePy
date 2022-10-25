@@ -4,7 +4,7 @@ from vectors import Vector
 from config import WIDTH, HEIGHT, gravity
 
 class Ball:
-    def __init__(self, x, y, mass = 6):
+    def __init__(self, x : int, y : int, mass = 6):
         self.originX=x; self.originY=y # origin position for the reset method
 
         self.pos = Vector(x, y)  # position
@@ -40,7 +40,7 @@ class Ball:
         self.pos.add(self.vel)
         self.acc.mult(0)
 
-        self.vel.limitMag(5) #stop the ball from going crazy, this resolves the occasional physics glitches
+        self.vel.limitMag(7) #stop the ball from going crazy, this resolves the occasional physics glitches
 
         # if ball collided with wall or has fallen through the floor
         if self.pos.vx > (WIDTH - self.radius) or self.pos.vx < self.radius:

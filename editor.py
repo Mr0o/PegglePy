@@ -6,13 +6,11 @@ with contextlib.redirect_stdout(None):
     import pygame # used for input, audio and graphics
 
 from random import randint
-import pickle
 
 ##### local imports #####
 from config import *
-from trajectory import calcTrajectory, findBestTrajectory
 from audio import playSoundPitch
-from load_level import loadData
+from load_level import loadData, saveData
 
 # refer to the vectors.py module for information on these functions
 from vectors import Vector, subVectors
@@ -26,21 +24,7 @@ from bucket import Bucket
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
 clock = pygame.time.Clock()  # game clock
-pygame.display.set_caption("Peggle Clone")
-
-# AUDIO
-launch_sound = pygame.mixer.Sound("resources/audio/sounds/shoot_ball.ogg")
-low_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peghit_low.ogg")
-normal_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peghit.ogg")
-max_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peg_hit_max.ogg")
-powerUpSpooky1 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky1.ogg")
-powerUpSpooky2 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky2.ogg")
-powerUpMultiBall = pygame.mixer.Sound("resources/audio/sounds/powerup_multiball.ogg")
-powerUpZenBall = pygame.mixer.Sound("resources/audio/sounds/gong.ogg")
-powerUpZenBallHit = pygame.mixer.Sound("resources/audio/sounds/powerup_zen3.ogg")
-powerUpGuideBall = pygame.mixer.Sound("resources/audio/sounds/powerup_guide.ogg")
-freeBallSound = pygame.mixer.Sound("resources/audio/sounds/freeball2.ogg")
-failSound = pygame.mixer.Sound("resources/audio/sounds/fail.ogg")
+pygame.display.set_caption("Peggle Clone - Level Editor")
 
 
 # play random music
@@ -72,8 +56,10 @@ def drawLine(x1,y1,x2,y2):
 
 debugCollision = False
 
-# load the pegs ffrom a level file (pickle)
-pegs = loadData()
+# load the pegs from a level file (pickle)
+#pegs = loadData()
+
+pegs = []
 
 ##### main loop #####
 while True:
@@ -83,16 +69,44 @@ while True:
             sys.exit()
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
-                pass
+                pegs = []
+            # save level
+            if event.key == pygame.K_s:
+                saveData(pegs)
+            # load level
+            if event.key == pygame.K_l:
+                pegs = loadData()
 
+    
+    ##### update #####
 
+    # get current mouse state
     mouseClicked = pygame.mouse.get_pressed() # get the mouse click state
     mx, my =  pygame.mouse.get_pos()  # get mouse position as 'mx' and 'my'
+    mousePos = Vector(mx, my)
 
-    #if mouse clicked 
+    #if mouse clicked, create a new ball at the mouse position
     if mouseClicked[0]:
-        pass
+        validNewPegPos = True
+        for peg in pegs:
+            if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/2, peg.pos.vx, peg.pos.vy, peg.radius):
+                validNewPegPos = False
+                break
+
+        if validNewPegPos:     
+            newBall = Peg(mousePos.vx, mousePos.vy)
+            pegs.append(newBall)
     
+    # if right clicked, remove peg
+    elif mouseClicked[2]:
+        selectedPeg = None
+        for peg in pegs:
+            if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius, peg.pos.vx, peg.pos.vy, peg.radius):
+                selectedPeg = peg
+                break
+
+        if selectedPeg != None:     
+            pegs.remove(selectedPeg)
 
     ##### draw #####
     screen.fill((0, 0, 0))  # black screen
@@ -101,6 +115,10 @@ while True:
     #draw pegs
     for p in pegs:
         screen.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
+
+    # draw peg count text
+    pegCount = infoFont.render("Pegs : " + str(len(pegs)), False, (5, 30, 100))
+    screen.blit(pegCount, (int(WIDTH/2 - 50), 20))
 
     pygame.display.update()
     clock.tick(144)  # lock game framerate to 144 fps

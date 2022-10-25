@@ -6,13 +6,13 @@ from config import bluePegImg, hitBluePegImg, orangePegImg, hitOrangePegImg, gre
 
 
 class Peg:
-    def __init__(self, x, y, color = "blue"):
+    def __init__(self, x : int, y : int, color = "blue"):
         self.pos = Vector(x, y)  # position
         self.vel = Vector(0, 0)  # velocity, used for collision calculation
 
         self.radius = 14
 
-        self.mass = 20 # magic number, just pulled this one out of thin air
+        self.mass = 22 # magic number, just pulled this one out of thin air
 
         self.posAdjust = self.radius # this is used to draw the image for the peg in the correct position
         self.isHit = False

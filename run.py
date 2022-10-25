@@ -1,4 +1,3 @@
-from cgitb import reset
 import sys # used to exit the program immediately
 
 ## disable pygame init message - "Hello from the pygame community..." ##
@@ -376,10 +375,10 @@ while True:
                                 b.lastHitPeg = None
                                 p.ballStuckTimer.cancleTimer()
 
-                            # if the velocity is less than 0.2 then it must be stuck, wait a few seconds and remove the peg its stuck on
-                            if b.vel.getMag() <= 0.2 and p.ballStuckTimer.isActive == False:
-                                p.ballStuckTimer.setTimer(0.5)
-                            elif b.vel.getMag() > 0.2:
+                            # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
+                            if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
+                                p.ballStuckTimer.setTimer(0.8)
+                            elif b.vel.getMag() > 0.5:
                                 p.ballStuckTimer.cancleTimer()
                                 b.lastPegHit = None
                         
@@ -444,7 +443,6 @@ while True:
                             score += (p.points * getScoreMultiplier(orangeCount, pegsHit))
        
             b.update()
-            
 
             # if active spooky powerup
             if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
