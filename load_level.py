@@ -105,9 +105,14 @@ def loadData():
 def saveData(pegs):
     filePath = fileSaveWindow()
     posList = getPegPosList(pegs)
-    # create a new pickle file
-    with open(filePath, 'wb') as f:
-        pickle.dump(posList, f)
+    try:
+        # create a new pickle file
+        with open(filePath, 'wb') as f:
+            pickle.dump(posList, f)
+    except Exception:
+        if debug:
+            print("ERROR: Unable to save file - Exception: " + str(Exception))
+
 
 
 def getPegPosList(pegs):

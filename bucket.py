@@ -3,7 +3,12 @@ from vectors import Vector
 
 from config import WIDTH, HEIGHT, bucketVelocity
 
+from peg import Peg
+
+from collision import isBallTouchingPeg, resolveCollision
+
 import pygame
+
 
 class Bucket:
     def __init__(self):
@@ -18,16 +23,40 @@ class Bucket:
         self.pos = Vector(WIDTH/2, HEIGHT - self.bucketBackImg.get_height())  # position
         self.vel = Vector(bucketVelocity, 0)  # velocity
 
+        # fake pegs on edges of bucket, allows the ball to bounce off the bucket
+        peg1 = Peg(self.pos.vx+32, self.pos.vy+27)
+        peg1.radius = 20
+        peg2 = Peg(self.pos.vx + self.bucketBackImg.get_width()-32, self.pos.vy+27)
+        peg2.radius = 20
+        self.fakePegs = [peg1, peg2]
+
     def update(self):
         self.pos.add(self.vel)
 
         # if bucket collided with wall
         if self.pos.vx > (WIDTH - self.bucketBackImg.get_width()) or self.pos.vx < self.bucketBackImg.get_width() - 300:
             self.vel.vx *= -1
+        
+        for fakePeg in self.fakePegs:
+            fakePeg.pos.add(self.vel)
+            fakePeg.vel = self.vel
     
     def reset(self):
         self.pos = Vector(WIDTH/2, HEIGHT - self.bucketBackImg.get_height())  # position
         self.vel = Vector(bucketVelocity, 0)  # velocity
 
+        peg1 = Peg(self.pos.vx+32, self.pos.vy+27)
+        peg1.radius = 20
+        peg2 = Peg(self.pos.vx + self.bucketBackImg.get_width()-32, self.pos.vy+27)
+        peg2.radius = 20
+        self.fakePegs = [peg1, peg2]
+    
+    # the bucket has fake pegs on the edges, this is so the ball can bounce off of the bucket
+    def isBallCollidingWithBucketEdge(self, ball):
+        for fakePeg in self.fakePegs.copy():
+            if isBallTouchingPeg(ball.pos.vx, ball.pos.vy, ball.radius, fakePeg.pos.vx, fakePeg.pos.vy, fakePeg.radius):
+                return True, fakePeg
+        return False, None
+
     def isInBucket(self, x, y):
-        return (y > HEIGHT - self.bucketBackImg.get_height() and (x > self.pos.vx - self.bucketBackImg.get_width() + 165*2 and x < self.pos.vx + self.bucketBackImg.get_width() - 30))
+        return (y > HEIGHT - self.bucketBackImg.get_height()+8 and (x > self.pos.vx - self.bucketBackImg.get_width() + 165*2 and x < self.pos.vx + self.bucketBackImg.get_width() - 30))

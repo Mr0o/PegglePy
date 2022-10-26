@@ -19,7 +19,7 @@ debug = False
 LAUNCH_FORCE = 4.5
 gravity = Vector(0, 0.025)
 trajectoryDepth = 75 # how many steps to take in the normal (non-powerup) launch trajectory calculation
-bucketVelocity = -1.3
+bucketVelocity = -1.25
 ballsRemaining = 10
 freeBall = False
 powerUpActive = False
@@ -31,6 +31,7 @@ previousAim = Vector(0,1)
 shouldClear = False
 segmentCount = 16
 autoRemovePegs = True
+frameRate = 144
 
 #images
 ballImg = pygame.image.load("resources/images/balls/16x16/ball.png")
