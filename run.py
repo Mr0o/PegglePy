@@ -1,7 +1,10 @@
+from sqlite3 import Time
 import sys # used to exit the program immediately
 
 ## disable pygame init message - "Hello from the pygame community..." ##
 import contextlib
+
+from trigger_events import TimedEvent
 with contextlib.redirect_stdout(None):
     import pygame # used for input, audio and graphics
 
@@ -228,6 +231,8 @@ gameOver = False
 alreadyPlayedOdeToJoy = False
 closeBall = None
 
+delayTimer = TimedEvent(1)
+
 pegs, originPegs, orangeCount = loadLevel(createPegColors)
 
 #createPegs(orangeCount) # must create pegs BEFORE locations are assigned
@@ -297,13 +302,20 @@ while True:
 
         if event.type == pygame.MOUSEWHEEL:
             fineTuneAmount += event.y
+    
+    mouseClicked = pygame.mouse.get_pressed() # get the mouse click state
+    mx, my =  pygame.mouse.get_pos()  # get mouse position as 'mx' and 'my'
+    mx_rel, my_rel = pygame.mouse.get_rel() # get mouse relative position as 'mx_rel' and 'my_rel'      
+
+    # reset the game when the game is over and the mouse is clicked
+    if mouseClicked[0] and gameOver:
+        delayTimer = TimedEvent(0.25) # prevent the click from instantly launching a ball
+        # horrifying function that resets the game
+        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+
 
     # do not update any game physics or game logic if the game is paused or over
     if not gamePaused and not gameOver:
-        mouseClicked = pygame.mouse.get_pressed() # get the mouse click state
-        mx, my =  pygame.mouse.get_pos()  # get mouse position as 'mx' and 'my'
-        mx_rel, my_rel = pygame.mouse.get_rel()
-        
         if mx_rel == 0 and my_rel == 0:
             launchAim = Vector(mx + fineTuneAmount, my) # use the mouse position as a vector to calculate the path that is being aimed
         else:
@@ -322,8 +334,9 @@ while True:
                 trajectory = calcTrajectory(launchAim, ball.pos, pegs, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debug)
         previousAim = Vector(launchAim.vx, launchAim.vy)
 
+        delayTimer.update() # prevent the ball from launching instantly after the game is reset
         #if mouse clicked then trigger ball launch 
-        if mouseClicked[0] and not ball.isAlive:
+        if mouseClicked[0] and not ball.isAlive and delayTimer.isTriggered:
             if powerUpActive and powerUpType == "guideball":
                 powerUpCount -= 1
                 if powerUpCount < 1:
@@ -382,9 +395,10 @@ while True:
                 ballScreenPos = getBallScreenLocation(b, segmentCount)
                 #### collision ####
                 for p in pegs:
+
                     # if the current peg is the last remaining orange peg then apply special effects
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
-                        if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius*6, b.pos.vx, b.pos.vy, b.radius):
+                        if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius):
                             if frameRate != 27 and len(balls) < 2: 
                                 playSoundPitch(drumRoll) # only play sound once
                             frameRate = 27 # gives the "slow motion" effect
