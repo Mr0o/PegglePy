@@ -1,3 +1,26 @@
 levels/*
 PegglePy_Demo.mkv
+.gitignore
+__pycache__/trigger_events.cpython-310.pyc
+__pycache__/trigger_events.cpython-39.pyc
+__pycache__/trajectory.cpython-311.pyc
+__pycache__/trajectory.cpython-310.pyc
+__pycache__/trajectory.cpython-39.pyc
+__pycache__/peg.cpython-310.pyc
+__pycache__/peg.cpython-39.pyc
+__pycache__/load_level.cpython-310.pyc
+__pycache__/load_level.cpython-39.pyc
+__pycache__/config.cpython-311.pyc
+__pycache__/config.cpython-310.pyc
+__pycache__/config.cpython-39.pyc
+__pycache__/collision.cpython-39.pyc
+__pycache__/bucket.cpython-311.pyc
+__pycache__/bucket.cpython-310.pyc
+__pycache__/bucket.cpython-39.pyc
+__pycache__/ball.cpython-310.pyc
+__pycache__/ball.cpython-39.pyc
+__pycache__/audio.cpython-310.pyc
+__pycache__/audio.cpython-310 copy.pyc
+__pycache__/audio.cpython-39.pyc
 .vscode/settings.json
+.vscode/launch.json
