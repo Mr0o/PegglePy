@@ -13,7 +13,7 @@ powerUpType = "spooky"
 cheats = False
 
 # debugging (displays debugging information to the screen)
-debug = False
+debug = True
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 4.5
@@ -31,6 +31,7 @@ previousAim = Vector(0,1)
 shouldClear = False
 segmentCount = 16
 autoRemovePegs = True
+longShotDistance = 400
 frameRate = 144
 
 #images

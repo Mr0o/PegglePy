@@ -28,14 +28,9 @@ pygame.display.set_caption("Peggle Clone - Level Editor")
 
 
 # play random music
-r = randint(1, 3)
-if r == 1:
-    pygame.mixer.music.load("resources/audio/music/peggle_music_1.wav")
-if r == 2:
-    pygame.mixer.music.load("resources/audio/music/peggle_music_2.wav")
-if r == 3:
-    pygame.mixer.music.load("resources/audio/music/peggle_music_9.wav")
-pygame.mixer.music.play(-1) # looping forever
+r = randint(1, 10)
+pygame.mixer.music.load("resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
+pygame.mixer.music.play(-1)
 
 
 #Background image

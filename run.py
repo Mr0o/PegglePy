@@ -1,3 +1,6 @@
+from cmath import inf
+from math import sqrt
+from operator import le
 from sqlite3 import Time
 import sys # used to exit the program immediately
 
@@ -45,17 +48,15 @@ freeBallSound = pygame.mixer.Sound("resources/audio/sounds/freeball2.ogg")
 failSound = pygame.mixer.Sound("resources/audio/sounds/fail.ogg")
 drumRoll = pygame.mixer.Sound("resources/audio/sounds/drum_roll.ogg")
 cymbal = pygame.mixer.Sound("resources/audio/sounds/cymbal.ogg")
-
+longShotSound = pygame.mixer.Sound("resources/audio/sounds/long_shot.ogg")
+sighSound = pygame.mixer.Sound("resources/audio/sounds/sigh.ogg")
 
 def loadRandMusic():
     # play random music
-    r = randint(1, 3)
-    if r == 1:
-        pygame.mixer.music.load("resources/audio/music/peggle_music_1.wav")
-    if r == 2:
-        pygame.mixer.music.load("resources/audio/music/peggle_music_2.wav")
-    if r == 3:
-        pygame.mixer.music.load("resources/audio/music/peggle_music_9.wav")
+    r = randint(1, 10)
+    pygame.mixer.music.load("resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
+        
+    
 
 #Background image
 backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
@@ -105,6 +106,7 @@ def getBallScreenLocation(p, segmentCount):
         if p.pos.vx > segmentWidth*(i-1) -p.radius and p.pos.vx < segmentWidth*i +p.radius:
             return i
 
+
 def getScoreMultiplier(remainingOrangePegs, pegsHit = 0):
     #first multiplier based on remaining orange pegs
     multiplier = 1
@@ -137,16 +139,35 @@ def getScoreMultiplier(remainingOrangePegs, pegsHit = 0):
     return multiplier
 
 
-def createPegColors(pegs):
+def createPegColors(pegs) -> list[Peg]:
     orangeCount = 25
 
+    if len(pegs) < 25:
+        if debug: print("WARN: Level has less than 25 pegs, continuing anyway...")
+        orangeCount = len(pegs) - 1
+    elif len(pegs) > 120:
+        if debug: print("WARN: Level has excessive number of pegs, expect performance issues...")
+
     #create orange pegs
-    for _ in range(orangeCount):
+    numOfOrangePegs = 0
+    while(numOfOrangePegs < orangeCount):
         i = randint(0, len(pegs)-1)
         p = pegs[i]
         p.color = "orange"
         p.isOrang = True
         p.update_color()
+
+        # must have exactly 25 orange pegs
+        numOfOrangePegs = 0
+        for peg in pegs:
+            if peg.color == "orange":
+                numOfOrangePegs += 1
+        
+        # invalid level, but we'll allow it with a warning
+        
+
+        
+
     #create green pegs
     for _ in range(2):
         i = randint(0, len(pegs)-1)
@@ -202,11 +223,16 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     gameOver = False
     alreadyPlayedOdeToJoy = False
     frameRate = 144
+    LongShotBonus = False
     # change the song
     pygame.mixer.music.stop()
     loadRandMusic()
     pygame.mixer.music.play(-1) # looping forever
-    return ballsRemaining,powerUpActive,powerUpCount,pitch,pitchRaiseCount,ball,score,pegsHit,pegs,orangeCount,gameOver,alreadyPlayedOdeToJoy,frameRate
+    return ballsRemaining,powerUpActive,powerUpCount,pitch,pitchRaiseCount,ball,score,pegsHit,pegs,orangeCount,gameOver,alreadyPlayedOdeToJoy,frameRate,LongShotBonus
+
+
+def distBetweenTwoPoints(x1,y1, x2,y2):
+    return sqrt(((x1-x2)**2) + ((y1-y2)**2))
 
 
 # some extra global variable initialization stuff
@@ -230,7 +256,11 @@ gamePaused = False
 gameOver = False
 alreadyPlayedOdeToJoy = False
 closeBall = None
+longShotBonus = False
+debugTrajectory = False
 
+
+longShotTextTimer = TimedEvent()
 delayTimer = TimedEvent(1)
 
 pegs, originPegs, orangeCount = loadLevel(createPegColors)
@@ -250,7 +280,7 @@ while True:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
             if event.key == pygame.K_1: # enable or disable debug features
                 if debug == False:
                     debug = True
@@ -283,12 +313,16 @@ while True:
             if event.key == pygame.K_6: # debug - increase collision segment count
                 segmentCount += 1
                 assignPegScreenLocation(pegs, segmentCount) # reassign each pegs segment location
-
+            if event.key == pygame.K_7: # debug - enable or disable full trajectory drawing
+                if debugTrajectory == False:
+                    debugTrajectory = True
+                else:
+                    debugTrajectory = False
             if event.key == pygame.K_l: # load a new level
                 pygame.mixer.music.stop()
                 pegs, originPegs, orangeCount = loadLevel(createPegColors)
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
             if event.key == pygame.K_ESCAPE: # enable or disable cheats
                 if gamePaused == False:
                     gamePaused = True
@@ -311,7 +345,7 @@ while True:
     if mouseClicked[0] and gameOver:
         delayTimer = TimedEvent(0.25) # prevent the click from instantly launching a ball
         # horrifying function that resets the game
-        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
 
 
     # do not update any game physics or game logic if the game is paused or over
@@ -328,10 +362,10 @@ while True:
                 trajectoryDepth = 750 #powerup
             else:
                 trajectoryDepth = 75 #normal
-                if debug:
+                if debugTrajectory:
                     trajectoryDepth = 2500
             if previousAim.vx != launchAim.vx or previousAim.vy != launchAim.vy: # only calculate the trajectory if the mouse has been moved - reduces cpu time
-                trajectory = calcTrajectory(launchAim, ball.pos, pegs, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debug)
+                trajectory = calcTrajectory(launchAim, ball.pos, pegs, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
         previousAim = Vector(launchAim.vx, launchAim.vy)
 
         delayTimer.update() # prevent the ball from launching instantly after the game is reset
@@ -389,7 +423,7 @@ while True:
             if powerUpCount < 1:
                 powerUpActive = False
 
-        #update balls physics
+        #update ball physics and pegs, additional game logic
         for b in balls:
             if b.isAlive:
                 ballScreenPos = getBallScreenLocation(b, segmentCount)
@@ -405,6 +439,7 @@ while True:
                             closeBall = b
                         elif frameRate != 144:
                             frameRate = 144
+                            playSoundPitch(sighSound) # only play sound once
 
 
                     # ball physics and game logic
@@ -412,16 +447,17 @@ while True:
                         if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius):
                             b = resolveCollision(b, p) # resolve the collision between the ball and peg
                             
+                            # save the peg that was last hit, used for when the ball is stuck and for bonus points
+                            b.lastPegHit = p
+
                             # automatically remove pegs that a ball is stuck on
                             if autoRemovePegs:
-                                # save the peg that was last hit, so that it can be removed in case the ball is stuck
-                                b.lastHitPeg = p
-
                                 p.ballStuckTimer.update()
+
                                 # when timer has triggered, remove the last hit peg
-                                if p.ballStuckTimer.isTriggered and b.lastHitPeg != None:
-                                    pegs.remove(b.lastHitPeg) # remove the peg
-                                    b.lastHitPeg = None
+                                if p.ballStuckTimer.isTriggered and b.lastPegHit != None:
+                                    pegs.remove(b.lastPegHit) # remove the peg
+                                    b.lastPegHit = None
                                     p.ballStuckTimer.cancleTimer()
 
                                 # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
@@ -430,7 +466,21 @@ while True:
                                 elif b.vel.getMag() > 0.5:
                                     p.ballStuckTimer.cancleTimer()
                                     b.lastPegHit = None
-                            
+
+                            # check for long shot bonus
+                            if b.lastPegHitPos != p.pos and b.lastPegHitPos != None and p.color == "orange" and not p.isHit:
+                                if distBetweenTwoPoints(b.lastPegHitPos.vx, b.lastPegHitPos.vy, p.pos.vx, p.pos.vy) > longShotDistance:
+                                    if not longShotBonus:
+                                        playSoundPitch(longShotSound) 
+                                        score += 1000
+                                        b.lastPegHitPos = None
+                                        longShotBonus = True
+
+                                        # used for showing the bonus score
+                                        longShotPos = Vector(p.pos.vx, p.pos.vy)
+
+                            # used for long shot check
+                            b.lastPegHitPos = p.pos
 
                             #peg color update and powerup sounds
                             if not p.isHit: 
@@ -564,6 +614,8 @@ while True:
             done = False
             ballsRemaining -= 1
             pegsHit = 0
+            longShotBonus = False
+            frameRate = 144
             previousAim = Vector(0,1) # forces the trajectory to be recalculated in case the mouse aim has not changed
             if powerUpType == "multiball" or powerUpType == "spooky-multiball":
                 powerUpActive = False
@@ -631,6 +683,19 @@ while True:
         else:
             tryAgainText = menuFont.render("Try Again", False, (255, 60, 20))
             screen.blit(tryAgainText,(WIDTH/3.1, HEIGHT/2.2))
+
+    # show the long shot score text only for a few seconds
+    longShotTextTimer.update()
+    if longShotTextTimer.isTriggered:
+        longShotBonus = False
+        longShotTextTimer.cancleTimer()
+
+    if longShotBonus and not longShotTextTimer.isActive:
+        longShotTextTimer.setTimer(1.25)
+    
+    if longShotBonus and not longShotTextTimer.isTriggered:
+        longShotText = infoFont.render("25,000", False, (255, 80, 40))
+        screen.blit(longShotText,(longShotPos.vx-28, longShotPos.vy+11))
 
     #debugging stuff
     if debug:

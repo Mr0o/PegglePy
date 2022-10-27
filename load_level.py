@@ -1,7 +1,6 @@
 import tkinter
 from tkinter import filedialog
-import pickle
-from random import randint
+import pickle # sort of abusing pickle to save the level data (it works, but I dont really think pickle is meant for this)
 
 from config import debug, WIDTH, HEIGHT
 
@@ -21,7 +20,7 @@ def fileSelectWindow():
 
     #open file selector 
     main_win.sourceFile = filedialog.askopenfilename(parent=main_win, initialdir= "./levels", title='Please select a level to open', 
-                                                        filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*.*")))
+                                                        filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*")))
 
     selected_file = main_win.sourceFile
 
@@ -52,7 +51,8 @@ def fileSaveWindow():
 
     #open file selector 
     main_win.sourceFile = filedialog.asksaveasfile(parent=main_win, initialdir= "./levels", title='Please name the level', 
-                                                        filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*.*")))
+                                                        filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*")),
+                                                        defaultextension = ".lvl", initialfile = "Untitled Level")
 
     selected_file = main_win.sourceFile
 
@@ -112,6 +112,8 @@ def saveData(pegs):
     except Exception:
         if debug:
             print("ERROR: Unable to save file - Exception: " + str(Exception))
+            print("Do you have permission to write to this directory??")
+        return str(Exception)
 
 
 

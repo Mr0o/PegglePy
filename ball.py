@@ -20,6 +20,7 @@ class Ball:
         self.inBucket = False
 
         self.lastPegHit = None # used for when the ball gets stuck
+        self.lastPegHitPos = None # used to determine long shot bonus
         
 
     # F = M*A 
