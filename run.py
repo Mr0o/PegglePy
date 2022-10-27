@@ -422,6 +422,17 @@ while True:
             powerUpCount -= 1
             if powerUpCount < 1:
                 powerUpActive = False
+        
+        # cheats, place ball anywhere on screen with right click
+        if cheats and mouseClicked[2] and ball.isAlive and not ball.isLaunch:
+                isValidPlacement = True
+                for ball in balls:
+                    if isBallTouchingPeg(ball.pos.vx, ball.pos.vy, ball.radius, mx, my, ball.radius):
+                        isValidPlacement = False
+                if isValidPlacement:
+                    newCheatBall = Ball(mx, my)
+                    newCheatBall.isAlive = True
+                    balls.append(newCheatBall)
 
         #update ball physics and pegs, additional game logic
         for b in balls:
@@ -687,13 +698,13 @@ while True:
     #show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
-        screen.blit(pauseText,(WIDTH/3.3, HEIGHT/4))
+        screen.blit(pauseText,(WIDTH/3 - 20, HEIGHT/4))
         if ballsRemaining >= 0 and orangeCount < 1:
             scoreText = menuFont.render(str(score), False, (20, 60, 255))
-            screen.blit(scoreText,(WIDTH/3.3, HEIGHT/2.2))
+            screen.blit(scoreText,(WIDTH/3 -10, HEIGHT/2.2))
         else:
             tryAgainText = menuFont.render("Try Again", False, (255, 60, 20))
-            screen.blit(tryAgainText,(WIDTH/3.1, HEIGHT/2.2))
+            screen.blit(tryAgainText,(WIDTH/3 , HEIGHT/2.2))
 
     # show the long shot score text only for a few seconds
     longShotTextTimer.update()
