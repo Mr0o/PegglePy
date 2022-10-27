@@ -1,7 +1,4 @@
-from cmath import inf
 from math import sqrt
-from operator import le
-from sqlite3 import Time
 import sys # used to exit the program immediately
 
 ## disable pygame init message - "Hello from the pygame community..." ##
@@ -40,6 +37,8 @@ normal_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peghit.ogg")
 max_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peg_hit_max.ogg")
 powerUpSpooky1 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky1.ogg")
 powerUpSpooky2 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky2.ogg")
+powerUpSpooky3 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky3.ogg")
+powerUpSpooky4 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky4.ogg")
 powerUpMultiBall = pygame.mixer.Sound("resources/audio/sounds/powerup_multiball.ogg")
 powerUpZenBall = pygame.mixer.Sound("resources/audio/sounds/gong.ogg")
 powerUpZenBallHit = pygame.mixer.Sound("resources/audio/sounds/powerup_zen3.ogg")
@@ -258,6 +257,7 @@ alreadyPlayedOdeToJoy = False
 closeBall = None
 longShotBonus = False
 debugTrajectory = False
+firstSpookyHit = False
 
 
 longShotTextTimer = TimedEvent()
@@ -291,7 +291,7 @@ while True:
                     cheats = True
                 else:
                     cheats = False
-            if event.key == pygame.K_3: # cycle through all powerpegs, originPegs = loadLevel(createPegColors) up types
+            if event.key == pygame.K_3: # cycle through all power up types
                 if powerUpType == "spooky":
                     powerUpType = "multiball"
                 elif powerUpType == "multiball":
@@ -365,7 +365,7 @@ while True:
                 if debugTrajectory:
                     trajectoryDepth = 2500
             if previousAim.vx != launchAim.vx or previousAim.vy != launchAim.vy: # only calculate the trajectory if the mouse has been moved - reduces cpu time
-                trajectory = calcTrajectory(launchAim, ball.pos, pegs, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
+                trajectory = calcTrajectory(launchAim, ball.pos, pegs.copy(), bucket.fakePegs.copy(), (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
         previousAim = Vector(launchAim.vx, launchAim.vy)
 
         delayTimer.update() # prevent the ball from launching instantly after the game is reset
@@ -472,7 +472,7 @@ while True:
                                 if distBetweenTwoPoints(b.lastPegHitPos.vx, b.lastPegHitPos.vy, p.pos.vx, p.pos.vy) > longShotDistance:
                                     if not longShotBonus:
                                         playSoundPitch(longShotSound) 
-                                        score += 1000
+                                        score += 25000
                                         b.lastPegHitPos = None
                                         longShotBonus = True
 
@@ -491,8 +491,13 @@ while True:
                                 if p.color == "orange":
                                     orangeCount -= 1
                                 if p.isPowerUp:
-                                    if powerUpType == "spooky": 
-                                        playSoundPitch(powerUpSpooky1)
+                                    if powerUpType == "spooky":
+                                        if powerUpCount < 1: 
+                                            playSoundPitch(powerUpSpooky1)
+                                            firstSpookyHit = True
+                                        elif powerUpCount == 1:
+                                            playSoundPitch(powerUpSpooky2)
+                                            firstSpookyHit = False
                                     if powerUpType == "multiball": 
                                         playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
@@ -522,7 +527,7 @@ while True:
                                 #cheats
                                 if cheats:
                                     if powerUpType == "spooky": 
-                                        playSoundPitch(powerUpSpooky1)
+                                        #playSoundPitch(powerUpSpooky1)
                                         powerUpCount += 1 
                                     if powerUpType == "multiball": 
                                         playSoundPitch(powerUpMultiBall)
@@ -532,7 +537,7 @@ while True:
                                         powerUpCount += 2
                                     if powerUpType == "spooky-multiball":
                                         playSoundPitch(powerUpMultiBall)
-                                        playSoundPitch(powerUpSpooky1)
+                                        #playSoundPitch(powerUpSpooky1)
                                         addNewBall = True
                                         powerUpCount += 2 
 
@@ -553,8 +558,13 @@ while True:
                     if b.pos.vy + b.radius > HEIGHT:
                         b.pos.vy = 0 + b.radius 
                         b.inBucket = False
+                        if powerUpCount == 1 and firstSpookyHit:
+                            playSoundPitch(powerUpSpooky2)
+                        elif powerUpCount == 1 and not firstSpookyHit:
+                            playSoundPitch(powerUpSpooky4)
+                        elif powerUpCount == 2 and not firstSpookyHit:
+                            playSoundPitch(powerUpSpooky3)
                         powerUpCount -= 1
-                        playSoundPitch(powerUpSpooky2)
                         if powerUpCount < 1:
                             powerUpActive = False 
 
@@ -627,20 +637,21 @@ while True:
             for s in pointsEarned:
                 score += s
 
-        ##bucket
-        bucket.update()
+        ##bucket, pass the power up info for the bucket to update its collison and image
+        bucket.update(powerUpType, powerUpActive)
 
     ##### draw #####
     screen.fill((0, 0, 0))  # black screen
     screen.blit(backgroundImg, (0, 0))
     #draw back of bucket
-    screen.blit(bucket.bucketBackImg, (bucket.pos.vx, bucket.pos.vy))
+    bucketBackImg, bucketFrontImg= bucket.getImage(powerUpType, powerUpActive)
+    screen.blit(bucketBackImg, (bucket.pos.vx, bucket.pos.vy))
     #draw ball(s)
     if not gameOver:
         for b in balls:
             screen.blit(ballImg, (b.pos.vx - b.radius, b.pos.vy - b.radius))
     #draw front of bucket
-    screen.blit(bucket.bucketFrontImg, (bucket.pos.vx , bucket.pos.vy))
+    screen.blit(bucketFrontImg, (bucket.pos.vx , bucket.pos.vy))
     #draw pegs
     for p in pegs:
         screen.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
@@ -694,7 +705,7 @@ while True:
         longShotTextTimer.setTimer(1.25)
     
     if longShotBonus and not longShotTextTimer.isTriggered:
-        longShotText = infoFont.render("25,000", False, (255, 80, 40))
+        longShotText = infoFont.render("25,000", False, (255, 40, 30))
         screen.blit(longShotText,(longShotPos.vx-28, longShotPos.vy+11))
 
     #debugging stuff
