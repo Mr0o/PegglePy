@@ -13,13 +13,13 @@ powerUpType = "spooky"
 cheats = False
 
 # debugging (displays debugging information to the screen)
-debug = True
+debug = False
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 4.5
 gravity = Vector(0, 0.025)
 trajectoryDepth = 75 # how many steps to take in the normal (non-powerup) launch trajectory calculation
-bucketVelocity = -1.25
+bucketVelocity = 2.5 # max set velocity of the bucket
 ballsRemaining = 10
 freeBall = False
 powerUpActive = False

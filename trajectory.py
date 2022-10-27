@@ -10,9 +10,13 @@ def getBallScreenLocation(p, segmentCount):
         if p.pos.vx > segmentWidth*(i-1) -p.radius and p.pos.vx < segmentWidth*i +p.radius:
             return i
 
-def calcTrajectory(aim : Vector, startPos : Vector, pegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
+def calcTrajectory(aim : Vector, startPos : Vector, pegs, bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
     hit = False
     previousFakeBall = Ball(startPos.vx, startPos.vy)
+
+    #include bucket pegs in the trajectory calculation
+    for fakePeg in bucketPegs:
+        pegs.append(fakePeg)
 
     fakeBalls = []
     for i in range(depth):
