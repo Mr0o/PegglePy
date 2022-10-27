@@ -1,2 +1,3 @@
-levels/
+levels/*
 PegglePy_Demo.mkv
+.vscode/settings.json
