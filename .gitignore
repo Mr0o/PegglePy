@@ -22,5 +22,13 @@ __pycache__/ball.cpython-39.pyc
 __pycache__/audio.cpython-310.pyc
 __pycache__/audio.cpython-310 copy.pyc
 __pycache__/audio.cpython-39.pyc
+__pycache__/audio.cpython-311.pyc
+__pycache__/ball.cpython-311.pyc
+__pycache__/collision.cpython-311.pyc
+__pycache__/load_level.cpython-311.pyc
+__pycache__/peg.cpython-311.pyc
+__pycache__/trigger_events.cpython-311.pyc
+__pycache__/vectors.cpython-311.pyc
+
 .vscode/settings.json
 .vscode/launch.json
