@@ -29,6 +29,9 @@ __pycache__/load_level.cpython-311.pyc
 __pycache__/peg.cpython-311.pyc
 __pycache__/trigger_events.cpython-311.pyc
 __pycache__/vectors.cpython-311.pyc
+__pycache__/misc.cpython-311.pyc
+__pycache__/resources.cpython-311.pyc
+__pycache__/run.cpython-311.pyc
 
 .vscode/settings.json
 .vscode/launch.json
