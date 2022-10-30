@@ -15,6 +15,7 @@ from config import *
 from trajectory import calcTrajectory, findBestTrajectory
 from audio import playSoundPitch
 from load_level import loadData
+from resources import *  # pygame audio, fonts and images
 
 # refer to the vectors.py module for information on these functions
 from vectors import Vector, subVectors
@@ -30,42 +31,13 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
 clock = pygame.time.Clock()  # game clock
 pygame.display.set_caption("Peggle Clone")
 
-# AUDIO
-launch_sound = pygame.mixer.Sound("resources/audio/sounds/shoot_ball.ogg")
-low_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peghit_low.ogg")
-normal_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peghit.ogg")
-max_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peg_hit_max.ogg")
-powerUpSpooky1 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky1.ogg")
-powerUpSpooky2 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky2.ogg")
-powerUpSpooky3 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky3.ogg")
-powerUpSpooky4 = pygame.mixer.Sound("resources/audio/sounds/powerup_spooky4.ogg")
-powerUpMultiBall = pygame.mixer.Sound("resources/audio/sounds/powerup_multiball.ogg")
-powerUpZenBall = pygame.mixer.Sound("resources/audio/sounds/gong.ogg")
-powerUpZenBallHit = pygame.mixer.Sound("resources/audio/sounds/powerup_zen3.ogg")
-powerUpGuideBall = pygame.mixer.Sound("resources/audio/sounds/powerup_guide.ogg")
-freeBallSound = pygame.mixer.Sound("resources/audio/sounds/freeball2.ogg")
-failSound = pygame.mixer.Sound("resources/audio/sounds/fail.ogg")
-drumRoll = pygame.mixer.Sound("resources/audio/sounds/drum_roll.ogg")
-cymbal = pygame.mixer.Sound("resources/audio/sounds/cymbal.ogg")
-longShotSound = pygame.mixer.Sound("resources/audio/sounds/long_shot.ogg")
-sighSound = pygame.mixer.Sound("resources/audio/sounds/sigh.ogg")
+
 
 def loadRandMusic():
-    # play random music
+    # load random music
     r = randint(1, 10)
     pygame.mixer.music.load("resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
         
-    
-
-#Background image
-backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
-backgroundImg =  pygame.transform.scale(backgroundImg, (WIDTH, HEIGHT))
-
-#font
-ballCountFont = pygame.font.Font("resources/fonts/Evogria.otf", 30)
-infoFont = pygame.font.Font("resources/fonts/Evogria.otf", 16)
-debugFont = pygame.font.Font("resources/fonts/Evogria.otf", 14)
-menuFont = pygame.font.Font("resources/fonts/Evogria.otf", 90)
 
 ##### drawing functions #####
 def drawCircle(x, y, rad, rgb):
