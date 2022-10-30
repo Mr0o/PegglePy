@@ -1,6 +1,8 @@
 import pygame
 from config import WIDTH, HEIGHT
 
+pygame.init()
+
 # AUDIO
 launch_sound = pygame.mixer.Sound("resources/audio/sounds/shoot_ball.ogg")
 low_hit_sound = pygame.mixer.Sound("resources/audio/sounds/peghit_low.ogg")
