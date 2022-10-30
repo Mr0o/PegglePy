@@ -1,6 +1,7 @@
 from math import sqrt
 from ball import Ball
 from peg import Peg
+from config import debug
 
 
 def isBallTouchingPeg(b1x, b1y, b1r, b2x, b2y, b2r):
@@ -19,6 +20,12 @@ def resolveCollision(ball : Ball, peg : Peg):
     distance = sqrt((ball.pos.vx - peg.pos.vx)*(ball.pos.vx - peg.pos.vx) + (ball.pos.vy - peg.pos.vy)*(ball.pos.vy - peg.pos.vy))
     #find the amount of overlap between the ball and peg
     overlap =  1.0 * (distance - ball.radius - peg.radius)
+
+    #prevent division by zero
+    if (distance == 0):
+        distance = 0.0001  # arbitrary small number
+        if debug:
+            print ("WARN: divide by zero, using 0.0001 (Distance = 0, " +  "Overlap = "+ str(overlap) + ")")
 
     #displace the ball
     ball.pos.vx -= overlap * (ball.pos.vx - peg.pos.vx) / distance
