@@ -3,20 +3,16 @@ import sys # used to exit the program immediately
 
 ## disable pygame init message - "Hello from the pygame community..." ##
 import contextlib
-
-from trigger_events import TimedEvent
 with contextlib.redirect_stdout(None):
     import pygame # used for input, audio and graphics
-
-from random import randint
 
 ##### local imports #####
 from config import *
 from trajectory import calcTrajectory, findBestTrajectory
 from audio import playSoundPitch
-from load_level import loadData
 from resources import *  # pygame audio, fonts and images
 from misc import *
+from trigger_events import TimedEvent
 
 # refer to the vectors.py module for information on these functions
 from vectors import Vector, subVectors
@@ -34,13 +30,14 @@ pygame.display.set_caption("Peggle Clone")
         
 
 ##### drawing functions #####
-def drawCircle(x, y, rad, rgb):
+def drawCircle(x, y, rad=5, rgb=(255,255,255)):
     pygame.draw.circle(screen, (rgb), [x, y], rad)
 
 def drawLine(x1,y1,x2,y2):
     pygame.draw.line(screen, (255, 0, 0),[x1, y1],[x2,y2])
 
 ### testing stuff ###
+balls : list[Ball]
 balls = []
 balls.append(Ball(WIDTH/2, HEIGHT/25))
 ball = balls[0]
@@ -74,10 +71,13 @@ firstSpookyHit = False
 longShotTextTimer = TimedEvent()
 delayTimer = TimedEvent(1)
 
+pegs : list[Peg]
 pegs, originPegs, orangeCount = loadLevel(createPegColors)
 
-#createPegs(orangeCount) # must create pegs BEFORE locations are assigned
+# assign each peg a screen location, this is to better optimize collison detection (only check pegs on the same screen location as the ball)
 assignPegScreenLocation(pegs, segmentCount)
+
+staticImage = createStaticImage(pegs)
 
 loadRandMusic()
 pygame.mixer.music.play(-1) # looping forever
@@ -91,7 +91,7 @@ while True:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
             if event.key == pygame.K_1: # enable or disable debug features
                 if debug == False:
                     debug = True
@@ -133,7 +133,7 @@ while True:
                 pygame.mixer.music.stop()
                 pegs, originPegs, orangeCount = loadLevel(createPegColors)
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
             if event.key == pygame.K_ESCAPE: # enable or disable cheats
                 if gamePaused == False:
                     gamePaused = True
@@ -156,7 +156,7 @@ while True:
     if mouseClicked[0] and gameOver:
         delayTimer = TimedEvent(0.25) # prevent the click from instantly launching a ball
         # horrifying function that resets the game
-        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
 
 
     # do not update any game physics or game logic if the game is paused or over
@@ -367,6 +367,9 @@ while True:
                                 #keep track of points earned
                                 #pointsEarned.append(p.points)
                                 score += (p.points * getScoreMultiplier(orangeCount, pegsHit))
+
+                                # redraw the static image
+                                staticImage = createStaticImage(pegs)
         
                 b.update()
 
@@ -458,13 +461,13 @@ while True:
                         pegs.remove(p)
             for s in pointsEarned:
                 score += s
+            staticImage = createStaticImage(pegs)
 
         ##bucket, pass the power up info for the bucket to update its collison and image
         bucket.update(powerUpType, powerUpActive)
 
     ##### draw #####
-    screen.fill((0, 0, 0))  # black screen
-    screen.blit(backgroundImg, (0, 0))
+    screen.blit(staticImage, (0, 0))
     #draw back of bucket
     bucketBackImg, bucketFrontImg= bucket.getImage(powerUpType, powerUpActive)
     screen.blit(bucketBackImg, (bucket.pos.vx, bucket.pos.vy))
@@ -474,9 +477,6 @@ while True:
             screen.blit(ballImg, (b.pos.vx - b.radius, b.pos.vy - b.radius))
     #draw front of bucket
     screen.blit(bucketFrontImg, (bucket.pos.vx , bucket.pos.vy))
-    #draw pegs
-    for p in pegs:
-        screen.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
     #draw trajectory path
     done = True
     for b in balls:

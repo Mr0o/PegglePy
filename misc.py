@@ -1,5 +1,6 @@
 from load_level import loadData
 from config import WIDTH, HEIGHT, debug, segmentCount
+from resources import backgroundImg
 from peg import Peg
 from ball import Ball
 
@@ -126,6 +127,21 @@ def loadRandMusic():
     pygame.mixer.music.load("resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
 
 
+# create a static image of the background and pegs, this avoids redrawing the background and pegs every frame
+# -- dramatic performance improvement especially in levels with lots of pegs
+def createStaticImage(pegs:list[Peg], bgImg=backgroundImg):
+    staticImg = pygame.Surface((WIDTH, HEIGHT))
+
+    # draw background
+    staticImg.blit(bgImg, (0,0))
+
+    # draw pegs
+    for p in pegs:
+        staticImg.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
+
+    return staticImg
+
+
 # quite horrendous, will be fixed in the future... hopefully :)
 def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
     #reset everything
@@ -162,7 +178,8 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     pygame.mixer.music.stop()
     loadRandMusic()
     pygame.mixer.music.play(-1) # looping forever
-    return ballsRemaining,powerUpActive,powerUpCount,pitch,pitchRaiseCount,ball,score,pegsHit,pegs,orangeCount,gameOver,alreadyPlayedOdeToJoy,frameRate,LongShotBonus
+    staticImage = createStaticImage(pegs)
+    return ballsRemaining,powerUpActive,powerUpCount,pitch,pitchRaiseCount,ball,score,pegsHit,pegs,orangeCount,gameOver,alreadyPlayedOdeToJoy,frameRate,LongShotBonus,staticImage
 
 
 def distBetweenTwoPoints(x1,y1, x2,y2):
