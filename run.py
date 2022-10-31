@@ -281,6 +281,7 @@ while True:
                                     pegs.remove(b.lastPegHit) # remove the peg
                                     b.lastPegHit = None
                                     p.ballStuckTimer.cancleTimer()
+                                    staticImage = createStaticImage(pegs)
 
                                 # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
                                 if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
