@@ -1,5 +1,11 @@
 import pygame.mixer, pygame.sndarray
-from samplerate import resample
+try:
+    from samplerate import resample
+except ImportError:
+    print("WARN: Unable to import samplerate, please install it with 'pip install samplerate'")
+    print("Some sound effects will not be played correctly.")
+    def resample(array, ratio, mode):
+        return array
 
 from config import debug
 
@@ -21,3 +27,4 @@ def playSoundPitch(sound_file, pitch = 1.0):
     except Exception:
         if debug:
             print("WARN: Unable to play sound '" + str(sound_file) + "' - Exception: " + str(Exception))
+            print("Does the file exist?")

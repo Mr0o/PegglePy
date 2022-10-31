@@ -15,6 +15,12 @@ cheats = False
 # debugging (displays debugging information to the screen)
 debug = False
 
+# enable or diasble sound effects
+soundEnabled = True
+
+# enable or disable music
+musicEnabled = True
+
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 4.5
 gravity = Vector(0, 0.025)

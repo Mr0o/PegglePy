@@ -4,23 +4,34 @@ import sys # used to exit the program immediately
 ## disable pygame init message - "Hello from the pygame community..." ##
 import contextlib
 with contextlib.redirect_stdout(None):
-    import pygame # used for input, audio and graphics
+    try:
+        import pygame # used for input, audio and graphics
+    except ImportError:
+        print("ERROR: Unable to import pygame, please install it with 'pip install pygame'")
+        print("Exiting...")
+        sys.exit(1)
 
 ##### local imports #####
-from config import *
-from trajectory import calcTrajectory, findBestTrajectory
-from audio import playSoundPitch
-from resources import *  # pygame audio, fonts and images
-from misc import *
-from trigger_events import TimedEvent
+try:
+    from config import *
+    from trajectory import calcTrajectory, findBestTrajectory
+    from audio import playSoundPitch
+    from resources import *  # pygame audio, fonts and images
+    from misc import *
+    from trigger_events import TimedEvent
 
-# refer to the vectors.py module for information on these functions
-from vectors import Vector, subVectors
-from collision import isBallTouchingPeg, resolveCollision
+    # refer to the vectors.py module for information on these functions
+    from vectors import Vector, subVectors
+    from collision import isBallTouchingPeg, resolveCollision
 
-from ball import Ball
-from peg import Peg
-from bucket import Bucket
+    from ball import Ball
+    from peg import Peg
+    from bucket import Bucket
+except ImportError as e:
+    print("ERROR: Unable to import local modules, please make sure you have all the required files in the same directory as this program")
+    print(str(e))
+    print("Exiting...")
+    sys.exit(1)
 
 ##### pygame stuff #####
 pygame.init()
@@ -80,7 +91,7 @@ assignPegScreenLocation(pegs, segmentCount)
 staticImage = createStaticImage(pegs)
 
 loadRandMusic()
-pygame.mixer.music.play(-1) # looping forever
+if musicEnabled: pygame.mixer.music.play(-1) # looping forever
 
 ##### main loop #####
 while True:
@@ -214,14 +225,14 @@ while True:
         # if active zenball powerup - launch
         if ball.isLaunch and ball.isAlive and powerUpType == "zenball" and powerUpActive:
             # find the best shot
-            playSoundPitch(powerUpZenBall, 0.93)
+            if soundEnabled: playSoundPitch(powerUpZenBall, 0.93)
             bestAim, bestScore, bestTrajectory = bestShotLaunch = findBestTrajectory(launchAim, ball.pos, pegs, 80, 1800)
 
             if bestScore >= 10: 
-                playSoundPitch(powerUpZenBall, 0.99)
+                if soundEnabled: playSoundPitch(powerUpZenBall, 0.99)
                 ball.applyForce(bestAim)
             elif bestScore < 10: # if there is no possible shot with the zen ball to earn points then it has failed
-                playSoundPitch(failSound)
+                if soundEnabled: playSoundPitch(failSound)
                 ball.applyForce(subVectors(launchAim, ball.pos)) # apply original launch aim
 
             #for debug
@@ -256,12 +267,12 @@ while True:
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
                         if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius):
                             if frameRate != 27 and len(balls) < 2: 
-                                playSoundPitch(drumRoll) # only play sound once
+                                if soundEnabled: playSoundPitch(drumRoll) # only play sound once
                             frameRate = 27 # gives the "slow motion" effect
                             closeBall = b
                         elif frameRate != 144:
                             frameRate = 144
-                            playSoundPitch(sighSound) # only play sound once
+                            if soundEnabled: playSoundPitch(sighSound) # only play sound once
 
 
                     # ball physics and game logic
@@ -294,7 +305,7 @@ while True:
                             if b.lastPegHitPos != p.pos and b.lastPegHitPos != None and p.color == "orange" and not p.isHit:
                                 if distBetweenTwoPoints(b.lastPegHitPos.vx, b.lastPegHitPos.vy, p.pos.vx, p.pos.vy) > longShotDistance:
                                     if not longShotBonus:
-                                        playSoundPitch(longShotSound) 
+                                        if soundEnabled: playSoundPitch(longShotSound) 
                                         score += 25000
                                         b.lastPegHitPos = None
                                         longShotBonus = True
@@ -316,21 +327,22 @@ while True:
                                 if p.isPowerUp:
                                     if powerUpType == "spooky":
                                         if powerUpCount < 1: 
-                                            playSoundPitch(powerUpSpooky1)
+                                            if soundEnabled: playSoundPitch(powerUpSpooky1)
                                             firstSpookyHit = True
                                         elif powerUpCount == 1:
-                                            playSoundPitch(powerUpSpooky2)
+                                            if soundEnabled: playSoundPitch(powerUpSpooky2)
                                             firstSpookyHit = False
                                     if powerUpType == "multiball": 
-                                        playSoundPitch(powerUpMultiBall)
+                                        if soundEnabled: 
+                                            if soundEnabled: playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
                                     if powerUpType == "zenball":
-                                        playSoundPitch(powerUpZenBallHit)
+                                        if soundEnabled: playSoundPitch(powerUpZenBallHit)
                                     if powerUpType == "guideball":
-                                        playSoundPitch(powerUpGuideBall)
+                                        if soundEnabled: playSoundPitch(powerUpGuideBall)
                                         powerUpCount += 2
                                     if powerUpType == "spooky-multiball": 
-                                        playSoundPitch(powerUpMultiBall)
+                                        if soundEnabled: playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
                                         powerUpCount += 1
                                     powerUpCount += 1   
@@ -338,29 +350,32 @@ while True:
                                 
                                 # peg hit sounds
                                 if pitchRaiseCount <= 7:
-                                    if not p.isPowerUp: playSoundPitch(low_hit_sound, pitch)
+                                    if not p.isPowerUp: 
+                                        if soundEnabled: playSoundPitch(low_hit_sound, pitch)
                                     pitch -= 0.05 #magic number
                                 if pitchRaiseCount == 7: pitch = 1.32 #magic number
                                 elif pitchRaiseCount > 7 and pitchRaiseCount < 26:
-                                    if not p.isPowerUp: playSoundPitch(normal_hit_sound, pitch)
+                                    if not p.isPowerUp: 
+                                        if soundEnabled: playSoundPitch(normal_hit_sound, pitch)
                                     pitch -= 0.045 #magic number
                                 elif pitchRaiseCount >= 26:
-                                    if not p.isPowerUp: playSoundPitch(normal_hit_sound, pitch)
+                                    if not p.isPowerUp: 
+                                        if soundEnabled: playSoundPitch(normal_hit_sound, pitch)
                                 
                                 #cheats
                                 if cheats:
                                     if powerUpType == "spooky": 
-                                        #playSoundPitch(powerUpSpooky1)
+                                        #if soundEnabled: playSoundPitch(powerUpSpooky1)
                                         powerUpCount += 1 
                                     if powerUpType == "multiball": 
-                                        playSoundPitch(powerUpMultiBall)
+                                        if soundEnabled: playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
                                         powerUpCount += 1 
                                     if powerUpType == "guideball":
                                         powerUpCount += 2
                                     if powerUpType == "spooky-multiball":
-                                        playSoundPitch(powerUpMultiBall)
-                                        #playSoundPitch(powerUpSpooky1)
+                                        if soundEnabled: playSoundPitch(powerUpMultiBall)
+                                        #if soundEnabled: playSoundPitch(powerUpSpooky1)
                                         addNewBall = True
                                         powerUpCount += 2 
 
@@ -385,11 +400,11 @@ while True:
                         b.pos.vy = 0 + b.radius 
                         b.inBucket = False
                         if powerUpCount == 1 and firstSpookyHit:
-                            playSoundPitch(powerUpSpooky2)
+                            if soundEnabled: playSoundPitch(powerUpSpooky2)
                         elif powerUpCount == 1 and not firstSpookyHit:
-                            playSoundPitch(powerUpSpooky4)
+                            if soundEnabled: playSoundPitch(powerUpSpooky4)
                         elif powerUpCount == 2 and not firstSpookyHit:
-                            playSoundPitch(powerUpSpooky3)
+                            if soundEnabled: playSoundPitch(powerUpSpooky3)
                         powerUpCount -= 1
                         if powerUpCount < 1:
                             powerUpActive = False 
@@ -406,7 +421,7 @@ while True:
                 # if ball went in the bucket
                 if not b.inBucket and bucket.isInBucket(b.pos.vx, b.pos.vy):
                     b.inBucket = True # prevent the ball from triggering it multiple times
-                    playSoundPitch(freeBallSound)
+                    if soundEnabled: playSoundPitch(freeBallSound)
                     ballsRemaining += 1
             
             # remove any 'dead' balls
@@ -426,13 +441,13 @@ while True:
         if done and (orangeCount == 0 or ballsRemaining < 1) and gameOver == False:
             gameOver = True
             if ballsRemaining < 1 and orangeCount > 0:
-                playSoundPitch(failSound)
+                if soundEnabled: playSoundPitch(failSound)
         
         # check if the last orange peg has been hit, play ode to joy and change the buckets
         if orangeCount < 1 and not ballsRemaining < 1 and not alreadyPlayedOdeToJoy:
             pygame.mixer.music.load("resources/audio/music/ode_to_joy.wav")
-            pygame.mixer.music.play(-1)
-            playSoundPitch(cymbal)
+            if musicEnabled: pygame.mixer.music.play(-1)
+            if soundEnabled: playSoundPitch(cymbal)
             alreadyPlayedOdeToJoy = True
             frameRate = 60 # still kinda slow motion, but a little bit faster
 
