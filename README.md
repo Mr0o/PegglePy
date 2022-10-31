@@ -9,14 +9,16 @@ However, this will take a long time, and I don't know when I will ever get aroun
  - Download the PegglePy repository as a zip
  - Extract PegglePy.zip
  - Install python 3 from the python website
- - Open the cmd prompt and type "pip3 install -r requirements.txt" 
+ - From within the PegglePy directory, open the cmd prompt and type: 
+        pip3 install -r requirements.txt 
  - or alternatively:
- -      "pip3 install pygame, numpy, samplerate"
+ -      pip3 install pygame, numpy, samplerate
  - From within the PegglePy folder on your computer, run "run.py"
 
 *Linux*
 - Install python 3 (most distributions already have python 3 installed)
-- Open a terminal and type "pip3 install -r requirements.txt" 
+- From within the PegglePy directory, open a terminal and type: 
+        pip3 install -r requirements.txt 
 - or alternatively:
--      "pip3 install pygame, numpy, samplerate"
+        pip3 install pygame, numpy, samplerate
 - From within the PegglePy directory, type "python3 run.py" into the terminal
