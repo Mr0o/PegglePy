@@ -9,16 +9,11 @@ from random import randint
 
 ##### local imports #####
 from config import *
-from audio import playSoundPitch
 from load_level import loadData, saveData
 
-# refer to the vectors.py module for information on these functions
-from vectors import Vector, subVectors
-from collision import isBallTouchingPeg, resolveCollision
+from collision import isBallTouchingPeg
 
-from ball import Ball
 from peg import Peg
-from bucket import Bucket
 
 ##### pygame stuff #####
 pygame.init()
@@ -53,7 +48,7 @@ debugCollision = False
 
 # load the pegs from a level file (pickle)
 #pegs = loadData()
-
+pegs : list[Peg]
 pegs = []
 
 ##### main loop #####
@@ -87,7 +82,8 @@ while True:
             if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/2, peg.pos.vx, peg.pos.vy, peg.radius):
                 validNewPegPos = False
                 break
-
+        
+        # valid position, add peg
         if validNewPegPos:     
             newBall = Peg(mousePos.vx, mousePos.vy)
             pegs.append(newBall)
@@ -99,7 +95,8 @@ while True:
             if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius, peg.pos.vx, peg.pos.vy, peg.radius):
                 selectedPeg = peg
                 break
-
+        
+        #peg has been selected, remove it
         if selectedPeg != None:     
             pegs.remove(selectedPeg)
 
