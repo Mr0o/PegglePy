@@ -35,3 +35,5 @@ __pycache__/run.cpython-311.pyc
 
 .vscode/settings.json
 .vscode/launch.json
+ignore/.vscode/launch.json
+ignore/.vscode/settings.json
