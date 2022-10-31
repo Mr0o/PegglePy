@@ -4,6 +4,14 @@ A clone of peggle written in python using pygame
 The code itself is quite messy and I plan to eventually rewrite/refactor most of the project to clean it up
 However, this will take a long time, and I don't know when I will ever get around to this
 
+
+# Screenshots
+<img src="screenshots/Screenshot from 2022-10-25 01-02-09.png" width="700"/>
+<img src="screenshots/Screenshot from 2022-10-31 00-19-20.png" width="700"/>
+<img src="screenshots/Screenshot from 2022-10-31 00-20-01.png" width="700"/>
+
+
+
 # Installation instructions
 *Windows*
 - Download the PegglePy repository as a zip
