@@ -25,6 +25,8 @@ class Bucket:
         #increase the width by twice its original width
         self.bucketClosedImg = pygame.transform.scale(self.bucketClosedImg, (self.bucketClosedImg.get_width()*2, self.bucketClosedImg.get_height()))
 
+        # TODO delete this warning message when the lerping is properly implemented
+        if WIDTH != 1200: print("WARN: Bucket cannot be lerped because WIDTH is not 1200, this needs to be fixed...")
 
         self.bucketCenterX = self.bucketBackImg.get_width() / 2
 
@@ -40,25 +42,28 @@ class Bucket:
 
     def update(self, powerUp = "none", powerActive = False):
 
-        # TODO properly implemnt lerping
-        # remaining distance if velocity is negative
-        if self.vel.vx < 0:
-            remainingDistToEdge = self.pos.vx
-        # remaining distance if velocity is positive
-        elif self.vel.vx > 0:
-            remainingDistToEdge = WIDTH - self.pos.vx - self.bucketBackImg.get_width()
+        # TODO properly implemnt lerping (Only works if WIDTH == 1200)
+        if WIDTH == 1200:
+            # remaining distance if velocity is negative
+            if self.vel.vx < 0:
+                remainingDistToEdge = self.pos.vx
+            # remaining distance if velocity is positive
+            elif self.vel.vx > 0:
+                remainingDistToEdge = WIDTH - self.pos.vx - self.bucketBackImg.get_width()
 
-        #slow down the bucket as it apporaches the egde of the screen
-        if remainingDistToEdge < WIDTH/5.5:
-            self.vel.vx *= 0.99
-        #speed up the bucket as it moves away from the edge of the screen
-        elif remainingDistToEdge > WIDTH/9:
-            self.vel.vx /= 0.99
+            #slow down the bucket as it apporaches the egde of the screen
+            if remainingDistToEdge < WIDTH/5.5:
+                self.vel.vx *= 0.99
+            #speed up the bucket as it moves away from the edge of the screen
+            elif remainingDistToEdge > WIDTH/9:
+                self.vel.vx /= 0.99
+            
+            if self.vel.getMag() < 0.1:
+                self.vel.setMag(0.1)
+            
+            self.vel.limitMag(bucketVelocity)
         
-        if self.vel.getMag() < 0.1:
-            self.vel.setMag(0.1)
-        
-        self.vel.limitMag(bucketVelocity)
+        # use static movement if the width is not 1200
 
         # if bucket collided with wall
         if self.pos.vx > (WIDTH - self.bucketBackImg.get_width()) or self.pos.vx < self.bucketBackImg.get_width() - 300:
