@@ -1,3 +1,5 @@
 pygame
 numpy
 samplerate
+tkinter
+pickle
