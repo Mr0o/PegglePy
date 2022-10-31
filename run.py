@@ -155,6 +155,19 @@ while True:
                     frameRate = 30
                 else:
                     frameRate = 144
+            if event.key == pygame.K_m:
+                if soundEnabled == False:
+                    soundEnabled = True
+                else:
+                    soundEnabled = False
+            if event.key == pygame.K_n:
+                if musicEnabled == False:
+                    musicEnabled = True
+                    pygame.mixer.music.play(-1)
+                else:
+                    musicEnabled = False
+                    pygame.mixer.music.stop()
+
 
         if event.type == pygame.MOUSEWHEEL:
             fineTuneAmount += event.y
