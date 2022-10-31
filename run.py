@@ -442,6 +442,12 @@ while True:
                 balls.remove(b)
 
         
+        # if there are more than 30 balls on the screen, disable sound effects, as playing too many sounds causes perfomance stuttering
+        # you would obviously have to be cheating to get this many balls on the screen, but it's still good to keep perfomance from tanking too hard
+        if len(balls) > 30 and soundEnabled:
+            soundEnabled = False
+        else:
+            soundEnabled = True
 
         # this little loop and if statement will determine if any of the balls are still alive and therfore if everything should be cleared/reset or not     
         done = True
