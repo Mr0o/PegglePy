@@ -126,6 +126,7 @@ def loadRandMusic():
     pygame.mixer.music.load("resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
 
 
+# quite horrendous, will be fixed in the future... hopefully :)
 def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
     #reset everything
     shouldClear = False
