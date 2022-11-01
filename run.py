@@ -1,4 +1,3 @@
-from math import sqrt
 import sys # used to exit the program immediately
 
 ## disable pygame init message - "Hello from the pygame community..." ##
@@ -13,20 +12,20 @@ with contextlib.redirect_stdout(None):
 
 ##### local imports #####
 try:
-    from config import *
-    from trajectory import calcTrajectory, findBestTrajectory
-    from audio import playSoundPitch
-    from resources import *  # pygame audio, fonts and images
-    from misc import *
-    from trigger_events import TimedEvent
+    from local.config import *
+    from local.trajectory import calcTrajectory, findBestTrajectory
+    from local.audio import playSoundPitch
+    from local.resources import *  # pygame audio, fonts and images
+    from local.misc import *
+    from local.trigger_events import TimedEvent
 
     # refer to the vectors.py module for information on these functions
-    from vectors import Vector, subVectors
-    from collision import isBallTouchingPeg, resolveCollision
+    from local.vectors import Vector, subVectors
+    from local.collision import isBallTouchingPeg, resolveCollision
 
-    from ball import Ball
-    from peg import Peg
-    from bucket import Bucket
+    from local.ball import Ball
+    from local.peg import Peg
+    from local.bucket import Bucket
 except ImportError as e:
     print("ERROR: Unable to import local modules, please make sure you have all the required files in the same directory as this program")
     print(str(e))
@@ -443,10 +442,10 @@ while True:
 
         
         # if there are more than 30 balls on the screen, disable sound effects, as playing too many sounds causes perfomance stuttering
-        # you would obviously have to be cheating to get this many balls on the screen, but it's still good to keep perfomance from tanking too hard
-        if len(balls) > 30 and soundEnabled:
+        # this is obviously only if your cheating
+        if len(balls) > 30 and cheats and pegsHit > 20:
             soundEnabled = False
-        else:
+        elif cheats:
             soundEnabled = True
 
         # this little loop and if statement will determine if any of the balls are still alive and therfore if everything should be cleared/reset or not     

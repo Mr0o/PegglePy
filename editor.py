@@ -8,12 +8,12 @@ with contextlib.redirect_stdout(None):
 from random import randint
 
 ##### local imports #####
-from config import *
-from load_level import loadData, saveData
+from local.config import *
+from local.load_level import loadData, saveData
 
-from collision import isBallTouchingPeg
+from local.collision import isBallTouchingPeg
 
-from peg import Peg
+from local.peg import Peg
 
 ##### pygame stuff #####
 pygame.init()
