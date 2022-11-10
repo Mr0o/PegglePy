@@ -1,16 +1,11 @@
 from local.vectors import Vector, subVectors
 from local.ball import Ball
+from local.peg import Peg
 from local.config import LAUNCH_FORCE, trajectoryDepth, WIDTH, HEIGHT, segmentCount
 from local.collision import isBallTouchingPeg, resolveCollision
+from local.misc import getBallScreenLocation
 
-# copied from run.py (kinda sloppy ngl)
-def getBallScreenLocation(p, segmentCount):
-    segmentWidth = WIDTH/segmentCount
-    for i in range(segmentCount+1):
-        if p.pos.vx > segmentWidth*(i-1) -p.radius and p.pos.vx < segmentWidth*i +p.radius:
-            return i
-
-def calcTrajectory(aim : Vector, startPos : Vector, pegs, bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
+def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
     hit = False
     previousFakeBall = Ball(startPos.vx, startPos.vy)
 
@@ -31,23 +26,42 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs, bucketPegs, collisionG
             fakeBall.applyForce(previousFakeBall.acc)
             fakeBall.applyForce(previousFakeBall.vel)
 
-        ballScreenPos = getBallScreenLocation(fakeBall, segmentCount)
 
         #### collision ####
+        ballScreenPosList = getBallScreenLocation(fakeBall, segmentCount)
+
         if hit:# ##powerup## if ball has collided then stop calculating and return
             for p in pegs:
-                if ballScreenPos == p.pegScreenLocation or ballScreenPos == p.pegScreenLocation2:
+                shouldCheckCollision = False
+                for ballScreenPos in ballScreenPosList:
+                    for pegScreenLocation in p.pegScreenLocations:
+                        if ballScreenPos == pegScreenLocation:
+                            shouldCheckCollision = True 
+    
+                if shouldCheckCollision:
                     if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
                         return fakeBalls
         elif collisionGuideBall and not hit: # if guideBall powerup is being used
             for p in pegs:
-                if ballScreenPos == p.pegScreenLocation or ballScreenPos == p.pegScreenLocation2:
+                shouldCheckCollision = False
+                for ballScreenPos in ballScreenPosList:
+                    for pegScreenLocation in p.pegScreenLocations:
+                        if ballScreenPos == pegScreenLocation:
+                            shouldCheckCollision = True 
+                            
+                if shouldCheckCollision:
                     if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
                         fakeBall = resolveCollision(fakeBall, p) # resolve elastic collision aginst the ball and peg
                         hit = True
         elif not collisionGuideBall: # ##normal## if ball has collided then stop calculating and return
             for p in pegs:
-                if ballScreenPos == p.pegScreenLocation or ballScreenPos == p.pegScreenLocation2:
+                shouldCheckCollision = False
+                for ballScreenPos in ballScreenPosList:
+                    for pegScreenLocation in p.pegScreenLocations:
+                        if ballScreenPos == pegScreenLocation:
+                            shouldCheckCollision = True 
+
+                if shouldCheckCollision:
                     if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
                         if not debug:
                             return fakeBalls
@@ -97,11 +111,17 @@ def findBestTrajectory(aim : Vector, startPos : Vector, pegs, maxRange = 40, dep
                 fakeBall.applyForce(previousFakeBall.acc)
                 fakeBall.applyForce(previousFakeBall.vel)
 
-            ballScreenPos = getBallScreenLocation(fakeBall, segmentCount)
+            ballScreenPosList = getBallScreenLocation(fakeBall, segmentCount)
 
             #### collision ####
             for p in pegs:
-                if ballScreenPos == p.pegScreenLocation or ballScreenPos == p.pegScreenLocation2:
+                shouldCheckCollision = False
+                for ballScreenPos in ballScreenPosList:
+                    for pegScreenLocation in p.pegScreenLocations:
+                        if ballScreenPos == pegScreenLocation:
+                            shouldCheckCollision = True 
+                            
+                if shouldCheckCollision:
                     if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
                         fakeBall = resolveCollision(fakeBall, p) # resolve elastic collision aginst the ball and peg
                         # add points

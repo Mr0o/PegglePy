@@ -2,15 +2,14 @@
 from local.trigger_events import TimedEvent
 from local.vectors import Vector
 
-from local.config import bluePegImg, hitBluePegImg, orangePegImg, hitOrangePegImg, greenPegImg, hitGreenPegImg
-
+from local.config import bluePegImg, hitBluePegImg, orangePegImg, hitOrangePegImg, greenPegImg, hitGreenPegImg, pegRad
 
 class Peg:
     def __init__(self, x : int, y : int, color = "blue"):
         self.pos = Vector(x, y)  # position
         self.vel = Vector(0, 0)  # velocity, used for collision calculation
 
-        self.radius = 14
+        self.radius = pegRad
 
         self.mass = 22 # magic number, just pulled this one out of thin air
 
@@ -25,8 +24,7 @@ class Peg:
 
         self.pegImg = bluePegImg
 
-        self.pegScreenLocation = 0 # default 0, this is to be given a different value
-        self.pegScreenLocation2 = 0 # default will be 0 unless the peg happens to be on the segment boundary
+        self.pegScreenLocations: list[int] = [] # list of screen segment locations (it is possible for a peg to cross multiple segments)
 
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
 
@@ -34,7 +32,7 @@ class Peg:
     def reset(self):
         self.vel = Vector(0, 0)  # velocity, used for collision calculation
 
-        self.radius = 14
+        self.radius = pegRad
 
         self.mass = 20 # magic number, just pulled this one out of thin air
 
@@ -49,8 +47,7 @@ class Peg:
 
         self.pegImg = bluePegImg
 
-        self.pegScreenLocation = 0 # default 0, this is to be given a different value
-        self.pegScreenLocation2 = 0 # default will be 0 unless the peg happens to be on the segment boundary
+        self.pegScreenLocations = [] # list of screen segment locations (it is possible for a peg to cross multiple segments)
 
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
 
@@ -58,7 +55,7 @@ class Peg:
     def update_color(self):
         # set the appropiate color peg image if it is has been hit or not
         if self.isHit:
-            self.posAdjust = 25 #the image for hit pegs is actually slightly larger, so this variable is to adjust for this
+            #self.posAdjust = 25 #the image for hit pegs is actually slightly larger, so this variable is to adjust for this
             if self.color == "blue":
                 self.pegImg = hitBluePegImg
             if self.color == "orange":

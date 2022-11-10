@@ -271,7 +271,7 @@ while True:
         #update ball physics and pegs, additional game logic
         for b in balls:
             if b.isAlive:
-                ballScreenPos = getBallScreenLocation(b, segmentCount)
+                ballScreenPosList = getBallScreenLocation(b, segmentCount)
                 #### collision ####
                 for p in pegs:
 
@@ -288,7 +288,13 @@ while True:
 
 
                     # ball physics and game logic
-                    if ballScreenPos == p.pegScreenLocation or ballScreenPos == p.pegScreenLocation2:
+                    shouldCheckCollision = False
+                    for ballScreenPos in ballScreenPosList:
+                        for pegScreenLocation in p.pegScreenLocations:
+                            if ballScreenPos == pegScreenLocation:
+                                shouldCheckCollision = True
+
+                    if shouldCheckCollision:
                         if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius):
                             b = resolveCollision(b, p) # resolve the collision between the ball and peg
                             
@@ -508,7 +514,7 @@ while True:
     #draw ball(s)
     if not gameOver:
         for b in balls:
-            screen.blit(ballImg, (b.pos.vx - b.radius, b.pos.vy - b.radius))
+            screen.blit(ballImg, (b.pos.vx - ballImg.get_width()/2, b.pos.vy - ballImg.get_height()/2))
     #draw front of bucket
     screen.blit(bucketFrontImg, (bucket.pos.vx , bucket.pos.vy))
     #draw trajectory path
