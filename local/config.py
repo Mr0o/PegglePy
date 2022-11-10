@@ -40,8 +40,8 @@ segmentCount = 16
 autoRemovePegs = True
 longShotDistance = WIDTH/3
 frameRate = 144
-ballRad = 10
-pegRad = 20
+ballRad = 12
+pegRad = 18
 
 #images
 ballImg = pygame.image.load("resources/images/balls/200x200/ball.png")
