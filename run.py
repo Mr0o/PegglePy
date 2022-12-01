@@ -633,6 +633,10 @@ while True:
             drawCircle(fakePeg.pos.vx, fakePeg.pos.vy, fakePeg.radius, (255,0,0))
 
         
+        if speedHack:
+            speedHackText = debugFont.render("Speed Hack: ON" , False, (255,255,255))
+            screen.blit(speedHackText,(245, 5))
+        
         if debugCollision:
             collSegmentDisp = debugFont.render("Collision Segments: " + str(segmentCount), False, (0,255,255))
             screen.blit(collSegmentDisp, (230,7))
