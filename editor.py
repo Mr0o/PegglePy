@@ -97,15 +97,16 @@ while True:
     
     # if right clicked, remove peg
     elif mouseClicked[2]:
-        selectedPeg = None
+        selectedPegs = []
         for peg in pegs:
             if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius, peg.pos.vx, peg.pos.vy, peg.radius):
-                selectedPeg = peg
-                break
+                selectedPegs.append(peg)
         
-        #peg has been selected, remove it
-        if selectedPeg != None:     
+        #remove any selected pegs
+        for selectedPeg in selectedPegs:     
             pegs.remove(selectedPeg)
+
+        if len(selectedPegs) > 0:
             staticImg = createStaticImage(pegs)
 
     ##### draw #####
