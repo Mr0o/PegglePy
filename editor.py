@@ -70,6 +70,7 @@ while True:
             # load level
             if event.key == pygame.K_l:
                 pegs = loadData()
+                staticImg = createStaticImage(pegs)
 
     
     ##### update #####
