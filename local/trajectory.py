@@ -1,3 +1,5 @@
+import time
+
 from local.vectors import Vector, subVectors
 from local.ball import Ball
 from local.peg import Peg
@@ -82,23 +84,28 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
     return fakeBalls
 
 
-def findBestTrajectory(aim : Vector, startPos : Vector, pegs, maxRange = 40, depth = 1200):
+def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRange = 21, depth = 9000):
+    # default maxRange and depth were found using a performance test on a level with 120 pegs, which can be run with the 'performance_test.py' module
+    # the default values are the values that gave the best performance (shortest time, but with the greatest depth and range possible)
+
+    maxTimeAllowed = 4 # seconds (if the function takes longer than this, then it will return the best trajectory it has found so far)
+
     score = 0
     bestScore = 0
     bestAim = aim
     bestTrajectory = []
 
     ogAim = aim
-
-    #maxRange = 40 #max range of trajectories to check
-    #depth = 1200 #how many steps to take in the trajectory calculation
     
     aim.vx += (round(maxRange*2))
+
+    startTime = time.time()
     for i in range(maxRange):
         aim.vx -= i/2
         fakeBalls = []
         previousFakeBall = Ball(startPos.vx, startPos.vy)
         score = 0
+        
         for j in range(depth):
             fakeBall = Ball(previousFakeBall.pos.vx, previousFakeBall.pos.vy)
             
@@ -150,10 +157,9 @@ def findBestTrajectory(aim : Vector, startPos : Vector, pegs, maxRange = 40, dep
                 bestAim = traj
                 bestTrajectory = fakeBalls
 
-
-        # restore all peg hit states
-        for p in pegs:
-            p.isHit = False
+            # if time is up, then return the best trajectory
+            if time.time() - startTime > maxTimeAllowed:
+                return bestAim, bestScore, bestTrajectory
 
     return bestAim, bestScore, bestTrajectory
 
