@@ -27,6 +27,9 @@ sighSound = pygame.mixer.Sound("resources/audio/sounds/sigh.ogg")
 backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
 backgroundImg =  pygame.transform.scale(backgroundImg, (WIDTH, HEIGHT))
 
+#Icon
+gameIconImg = pygame.image.load("resources/images/balls/200x200/ball.png")
+
 #FONT
 ballCountFont = pygame.font.Font("resources/fonts/Evogria.otf", 30)
 infoFont = pygame.font.Font("resources/fonts/Evogria.otf", 16)
