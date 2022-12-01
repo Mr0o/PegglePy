@@ -22,9 +22,11 @@ soundEnabled = True
 musicEnabled = True
 
 # a bunch of variables (defaults)
-LAUNCH_FORCE = 4.5
-maxBallVelocity = 6
-gravity = Vector(0, 0.025)
+LAUNCH_FORCE = 5.0
+maxBallVelocity = 7
+defaultBallMass = 6
+defaultPegMass = 32
+gravity = Vector(0, 0.035)
 trajectoryDepth = 75 # how many steps to take in the normal (non-powerup) launch trajectory calculation
 bucketVelocity = 2.5 # max set velocity of the bucket
 ballsRemaining = 10
@@ -41,7 +43,7 @@ autoRemovePegs = True
 longShotDistance = WIDTH/3
 frameRate = 144
 ballRad = 12
-pegRad = 18
+pegRad = 25
 
 #images
 ballImg = pygame.image.load("resources/images/balls/200x200/ball.png")
