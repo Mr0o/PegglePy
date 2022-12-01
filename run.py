@@ -37,6 +37,9 @@ pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
 clock = pygame.time.Clock()  # game clock
 pygame.display.set_caption("Peggle Clone")
+
+# set the icon
+pygame.display.set_icon(gameIconImg)
         
 
 ##### drawing functions #####
@@ -238,7 +241,10 @@ while True:
         if ball.isLaunch and ball.isAlive and powerUpType == "zenball" and powerUpActive:
             # find the best shot
             if soundEnabled: playSoundPitch(powerUpZenBall, 0.93)
-            bestAim, bestScore, bestTrajectory = bestShotLaunch = findBestTrajectory(launchAim, ball.pos, pegs, 80, 1800)
+            bestAim, bestScore, bestTrajectory = findBestTrajectory(Vector(launchAim.vx, launchAim.vy), Vector(ball.pos.vx, ball.pos.vy), pegs.copy())
+
+            for p in pegs:
+                p.isHit = False
 
             if bestScore >= 10: 
                 if soundEnabled: playSoundPitch(powerUpZenBall, 0.99)
@@ -247,8 +253,6 @@ while True:
                 if soundEnabled: playSoundPitch(failSound)
                 ball.applyForce(subVectors(launchAim, ball.pos)) # apply original launch aim
 
-            #for debug
-            drawTrajectory = True
             
             pygame.mixer.Sound.play(launch_sound)
             ball.isLaunch = False
@@ -592,8 +596,8 @@ while True:
         #print ball velocity
         ballVelText = debugFont.render("Velocity: " + str(ball.vel.getMag()), False, (255,255,255))
         screen.blit(ballVelText, (100,20))
-        #draw zenball trajectory
-        if drawTrajectory and not done and powerUpType == "zenball":
+        #draw zenball trajectory (can cause a noticable performance hit due to the number of circles being drawn)
+        if not done and powerUpType == "zenball":
             for fb in bestTrajectory:
                 drawCircle(fb.pos.vx, fb.pos.vy, 1, (0 ,153 ,10))
 
@@ -615,5 +619,7 @@ while True:
         cheatsIcon = debugFont.render("CHEATS ENABLED" , False, (255,0,0))
         screen.blit(cheatsIcon,(100, 6))
 
+    # anti aliasing the game screen
+    
     pygame.display.update()
     clock.tick(frameRate)  # lock game framerate to a specified tickrate (default is 144)
