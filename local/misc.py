@@ -132,6 +132,9 @@ def createStaticImage(pegs:list[Peg], bgImg=backgroundImg):
     for p in pegs:
         staticImg.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
 
+    # anti-aliasing
+    #staticImg = pygame.transform.smoothscale(staticImg, (WIDTH, HEIGHT))
+
     return staticImg
 
 
