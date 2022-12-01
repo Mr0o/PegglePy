@@ -2,6 +2,7 @@ import sys # used to exit the program immediately
 
 ## disable pygame init message - "Hello from the pygame community..." ##
 import contextlib
+import time
 with contextlib.redirect_stdout(None):
     try:
         import pygame # used for input, audio and graphics
@@ -79,6 +80,8 @@ closeBall = None
 longShotBonus = False
 debugTrajectory = False
 firstSpookyHit = False
+hasPegBeenHit = False
+hasPegBeenRemoved = False
 
 
 longShotTextTimer = TimedEvent()
@@ -169,6 +172,11 @@ while True:
                 else:
                     musicEnabled = False
                     pygame.mixer.music.stop()
+            if event.key == pygame.K_8:
+                if speedHack == False:
+                    speedHack = True
+                else:
+                    speedHack = False
 
 
         if event.type == pygame.MOUSEWHEEL:
@@ -241,7 +249,13 @@ while True:
         if ball.isLaunch and ball.isAlive and powerUpType == "zenball" and powerUpActive:
             # find the best shot
             if soundEnabled: playSoundPitch(powerUpZenBall, 0.93)
+            if debug:
+                print("Debug: Zenball launched")
+                startTime = time.time()
             bestAim, bestScore, bestTrajectory = findBestTrajectory(Vector(launchAim.vx, launchAim.vy), Vector(ball.pos.vx, ball.pos.vy), pegs.copy())
+
+            if debug:
+                print("Debug: Zenball best aim found in " + str(time.time() - startTime) + " seconds")
 
             for p in pegs:
                 p.isHit = False
@@ -313,8 +327,8 @@ while True:
                                 if p.ballStuckTimer.isTriggered and b.lastPegHit != None:
                                     pegs.remove(b.lastPegHit) # remove the peg
                                     b.lastPegHit = None
+                                    hasPegBeenRemoved = True
                                     p.ballStuckTimer.cancleTimer()
-                                    staticImage = createStaticImage(pegs)
 
                                 # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
                                 if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
@@ -340,6 +354,7 @@ while True:
 
                             #peg color update and powerup sounds
                             if not p.isHit: 
+                                hasPegBeenHit = True # has a peg been hit this frame
                                 p.isHit = True
                                 pegsHit += 1
                                 p.update_color() # change the color to signify it has been hit
@@ -406,8 +421,10 @@ while True:
                                 #pointsEarned.append(p.points)
                                 score += (p.points * getScoreMultiplier(orangeCount, pegsHit))
 
-                                # redraw the static image
-                                staticImage = createStaticImage(pegs)
+
+                                if speedHack:
+                                    # update the static image to show the peg has been hit (can increase performance, but at the cost of visual wierdness)
+                                    staticImage = updateStaticImage(staticImage, p)
         
                 b.update()
 
@@ -450,7 +467,17 @@ while True:
             elif not b.isAlive and b != ball:
                 balls.remove(b)
 
+        # if a peg was hit or removed this frame, update the static image (this is an optimazation to prevent the static image from being updated more than once per frame)
+        if hasPegBeenHit and not speedHack:
+            # generate new static image to show the peg has been hit or removed (can cause pefromance hiccups especially when there are lots of pegs in the level)
+            staticImage = createStaticImage(pegs)
+            hasPegBeenHit = False
         
+        # regardless of speedHack, update the static image if a peg was removed
+        if hasPegBeenRemoved:
+            hasPegBeenRemoved = False
+            staticImage = createStaticImage(pegs)
+
         # if there are more than 30 balls on the screen, disable sound effects, as playing too many sounds causes perfomance stuttering
         # this is obviously only if your cheating
         if len(balls) > 30 and cheats and pegsHit > 20:

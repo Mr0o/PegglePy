@@ -138,6 +138,14 @@ def createStaticImage(pegs:list[Peg], bgImg=backgroundImg):
     return staticImg
 
 
+# blit a single peg to the static image rather than redrawing the entire image
+def updateStaticImage(staticImg: pygame.Surface, peg: Peg):
+    staticImg.blit(peg.pegImg, (peg.pos.vx - peg.posAdjust, peg.pos.vy - peg.posAdjust))
+
+    return staticImg
+
+
+
 # quite horrendous, will be fixed in the future... hopefully :)
 def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
     #reset everything

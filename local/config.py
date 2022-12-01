@@ -15,6 +15,10 @@ cheats = False
 # debugging (displays debugging information to the screen)
 debug = False
 
+# when there are lots of pegs on the screen (perhaps more than a few hundred, lol), you might see performance hiccups
+# this can be set to true to improve performance at the cost of visual weirdness
+speedHack = False
+
 # enable or diasble sound effects
 soundEnabled = True
 
@@ -38,7 +42,7 @@ pitchRaiseCount = 0
 showCollision = False
 previousAim = Vector(0,1)
 shouldClear = False
-segmentCount = 16
+segmentCount = 20
 autoRemovePegs = True
 longShotDistance = WIDTH/3
 frameRate = 144

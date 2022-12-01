@@ -84,11 +84,12 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
     return fakeBalls
 
 
-def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRange = 21, depth = 9000):
+def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRange = 21, depth = 9000, setTimeLimit = 5):
     # default maxRange and depth were found using a performance test on a level with 120 pegs, which can be run with the 'performance_test.py' module
     # the default values are the values that gave the best performance (shortest time, but with the greatest depth and range possible)
 
-    maxTimeAllowed = 4 # seconds (if the function takes longer than this, then it will return the best trajectory it has found so far)
+    timeLimit = setTimeLimit# seconds (if the function takes longer than this, then it will return the best trajectory it has found so far)
+    # set to 0 to disable time limit
 
     score = 0
     bestScore = 0
@@ -158,7 +159,7 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRange 
                 bestTrajectory = fakeBalls
 
             # if time is up, then return the best trajectory
-            if time.time() - startTime > maxTimeAllowed:
+            if time.time() - startTime > timeLimit and timeLimit != 0:
                 return bestAim, bestScore, bestTrajectory
 
     return bestAim, bestScore, bestTrajectory

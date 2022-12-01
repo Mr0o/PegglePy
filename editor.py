@@ -15,6 +15,8 @@ from local.collision import isBallTouchingPeg
 
 from local.peg import Peg
 
+from local.misc import createStaticImage, updateStaticImage
+
 ##### pygame stuff #####
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
@@ -51,6 +53,8 @@ debugCollision = False
 pegs : list[Peg]
 pegs = []
 
+staticImg = createStaticImage(pegs)
+
 ##### main loop #####
 while True:
     for event in pygame.event.get():  # check events and quit if the program is closed
@@ -79,7 +83,8 @@ while True:
     if mouseClicked[0]:
         validNewPegPos = True
         for peg in pegs:
-            if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
+            #if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
+            if isBallTouchingPeg(mousePos.vx, mousePos.vy, 0, peg.pos.vx, peg.pos.vy, 0):
                 validNewPegPos = False
                 break
         
@@ -87,6 +92,7 @@ while True:
         if validNewPegPos:     
             newBall = Peg(mousePos.vx, mousePos.vy)
             pegs.append(newBall)
+            staticImg = updateStaticImage(staticImg, newBall)
     
     # if right clicked, remove peg
     elif mouseClicked[2]:
@@ -99,14 +105,10 @@ while True:
         #peg has been selected, remove it
         if selectedPeg != None:     
             pegs.remove(selectedPeg)
+            staticImg = createStaticImage(pegs)
 
     ##### draw #####
-    screen.fill((0, 0, 0))  # black screen
-    screen.blit(backgroundImg, (0, 0))
-    
-    #draw pegs
-    for p in pegs:
-        screen.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
+    screen.blit(staticImg, (0, 0))
 
     # draw peg count text
     pegCount = infoFont.render("Pegs : " + str(len(pegs)), False, (5, 30, 100))
