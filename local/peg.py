@@ -2,7 +2,7 @@
 from local.trigger_events import TimedEvent
 from local.vectors import Vector
 
-from local.config import bluePegImg, hitBluePegImg, orangePegImg, hitOrangePegImg, greenPegImg, hitGreenPegImg, pegRad
+from local.config import bluePegImg, hitBluePegImg, orangePegImg, hitOrangePegImg, greenPegImg, hitGreenPegImg, pegRad, defaultPegMass
 
 class Peg:
     def __init__(self, x : int, y : int, color = "blue"):
@@ -11,7 +11,7 @@ class Peg:
 
         self.radius = pegRad
 
-        self.mass = 22 # magic number, just pulled this one out of thin air
+        self.mass = defaultPegMass # magic number, just pulled this one out of thin air
 
         self.posAdjust = self.radius # this is used to draw the image for the peg in the correct position
         self.isHit = False
