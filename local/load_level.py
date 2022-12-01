@@ -77,19 +77,18 @@ def loadData():
     posList = createDefaultPegsPos()
     if filePath != None:
         try:
-            # load average mpg data from file
             with open(filePath, 'rb') as f:
                 posList = pickle.load(f)
 
-
-        except Exception: # if the file selected is invalid, generate a new file
-            print("WARN: Unable to open file, using default generated level (No file created or loaded)")
+        except Exception: # if the file selected is invalid generate the default level and use it instead
+            if debug:
+                print("WARN: Unable to open file, using default generated level (No file created or loaded)")
 
             posList = createDefaultPegsPos()
 
     # if no file was selected
     elif filePath == None and debug:
-        print("WARN: Unable to open file, using default generated level (No file created or loaded)")
+        print("WARN: No file selected, using default generated level (No file created or loaded)")
         
 
     # using x and y tuple, create list of peg objects
