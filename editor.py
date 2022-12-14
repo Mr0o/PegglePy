@@ -47,6 +47,7 @@ def drawLine(x1,y1,x2,y2):
     pygame.draw.line(screen, (255, 0, 0),[x1, y1],[x2,y2])
 
 debugCollision = False
+skipValidPegCheck = False
 
 # load the pegs from a level file (pickle)
 #pegs = loadData()
@@ -64,6 +65,7 @@ while True:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 pegs = []
+                staticImg = createStaticImage(pegs)
             # save level
             if event.key == pygame.K_s:
                 saveData(pegs)
@@ -71,6 +73,8 @@ while True:
             if event.key == pygame.K_l:
                 pegs = loadData()
                 staticImg = createStaticImage(pegs)
+            if event.key == pygame.K_1:
+                skipValidPegCheck = not skipValidPegCheck
 
     
     ##### update #####
@@ -83,11 +87,15 @@ while True:
     #if mouse clicked, create a new ball at the mouse position
     if mouseClicked[0]:
         validNewPegPos = True
-        for peg in pegs:
-            #if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
-            if isBallTouchingPeg(mousePos.vx, mousePos.vy, 0, peg.pos.vx, peg.pos.vy, 0):
-                validNewPegPos = False
-                break
+        if not skipValidPegCheck:
+            for peg in pegs:
+                if  isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
+                    validNewPegPos = False
+                    break
+        
+        else:
+            validNewPegPos = True
+
         
         # valid position, add peg
         if validNewPegPos:     
