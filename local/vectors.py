@@ -5,7 +5,7 @@
 #  In here you will find a Vector class with methods for performing basic vector math
 #  All vector math is 2-Dimensional meaning that all Vectors have just an x and y component
 
-from math import sqrt  # used for square root
+from math import atan2, sqrt, cos, sin
 from random import randint  # used for random integers
 
 
@@ -37,6 +37,7 @@ class Vector:
     def __init__(self, x, y):
         self.vx = x
         self.vy = y
+        self.angleRad = atan2(self.vy, self.vx)  # find the angle of the vector in radians
 
     def getMag(self):
         mag = abs((self.vx * self.vx) + (self.vy * self.vy))  # find the magnitude using pythagorean theorem
@@ -82,3 +83,21 @@ class Vector:
     def div(self, d):
         self.vx /= d
         self.vy /= d
+    
+    #  return the angle of the vector
+    def getAngleRad(self):
+        return atan2(self.vy, self.vx)
+    
+    # return the angle of the vector in degrees
+    def getAngleDeg(self):
+        return self.getAngleRad() * 180 / 3.14159265359
+    
+    #  set the angle of the vector in radians
+    def setAngleRad(self, angle):
+        mag = self.getMag()
+        self.vx = mag * cos(angle)
+        self.vy = mag * sin(angle)
+    
+    # set the angle of the vector in degrees
+    def setAngleDeg(self, angle):
+        self.setAngleRad(angle * 3.14159265359 / 180)
