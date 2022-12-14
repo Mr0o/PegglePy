@@ -1,8 +1,11 @@
+import math
 import sys # used to exit the program immediately
 
 ## disable pygame init message - "Hello from the pygame community..." ##
 import contextlib
 import time
+
+from local.vectors import addVectors
 with contextlib.redirect_stdout(None):
     try:
         import pygame # used for input, audio and graphics
@@ -82,6 +85,9 @@ debugTrajectory = False
 firstSpookyHit = False
 hasPegBeenHit = False
 hasPegBeenRemoved = False
+controllerInput = False
+inputAim = Vector(WIDTH/2, (HEIGHT/25)+50)
+gamePadFineTuneAmount = 0
 
 
 longShotTextTimer = TimedEvent()
@@ -100,6 +106,8 @@ if musicEnabled: pygame.mixer.music.play(-1) # looping forever
 
 ##### main loop #####
 while True:
+    launch_button = False
+    gamePadFineTuneAmount = 0
     for event in pygame.event.get():  # check events and quit if the program is closed
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -108,6 +116,7 @@ while True:
             if event.key == pygame.K_SPACE:
                 # horrifying function that resets the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                if not musicEnabled: pygame.mixer.music.stop()
             if event.key == pygame.K_1: # enable or disable debug features
                 if debug == False:
                     debug = True
@@ -150,6 +159,7 @@ while True:
                 pegs, originPegs, orangeCount = loadLevel(createPegColors)
                 # horrifying function that resets the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                if not musicEnabled: pygame.mixer.music.stop()
             if event.key == pygame.K_ESCAPE: # enable or disable cheats
                 if gamePaused == False:
                     gamePaused = True
@@ -180,25 +190,130 @@ while True:
 
 
         if event.type == pygame.MOUSEWHEEL:
-            fineTuneAmount += event.y
-    
+            fineTuneAmount -= event.y / 5
+
+        if event.type == pygame.MOUSEMOTION:
+            controllerInput = False
+
+        # check for gamepad dpad buttons
+        if event.type == pygame.JOYHATMOTION:
+            if event.value == (0, 1):
+                gamePadFineTuneAmount += 0.11
+            if event.value == (0, -1):
+                gamePadFineTuneAmount -= 0.11
+            if event.value == (1, 0):
+                gamePadFineTuneAmount += 0.11
+            if event.value == (-1, 0):
+                gamePadFineTuneAmount -= 0.11
+
+        if event.type == pygame.JOYAXISMOTION:
+            controllerInput = True
+        if event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 0: # the 'X' button on an xbox controller
+                launch_button = True
+            if event.button == 1: # the 'A' button on an xbox controller
+                launch_button = True
+            if event.button == 2: # the 'B' button on an xbox controller
+                if powerUpType == "spooky":
+                    powerUpType = "multiball"
+                elif powerUpType == "multiball":
+                    powerUpType = "zenball"
+                elif powerUpType == "zenball":
+                    powerUpType = "guideball"
+                elif powerUpType == "guideball":
+                    powerUpType = "spooky-multiball"
+                elif powerUpType == "spooky-multiball":
+                    powerUpType = "spooky"
+            if event.button == 3: # the 'Y' button on an xbox controller
+                #reset the game
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                if not musicEnabled: pygame.mixer.music.stop()
+            if event.button == 8: # the 'back' button on an xbox controller
+                if debug == False:
+                    debug = True
+                else:
+                    debug = False
+            if event.button == 9: # the 'start' button on an xbox controller
+                if gamePaused == False:
+                    gamePaused = True
+                else:
+                    gamePaused = False
+            if event.button == 10 or event.button == 11: # the 'left stick' or 'right stick' buttons on an xbox controller
+                if musicEnabled == False:
+                    musicEnabled = True
+                    pygame.mixer.music.play(-1)
+                else:
+                    musicEnabled = False
+                    pygame.mixer.music.stop()
+                if soundEnabled == False:
+                    soundEnabled = True
+                else:
+                    soundEnabled = False
+            if event.button == 4: # the 'left bumper' button on an xbox controller
+                #rumble test
+                if pygame.joystick.get_count() > 0:
+                    print("rumble test - 100 ms")
+                    joystick = pygame.joystick.Joystick(0)
+                    joystick.init()
+                    joystick.rumble(1, 1, 100)
+                
+
     mouseClicked = pygame.mouse.get_pressed() # get the mouse click state
     mx, my =  pygame.mouse.get_pos()  # get mouse position as 'mx' and 'my'
-    mx_rel, my_rel = pygame.mouse.get_rel() # get mouse relative position as 'mx_rel' and 'my_rel'      
+    mx_rel, my_rel = pygame.mouse.get_rel() # get mouse relative position as 'mx_rel' and 'my_rel' 
+
+     # check for joystick
+    if pygame.joystick.get_count() > 0:
+        minJoystickValue = 0.05
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+        joystickX = joystick.get_axis(0) # 0 is the x axis on the left joystick
+    else:
+        controllerInput = False
+        if mouseClicked[0]:
+            launch_button = True
+
+    if controllerInput:
+        maxAngleDegrees = 200
+        minAngleDegrees = -20
+
+        angleStep = joystickX * 0.60 + gamePadFineTuneAmount
+
+        angle = inputAim.getAngleDeg()
+        
+        if angleStep > minJoystickValue or angleStep < -minJoystickValue:
+            angle -= angleStep
+        
+
+        inputAim.setAngleDeg(angle)
+        inputAim.setMag(500)
+
+        posX = inputAim.vx + ball.pos.vx
+        posY = inputAim.vy + ball.pos.vy
+    elif not controllerInput:
+        inputAim = Vector(mx, my)
+        mouseAim = subVectors(inputAim, ball.pos)
+        # adjust the angle of the mouseAim to account for gravity
+        mouseAim.setAngleDeg(mouseAim.getAngleDeg() + fineTuneAmount)
+        inputAim = addVectors(ball.pos, mouseAim)
+        posX = inputAim.vx
+        posY = inputAim.vy
+        if mouseClicked[0]:
+            launch_button = True
+          
 
     # reset the game when the game is over and the mouse is clicked
-    if mouseClicked[0] and gameOver:
+    if launch_button and gameOver:
         delayTimer = TimedEvent(0.25) # prevent the click from instantly launching a ball
         # horrifying function that resets the game
         ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
-
+        if not musicEnabled: pygame.mixer.music.stop()
 
     # do not update any game physics or game logic if the game is paused or over
     if not gamePaused and not gameOver:
-        if mx_rel == 0 and my_rel == 0:
-            launchAim = Vector(mx + fineTuneAmount, my) # use the mouse position as a vector to calculate the path that is being aimed
-        else:
-            launchAim = Vector(mx,my) # use the mouse position as a vector to calculate the path that is being aimed
+        launchAim = Vector(posX,posY) # use the mouse position as a vector to calculate the path that is being aimed
+        # check if the mouse is being moved to determine whether or not to use the fine tune amount
+        if mx_rel != 0 and my_rel != 0:
             fineTuneAmount = 0
 
         # calculate trajectory
@@ -215,7 +330,7 @@ while True:
 
         delayTimer.update() # prevent the ball from launching instantly after the game is reset
         #if mouse clicked then trigger ball launch 
-        if mouseClicked[0] and not ball.isAlive and delayTimer.isTriggered:
+        if launch_button and not ball.isAlive and delayTimer.isTriggered:
             if powerUpActive and powerUpType == "guideball":
                 powerUpCount -= 1
                 if powerUpCount < 1:
@@ -229,14 +344,14 @@ while True:
                 launchForce = subVectors(launchAim, ball.pos)
                 launchForce.setMag(LAUNCH_FORCE)
                 ball.applyForce(launchForce)
-                pygame.mixer.Sound.play(launch_sound)
+                if soundEnabled: pygame.mixer.Sound.play(launch_sound)
                 ball.isLaunch = False
                 shouldClear = True
             elif not powerUpActive and powerUpType == "zenball": # if powerup type is zenball and it is not active then normal launch
                 launchForce = subVectors(launchAim, ball.pos)
                 launchForce.setMag(LAUNCH_FORCE)
                 ball.applyForce(launchForce)
-                pygame.mixer.Sound.play(launch_sound)
+                if soundEnabled: pygame.mixer.Sound.play(launch_sound)
                 ball.isLaunch = False
                 shouldClear = True
                 drawTrajectory = False
@@ -268,7 +383,7 @@ while True:
                 ball.applyForce(subVectors(launchAim, ball.pos)) # apply original launch aim
 
             
-            pygame.mixer.Sound.play(launch_sound)
+            if soundEnabled: pygame.mixer.Sound.play(launch_sound)
             ball.isLaunch = False
             shouldClear = True
             powerUpCount -= 1
@@ -348,6 +463,12 @@ while True:
 
                                         # used for showing the bonus score
                                         longShotPos = Vector(p.pos.vx, p.pos.vy)
+
+                                        if pygame.joystick.get_count() > 0 and controllerInput:
+                                            if debug: print("Debug: Rumble")
+                                            joystick = pygame.joystick.Joystick(0)
+                                            joystick.init()
+                                            joystick.rumble(1, 1, 100)
 
                             # used for long shot check
                             b.lastPegHitPos = p.pos
@@ -627,6 +748,14 @@ while True:
         if not done and powerUpType == "zenball":
             for fb in bestTrajectory:
                 drawCircle(fb.pos.vx, fb.pos.vy, 1, (0 ,153 ,10))
+        
+        # draw line for joystick aim vector
+        if controllerInput and not ball.isAlive:
+            drawLine(ball.pos.vx, ball.pos.vy, inputAim.vx+ball.pos.vx, inputAim.vy+ball.pos.vy)
+        elif not controllerInput and not ball.isAlive:
+            drawLine(ball.pos.vx, ball.pos.vy, mouseAim.vx+ball.pos.vx, mouseAim.vy+ball.pos.vy)
+
+        
 
         #draw bucket fake pegs
         for fakePeg in bucket.fakePegs.copy():
