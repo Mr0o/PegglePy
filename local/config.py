@@ -27,7 +27,7 @@ musicEnabled = True
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 5.0
-maxBallVelocity = 7
+maxBallVelocity = 8
 defaultBallMass = 6
 defaultPegMass = 32
 gravity = Vector(0, 0.035)

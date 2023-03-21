@@ -9,9 +9,10 @@ except ImportError:
 
 from local.config import debug
 
+
+pygame.mixer.init(44100,-16,2,4096)
 def playSoundPitch(sound_file, pitch = 1.0):
     try:
-        pygame.mixer.init(44100,-16,2,4096)
         # choose a file and make a sound object
         sound = pygame.mixer.Sound(sound_file)
 
