@@ -1,5 +1,8 @@
-import tkinter
-from tkinter import filedialog
+try:
+    import tkinter
+    from tkinter import filedialog
+except ImportError:
+    print("ERROR: Unable to import tkinter! Please install tkinter.")
 import pickle # sort of abusing pickle to save the level data (it works, but I dont really think pickle is meant for this)
 
 from local.config import debug, WIDTH, HEIGHT
