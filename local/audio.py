@@ -9,9 +9,10 @@ except ImportError:
 
 from local.config import debug
 
+
+pygame.mixer.init(44100,-16,2,4096)
 def playSoundPitch(sound_file, pitch = 1.0):
     try:
-        pygame.mixer.init(44100,-16,2,4096)
         # choose a file and make a sound object
         sound = pygame.mixer.Sound(sound_file)
 
@@ -24,7 +25,16 @@ def playSoundPitch(sound_file, pitch = 1.0):
         # take the resampled array, make it an object and stop playing after 2 seconds.
         snd_out = pygame.sndarray.make_sound(snd_resample)
         snd_out.play()
-    except Exception:
+    except Exception as e:
         if debug:
-            print("WARN: Unable to play sound '" + str(sound_file) + "' - Exception: " + str(Exception))
+            print(f"WARN: Unable to play sound '{sound_file}' - Exception:  {e}")
             print("Does the file exist?")
+
+
+class GameAudioPlayer:
+    def __init__(self) -> None:
+        self.soundEnabled = True
+        self.musicEnabled = True
+
+    def playPowerUpSound(self, powerUpType : str = "spooky"):
+        playSoundPitch("")

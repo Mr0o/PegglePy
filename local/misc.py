@@ -10,33 +10,25 @@ from local.peg import Peg
 from local.ball import Ball
 
 # iterate through each peg x,y position to determine its location on the screen
-def assignPegScreenLocation(pegs, segmentCount):
+def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
     segmentWidth = WIDTH/segmentCount
     for p in pegs:
         for i in range(segmentCount+1):
-            if p.pos.vx >= segmentWidth*(i-1) and p.pos.vx <= segmentWidth*i:
-                p.pegScreenLocation = i
-        
-        # second check for cases where the peg is on the segment boundary from the right
-        for i in range(segmentCount+1):
-            if p.pegScreenLocation == i and (p.pos.vx >= segmentWidth*i -p.radius*2 and p.pos.vx <= segmentWidth*(i+1) +p.radius*2): 
-                p.pegScreenLocation2 = i+1
-                break
-        # third check for cases where the peg is on the segment boundary from the left
-        for i in range(segmentCount+1):
-            if p.pegScreenLocation == i+1 and (p.pos.vx >= segmentWidth*(i-1) -p.radius*2 and p.pos.vx <= segmentWidth*i +p.radius*2): 
-                p.pegScreenLocation2 = i
-                break
+            if p.pos.vx >= segmentWidth*(i-1) -p.radius and p.pos.vx <= segmentWidth*i +p.radius:
+                p.pegScreenLocations.append(i)
 
 
-def getBallScreenLocation(p, segmentCount):
+def getBallScreenLocation(b: Ball, segmentCount) -> list[int]:
     segmentWidth = WIDTH/segmentCount
+    locations = []
     for i in range(segmentCount+1):
-        if p.pos.vx > segmentWidth*(i-1) -p.radius and p.pos.vx < segmentWidth*i +p.radius:
-            return i
+        if b.pos.vx > segmentWidth*(i-1) -b.radius and b.pos.vx < segmentWidth*i +b.radius:
+            locations.append(i)
+    
+    return locations
 
 
-def getScoreMultiplier(remainingOrangePegs, pegsHit = 0):
+def getScoreMultiplier(remainingOrangePegs, pegsHit = 0) -> int:
     #first multiplier based on remaining orange pegs
     multiplier = 1
     if remainingOrangePegs >= 30:
@@ -68,7 +60,7 @@ def getScoreMultiplier(remainingOrangePegs, pegsHit = 0):
     return multiplier
 
 
-def createPegColors(pegs) -> list[Peg]:
+def createPegColors(pegs: list[Peg]) -> list[Peg]:
     orangeCount = 25
 
     if len(pegs) < 25:
@@ -108,7 +100,7 @@ def createPegColors(pegs) -> list[Peg]:
     return pegs
 
 
-def loadLevel(createPegColors):
+def loadLevel(createPegColors) -> tuple[list[Peg], list[Peg], int]:
     # load the pegs from a level file (pickle)
     pegs = loadData()
     originPegs = pegs.copy()
@@ -140,7 +132,18 @@ def createStaticImage(pegs:list[Peg], bgImg=backgroundImg):
     for p in pegs:
         staticImg.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
 
+    # anti-aliasing
+    #staticImg = pygame.transform.smoothscale(staticImg, (WIDTH, HEIGHT))
+
     return staticImg
+
+
+# blit a single peg to the static image rather than redrawing the entire image
+def updateStaticImage(staticImg: pygame.Surface, peg: Peg):
+    staticImg.blit(peg.pegImg, (peg.pos.vx - peg.posAdjust, peg.pos.vy - peg.posAdjust))
+
+    return staticImg
+
 
 
 # quite horrendous, will be fixed in the future... hopefully :)

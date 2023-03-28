@@ -15,6 +15,8 @@ from local.collision import isBallTouchingPeg
 
 from local.peg import Peg
 
+from local.misc import createStaticImage, updateStaticImage
+
 ##### pygame stuff #####
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
@@ -45,11 +47,14 @@ def drawLine(x1,y1,x2,y2):
     pygame.draw.line(screen, (255, 0, 0),[x1, y1],[x2,y2])
 
 debugCollision = False
+skipValidPegCheck = False
 
 # load the pegs from a level file (pickle)
 #pegs = loadData()
 pegs : list[Peg]
 pegs = []
+
+staticImg = createStaticImage(pegs)
 
 ##### main loop #####
 while True:
@@ -60,12 +65,16 @@ while True:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 pegs = []
+                staticImg = createStaticImage(pegs)
             # save level
             if event.key == pygame.K_s:
                 saveData(pegs)
             # load level
             if event.key == pygame.K_l:
                 pegs = loadData()
+                staticImg = createStaticImage(pegs)
+            if event.key == pygame.K_1:
+                skipValidPegCheck = not skipValidPegCheck
 
     
     ##### update #####
@@ -78,35 +87,38 @@ while True:
     #if mouse clicked, create a new ball at the mouse position
     if mouseClicked[0]:
         validNewPegPos = True
-        for peg in pegs:
-            if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/2, peg.pos.vx, peg.pos.vy, peg.radius):
-                validNewPegPos = False
-                break
+        if not skipValidPegCheck:
+            for peg in pegs:
+                if  isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
+                    validNewPegPos = False
+                    break
+        
+        else:
+            validNewPegPos = True
+
         
         # valid position, add peg
         if validNewPegPos:     
             newBall = Peg(mousePos.vx, mousePos.vy)
             pegs.append(newBall)
+            staticImg = updateStaticImage(staticImg, newBall)
     
     # if right clicked, remove peg
     elif mouseClicked[2]:
-        selectedPeg = None
+        selectedPegs = []
         for peg in pegs:
             if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius, peg.pos.vx, peg.pos.vy, peg.radius):
-                selectedPeg = peg
-                break
+                selectedPegs.append(peg)
         
-        #peg has been selected, remove it
-        if selectedPeg != None:     
+        #remove any selected pegs
+        for selectedPeg in selectedPegs:     
             pegs.remove(selectedPeg)
 
+        if len(selectedPegs) > 0:
+            staticImg = createStaticImage(pegs)
+
     ##### draw #####
-    screen.fill((0, 0, 0))  # black screen
-    screen.blit(backgroundImg, (0, 0))
-    
-    #draw pegs
-    for p in pegs:
-        screen.blit(p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
+    screen.blit(staticImg, (0, 0))
 
     # draw peg count text
     pegCount = infoFont.render("Pegs : " + str(len(pegs)), False, (5, 30, 100))

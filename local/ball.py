@@ -1,10 +1,10 @@
 # refer to the vectors.py module for information on these functions
 from local.vectors import Vector
 
-from local.config import WIDTH, HEIGHT, gravity, maxBallVelocity
+from local.config import WIDTH, HEIGHT, gravity, maxBallVelocity, ballRad, defaultBallMass
 
 class Ball:
-    def __init__(self, x : int, y : int, mass = 6):
+    def __init__(self, x : int, y : int, mass = defaultBallMass):
         self.originX=x; self.originY=y # origin position for the reset method
 
         self.pos = Vector(x, y)  # position
@@ -12,7 +12,7 @@ class Ball:
         self.vel = Vector(0, 0)  # velocity
 
         self.mass = mass
-        self.radius = 8
+        self.radius = ballRad
 
         self.isLaunch = False
         self.isAlive = False
