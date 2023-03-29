@@ -20,7 +20,7 @@ However, this will take a long time, and I don't know when I will ever get aroun
 - From within the PegglePy directory, open the cmd prompt and type: 
 -     pip3 install -r requirements.txt 
 - or alternatively:
--     pip3 install pygame, numpy, samplerate, tkinter, pickle
+-     pip3 install pygame, numpy, samplerate
 - From within the PegglePy folder on your computer, run "run.py"
 
 *Linux*
@@ -28,7 +28,7 @@ However, this will take a long time, and I don't know when I will ever get aroun
 - From within the PegglePy directory, open a terminal and type: 
 -     pip3 install -r requirements.txt 
 - or alternatively:
--     pip3 install pygame, numpy, samplerate, tkinter, pickle
+-     pip3 install pygame, numpy, samplerate
 - From within the PegglePy directory, type into the terminal:
 -     python3 run.py
 
