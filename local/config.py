@@ -1,5 +1,46 @@
 from local.vectors import Vector # used for gravity
 
+def installDependencies():
+    try: # check that the dependencies are installed
+        import pygame
+        import numpy
+        import samplerate
+    except ImportError:
+        # automatically install PegglePy dependencies
+        print("Installing dependencies...")
+
+        # attempt 1
+        import sys
+        import subprocess
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        try:
+            import pygame
+            import numpy
+            import samplerate
+        except ImportError:
+            # attempt 2
+            try:
+                import os
+                os.system("pip install -r requirements.txt")
+                import pygame
+                import numpy
+                import samplerate
+            except ImportError:
+                # attempt 3
+                try:
+                    import os
+                    os.system("pip3 install -r requirements.txt")
+                    import pygame
+                    import numpy
+                    import samplerate
+                except ImportError as e:
+                    print("ERROR: Failed to install dependencies. Please make sure that pip is installed and try again.")
+                    print("Details: " + str(e))
+                    sys.exit(1)
+
+
+installDependencies()
+
 import pygame
 
 # hard coded window size

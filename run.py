@@ -2,17 +2,6 @@ import sys # used to exit the program immediately
 import time
 from math import atan2
 
-## disable pygame init message - "Hello from the pygame community..." ##
-import contextlib
-
-with contextlib.redirect_stdout(None):
-    try:
-        import pygame # used for input, audio and graphics
-    except ImportError:
-        print("ERROR: Unable to import pygame, please install it with 'pip install pygame'")
-        print("Exiting...")
-        sys.exit(1)
-
 ##### local imports #####
 try:
     from local.config import *
@@ -30,10 +19,15 @@ try:
     from local.peg import Peg
     from local.bucket import Bucket
 except ImportError as e:
-    print("ERROR: Unable to import local modules, please make sure you have all the required files in the same directory as this program")
+    print("ERROR: Unable to import local modules, this is likely due to a missing file or folder. Please make sure to run the script from within the PegglePy directory.")
     print(str(e))
     print("Exiting...")
     sys.exit(1)
+
+## check for dependencies ##
+installDependencies()
+
+import pygame
 
 ##### pygame stuff #####
 pygame.init()

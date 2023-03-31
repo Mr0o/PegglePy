@@ -2,8 +2,7 @@ import pygame.mixer, pygame.sndarray
 try:
     from samplerate import resample
 except ImportError:
-    print("WARN: Unable to import samplerate, please install it with 'pip install samplerate'")
-    print("Some sound effects will not be played correctly.")
+    print("WARN: samplerate is not installed, some audio effects will not work")
     def resample(array, ratio, mode):
         return array
 
