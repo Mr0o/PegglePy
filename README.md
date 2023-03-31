@@ -22,7 +22,7 @@ Eventually I would like to polish this entire game with a complete menu and more
 
 ### __Linux__
 - Make sure Python 3 and pip is installed (it should be installed by default on most distros) [(link)](https://www.python.org/downloads/)
-- Install tkinter ()[https://tkdocs.com/tutorial/install.html]
+- Install [tkinter](https://tkdocs.com/tutorial/install.html)
 - This can be done by running the following command on debian and debian based distros (ubuntu, mint, etc)
 ```
 sudo apt install python3-tk
