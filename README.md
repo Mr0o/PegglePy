@@ -1,8 +1,8 @@
 # PegglePy
 A clone of peggle written in python using pygame
 
-The code itself is quite messy and I plan to eventually rewrite/refactor most of the project to clean it up
-However, this will take a long time, and I don't know when I will ever get around to this
+Hope you like spaghetti because there is quite a mess here. I plan to eventually refactor this project because it is very much hacked together and not very well organized. This orignally started as a fun side project so keeping it clean was never the goal. But now that I have made it this far, I would like to clean it up a bit
+Eventually I would like to polish this entire game with a complete menu and more feature rich level editor, but for now consider this a demo of sorts.
 
 
 # Screenshots
@@ -13,28 +13,46 @@ However, this will take a long time, and I don't know when I will ever get aroun
 
 
 # Installation instructions
-*Windows*
-- Download the PegglePy repository as a zip
-- Extract PegglePy.zip
-- Install python 3 from the python website
-- From within the PegglePy directory, open the cmd prompt and type: 
--     pip3 install -r requirements.txt 
-- or alternatively:
--     pip3 install pygame, numpy, samplerate
-- From within the PegglePy folder on your computer, run "run.py"
+### __Windows__
+- Make sure Python 3 and pip is installed [(link)](https://www.python.org/downloads/)
+- [Download](https://github.com/Mr0o/PegglePy/archive/refs/heads/main.zip) the PegglePy repository 
+- Extract the zip file
+- Navigate to the PegglePy folder within the extracted folder
+- Double click on ```start.bat``` to start the game
 
-*Linux*
-- Install python 3 (most distributions already have python 3 installed)
-- From within the PegglePy directory, open a terminal and type: 
--     pip3 install -r requirements.txt 
-- or alternatively:
--     pip3 install pygame, numpy, samplerate
-- From within the PegglePy directory, type into the terminal:
--     python3 run.py
+### __Linux__
+- Make sure Python 3 and pip is installed (it should be installed by default on most distros) [(link)](https://www.python.org/downloads/)
+- Install tkinter ()[https://tkdocs.com/tutorial/install.html]
+- This can be done by running the following command on debian and debian based distros (ubuntu, mint, etc)
+```
+sudo apt install python3-tk
+```
+- [Download](https://github.com/Mr0o/PegglePy/archive/refs/heads/main.zip) the PegglePy repository or use git to clone the repository
+```
+git clone https://github.com/Mr0o/PegglePy.git
+```
+- Extract the zip file
+- Navigate to the PegglePy folder within the extracted folder
+- Open a terminal in the PegglePy folder
+- Run the following command
+```
+python3 run.py
+```
+</br>
+
+### Dependencies
+- pygame, numpy, samplerate, *__tkinter__*
+These should be installed automatically when you run the game, but if they are not, you can install them manually by running the following command
+```
+pip3 install -r requirements.txt
+```
+Tkinter will need to be installed separately on linux
+
+<br/>
 
 # Usage instructions
-*Play the game*
--  To start, execute 'run.py'
+### Play the game
+-  To start, execute 'run.py' or click on ```start.bat``` if you are on windows
 -  You will be prompted to select a level, if you dont have any levels just click cancel, this will load a default level
 -  The game works similar to peggle, to launch the ball just point with the mouse and left click
 -  To win, try to hit all the orange pegs before you run out of balls (you start with 10)
@@ -47,14 +65,14 @@ However, this will take a long time, and I don't know when I will ever get aroun
 -  You can use the scroll wheel to help fine tune your aim
 -  The game is over when you have cleared all the orange pegs
 
-*power ups*
+### Power ups
 - "Spooky"    : When the ball reaches the bottom of the screen, it will start back at the top
 - "Multiball" : A second ball will be spwaned in the game wherever you hit the green peg
 - "Zenball"   : When you launch the ball on your next turn, the computer will calculate the best possible move and adjust your aim
 - "guideball" : For the next 3 turns, you will get a better aim trajectory visual
 
-*Create Levels*
--  To start the editor, execute 'editor.py'
+### Create Levels
+-  To start the editor, execute 'editor.py' or click on ```start_editor.bat``` if you are on windows
 -  Left click anywhere on the game window to place a peg on the screen
 -  All of your pegs will be blue, but when you play the game, they will be randomly assigned a color
 -  To delete pegs, click on a peg with the right mouse button
@@ -62,7 +80,7 @@ However, this will take a long time, and I don't know when I will ever get aroun
 -  To play the level exit the editor and execute 'run.py', then select your level when prompted
 -  To load a level into the editor, press L on the keyboard and select the level you want to edit
 
-*Settings and debug*
+### Settings and debug
 - To mute sound effects, press M
 - To mute music, press N
 - To Load a level, press L
