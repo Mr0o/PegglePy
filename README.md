@@ -42,6 +42,7 @@ python3 run.py
 
 ### Dependencies
 - pygame, numpy, samplerate, *__tkinter__*
+
 These should be installed automatically when you run the game, but if they are not, you can install them manually by running the following command
 ```
 pip3 install -r requirements.txt
