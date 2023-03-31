@@ -24,9 +24,6 @@ except ImportError as e:
     print("Exiting...")
     sys.exit(1)
 
-## check for dependencies ##
-installDependencies()
-
 import pygame
 
 ##### pygame stuff #####

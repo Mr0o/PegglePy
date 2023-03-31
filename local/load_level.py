@@ -1,9 +1,11 @@
 try:
     import tkinter
     from tkinter import filedialog
+    tkinterInstalled = True
 except ImportError:
-    print("ERROR: Unable to import tkinter! Please install tkinter.")
-    exit()
+    print("WARN: Tkinter is not installed. You will be unable to load or save levels.")
+    print("Please install tkinter")
+    tkinterInstalled = False
 
 import pickle # sort of abusing pickle to save the level data (it works, but I dont really think pickle is meant for this)
 
@@ -11,69 +13,82 @@ from local.config import debug, WIDTH, HEIGHT
 
 from local.peg import Peg
 
-def fileSelectWindow():
-    #initiate tinker and hide window 
-    main_win = tkinter.Tk() 
-    main_win.withdraw()
+if tkinterInstalled:
+    def fileSelectWindow():
+        #initiate tinker and hide window 
+        main_win = tkinter.Tk() 
+        main_win.withdraw()
 
-    main_win.overrideredirect(True)
-    main_win.geometry('0x0+0'+str(round(WIDTH/2))+'+'+str(round(HEIGHT/2)))
+        main_win.overrideredirect(True)
+        main_win.geometry('0x0+0'+str(round(WIDTH/2))+'+'+str(round(HEIGHT/2)))
 
-    main_win.deiconify()
-    main_win.lift()
-    main_win.focus_force()
+        main_win.deiconify()
+        main_win.lift()
+        main_win.focus_force()
 
-    #open file selector 
-    main_win.sourceFile = filedialog.askopenfilename(parent=main_win, initialdir= "./levels", title='Please select a level to open', 
-                                                        filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*")))
+        #open file selector 
+        main_win.sourceFile = filedialog.askopenfilename(parent=main_win, initialdir= "./levels", title='Please select a level to open', 
+                                                            filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*")))
 
-    selected_file = main_win.sourceFile
+        selected_file = main_win.sourceFile
 
-    #close window after selection 
-    main_win.destroy()
+        #close window after selection 
+        main_win.destroy()
 
-    if str(selected_file) == '()' or str(selected_file) == '':
-        selected_file = None
+        if str(selected_file) == '()' or str(selected_file) == '':
+            selected_file = None
 
-    if debug:
-        print("File selected: '" + str(selected_file) +"'")
-
-    # returns the path to the selected file
-    return selected_file
-
-
-def fileSaveWindow():
-    #initiate tinker and hide window 
-    main_win = tkinter.Tk() 
-    main_win.withdraw()
-
-    main_win.overrideredirect(True)
-    main_win.geometry('0x0+0'+str(round(WIDTH/2))+'+'+str(round(HEIGHT/2)))
-
-    main_win.deiconify()
-    main_win.lift()
-    main_win.focus_force()
-
-    #open file selector 
-    main_win.sourceFile = filedialog.asksaveasfile(parent=main_win, initialdir= "./levels", title='Please name the level', 
-                                                        filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*")),
-                                                        defaultextension = ".lvl", initialfile = "Untitled Level")
-
-    selected_file = main_win.sourceFile
-
-    #close window after selection 
-    main_win.destroy()
-
-    if selected_file == None:
         if debug:
-            print("WARN: File was not saved")
+            print("File selected: '" + str(selected_file) +"'")
+
+        # returns the path to the selected file
+        return selected_file
+
+
+    def fileSaveWindow():
+        #initiate tinker and hide window 
+        main_win = tkinter.Tk() 
+        main_win.withdraw()
+
+        main_win.overrideredirect(True)
+        main_win.geometry('0x0+0'+str(round(WIDTH/2))+'+'+str(round(HEIGHT/2)))
+
+        main_win.deiconify()
+        main_win.lift()
+        main_win.focus_force()
+
+        #open file selector 
+        main_win.sourceFile = filedialog.asksaveasfile(parent=main_win, initialdir= "./levels", title='Please name the level', 
+                                                            filetypes = (("PegglePy Level File", "*.lvl*"), ("all files", "*")),
+                                                            defaultextension = ".lvl", initialfile = "Untitled Level")
+
+        selected_file = main_win.sourceFile
+
+        #close window after selection 
+        main_win.destroy()
+
+        if selected_file == None:
+            if debug:
+                print("WARN: File was not saved")
+            return None
+
+        if debug:
+            print("File saved: '" + str(selected_file.name) +"'")
+
+        # returns the path to the selected file
+        return str(selected_file.name)
+        
+# tkinter is not installed
+else:
+    def fileSelectWindow():
+        if debug:
+            print("WARN: Tkinter is not installed")
         return None
 
-    if debug:
-        print("File saved: '" + str(selected_file.name) +"'")
-
-    # returns the path to the selected file
-    return str(selected_file.name)
+    def fileSaveWindow():
+        if debug:
+            print("WARN: Tkinter is not installed")
+        return None
 
 
 def loadData():
