@@ -67,7 +67,7 @@ Tkinter will need to be installed separately on linux
 -  The game is over when you have cleared all the orange pegs
 
 ### Power ups
-- "pooky"    : When the ball reaches the bottom of the screen, it will start back at the top
+- "spooky"    : When the ball reaches the bottom of the screen, it will start back at the top
 - "multiball" : A second ball will be spwaned in the game wherever you hit the green peg
 - "zenball"   : When you launch the ball on your next turn, the computer will calculate the best possible move and adjust your aim
 - "guideball" : For the next 3 turns, you will get a better aim trajectory visual
