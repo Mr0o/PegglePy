@@ -43,7 +43,7 @@ installDependencies()
 
 import pygame
 
-# hard coded window size
+# hard coded window size, the game is not designed to be resized, even though it technically can be
 WIDTH = 1200
 HEIGHT = 900
 
@@ -57,7 +57,8 @@ cheats = False
 debug = False
 
 # when there are lots of pegs on the screen (perhaps more than a few hundred, lol), you might see performance hiccups
-# this can be set to true to improve performance at the cost of visual weirdness
+# this can be set to true to improve performance at the cost of visual weirdness 
+# (when a peg gets hit, normally the entire frame of pegs is redrawn, but with this enabled, only the peg that was hit is redrawn, which means the pegs that are hit will be drawn out of order)
 speedHack = False
 
 # enable or diasble sound effects
@@ -68,9 +69,9 @@ musicEnabled = True
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 5.0
-maxBallVelocity = 8
+maxBallVelocity = 8 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
 defaultBallMass = 6
-defaultPegMass = 32
+defaultPegMass = 32 # the pegs mass doesnt really matter, but they need to have a mass in order for the physics to be calculated when a ball hits the pegs (in this case I have determined that 32 is a good number, magic)
 gravity = Vector(0, 0.035)
 trajectoryDepth = 75 # how many steps to take in the normal (non-powerup) launch trajectory calculation
 bucketVelocity = 2.5 # max set velocity of the bucket
@@ -85,8 +86,10 @@ previousAim = Vector(0,1)
 shouldClear = False
 segmentCount = 20
 autoRemovePegs = True
+autoRemovePegsTimerValue = 0.8 # how much time in seconds to wait before removing a peg that a ball is stuck on
+debugAutoRemovePegsTimer = False # if true, each pegs autoRemovePegsTimer will be displayed on the screen
 longShotDistance = WIDTH/3
-frameRate = 144
+frameRate = 144 # the game speed is currently tied to the framerate, unfortunately, which means that you should NOT change this value
 ballRad = 12
 pegRad = 25
 
