@@ -138,7 +138,7 @@ def createStaticImage(pegs:list[Peg], bgImg=backgroundImg):
     return staticImg
 
 
-# blit a single peg to the static image rather than redrawing the entire image
+# blit a single peg to the static image rather than redrawing the entire image (this may not look correct if the peg is overlapping another peg)
 def updateStaticImage(staticImg: pygame.Surface, peg: Peg):
     staticImg.blit(peg.pegImg, (peg.pos.vx - peg.posAdjust, peg.pos.vy - peg.posAdjust))
 
