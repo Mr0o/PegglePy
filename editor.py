@@ -31,6 +31,9 @@ r = randint(1, 10)
 pygame.mixer.music.load("resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
 pygame.mixer.music.play(-1)
 
+# peg placement sound
+newPegSound = pygame.mixer.Sound("resources/audio/sounds/peg_pop.ogg")
+delPegSound = pygame.mixer.Sound("resources/audio/sounds/hitmarker.wav")
 
 #Background image
 backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
@@ -143,6 +146,8 @@ while True:
             newPeg = Peg(mousePos.vx, mousePos.vy)
             pegs.append(newPeg)
             staticImg = updateStaticImage(staticImg, newPeg)
+            # play sound
+            pygame.mixer.Sound.play(newPegSound)
     
     # if right clicked, remove peg
     elif mouseClicked[2]:
@@ -157,6 +162,8 @@ while True:
 
         if len(selectedPegs) > 0:
             staticImg = createStaticImage(pegs)
+            # play sound
+            pygame.mixer.Sound.play(delPegSound)
         
         
 
