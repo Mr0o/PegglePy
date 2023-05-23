@@ -34,6 +34,7 @@ pygame.mixer.music.play(-1)
 # peg placement sound
 newPegSound = pygame.mixer.Sound("resources/audio/sounds/peg_pop.ogg")
 delPegSound = pygame.mixer.Sound("resources/audio/sounds/hitmarker.wav")
+invalidPegSound = pygame.mixer.Sound("resources/audio/sounds/tonelo.ogg")
 
 #Background image
 backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
@@ -68,6 +69,8 @@ def drawLine(x1,y1,x2,y2):
 
 debugCollision = False
 skipValidPegCheck = False
+validNewPegPos = True
+mouseOutofBounds = False
 
 # load the pegs from a level file (pickle)
 #pegs = loadData()
@@ -111,6 +114,11 @@ while True:
                 for peg in pegs:
                     pegsPos.append((peg.pos.vx, peg.pos.vy))
                 print(pegsPos)
+        # invalid position, play sound but only on mouse click (button down event)
+        if event.type == pygame.MOUSEBUTTONDOWN and mouseOutofBounds:
+            if event.button == 1:
+                # play sound
+                pygame.mixer.Sound.play(invalidPegSound)
 
     
     ##### update #####
@@ -123,10 +131,12 @@ while True:
     #if mouse clicked, create a new ball at the mouse position
     if mouseClicked[0]:
         validNewPegPos = True
+        mouseOutofBounds = False
         if not skipValidPegCheck:
             # check if the mouse is in a valid position to place a peg
             if mousePos.vy > HEIGHT - heightBound or mousePos.vy < heightBound or mousePos.vx > WIDTH - widthBound or mousePos.vx < widthBound:
                 validNewPegPos = False
+                mouseOutofBounds = True
             else:
                 for peg in pegs:
                     if  isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
