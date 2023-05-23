@@ -203,10 +203,10 @@ while True:
     # draw warning text
     warningTimer.update()
     if warningTimer.isActive and len(pegs) == 0:
-        warningText = warnFont.render("Cannot save empty level...", False, (255,20,25))
+        warningText = warnFont.render("Cannot save empty level...", False, (200,20,25))
         screen.blit(warningText, (int(WIDTH/2 - 150), HEIGHT/2))
     elif warningTimer.isActive and len(pegs) > 0 and len(pegs) < 30:
-        warningText = warnFont.render("Level must have at least 30 pegs...", False, (255,20,25))
+        warningText = warnFont.render("Level must have at least 30 pegs...", False, (200,20,25))
         screen.blit(warningText, (int(WIDTH/2 - 200), HEIGHT/2))
 
 
