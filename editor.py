@@ -132,6 +132,10 @@ while True:
         
         else:
             validNewPegPos = True
+            for peg in pegs:
+                if  isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius/6):
+                    validNewPegPos = False
+                    break
 
         
         # valid position, add peg
