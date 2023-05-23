@@ -205,6 +205,11 @@ while True:
                     speedHack = True
                 else:
                     speedHack = False
+            if event.key == pygame.K_9:
+                if debugAutoRemovePegsTimer == False:
+                    debugAutoRemovePegsTimer = True
+                else:
+                    debugAutoRemovePegsTimer = False
 
 
         if event.type == pygame.MOUSEWHEEL:
@@ -229,8 +234,8 @@ while True:
                 if abs(event.value) > 0.15:
                     controllerInput = True
         if event.type == pygame.JOYBUTTONDOWN:
-            # if the controller is a 'sony' or 'playstation' controller
-            if joystick.get_name().lower().find("sony") != -1 or joystick.get_name().lower().find("playstation") != -1:
+            # if the controller is a 'sony' or 'playstation' controller (Sometimes "Wireless Controller" is the name of the ps4 controller, so we will include that as well)
+            if joystick.get_name().lower().find("sony") != -1 or joystick.get_name().lower().find("playstation") != -1 or joystick.get_name().lower().find("wireless") != -1:
                 if event.button == 0: # the 'X'/cross button on a ps4 controller
                     launch_button = True
                 if event.button == 3: # the '[]'/square button on a ps4 controller
@@ -546,7 +551,7 @@ while True:
 
                                 # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
                                 if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
-                                    p.ballStuckTimer.setTimer(0.8)
+                                    p.ballStuckTimer.setTimer(autoRemovePegsTimerValue)
                                 elif b.vel.getMag() > 0.5:
                                     p.ballStuckTimer.cancleTimer()
                                     b.lastPegHit = None
@@ -870,6 +875,17 @@ while True:
             segmentWidth = WIDTH/segmentCount
             for i in range(segmentCount):
                 drawLine(segmentWidth*i, 0, segmentWidth*i, HEIGHT)
+        
+        # draw each pegs ballStuckTimer value
+        if autoRemovePegs and debugAutoRemovePegsTimer:
+            for p in pegs:
+                if p.ballStuckTimer.timeRemaining > 0:
+                    stuckTimerText = debugFont.render(str(round(p.ballStuckTimer.timeRemaining, 3)), False, (255,20,10))
+                    screen.blit(stuckTimerText, (p.pos.vx, p.pos.vy))
+                else:
+                    stuckTimerText = debugFont.render(str(round(autoRemovePegsTimerValue, 3)), False, (255,255,255))
+                    screen.blit(stuckTimerText, (p.pos.vx, p.pos.vy))
+
 
     # display red text indicating if cheats are enabled       
     if cheats:
