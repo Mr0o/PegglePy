@@ -402,6 +402,7 @@ while True:
 
         posX = inputAim.vx
         posY = inputAim.vy
+        # check if the mouse is clicked (and that the size of the balls collections is less than 1)
         if mouseClicked[0]:
             launch_button = True
           
@@ -434,7 +435,7 @@ while True:
 
         delayTimer.update() # prevent the ball from launching instantly after the game is reset
         #if mouse clicked then trigger ball launch 
-        if launch_button and not ball.isAlive and delayTimer.isTriggered:
+        if launch_button and not ball.isAlive and delayTimer.isTriggered and len(balls) < 2:
             if powerUpActive and powerUpType == "guideball":
                 powerUpCount -= 1
                 if powerUpCount < 1:
@@ -849,9 +850,9 @@ while True:
                 drawCircle(fb.pos.vx, fb.pos.vy, 1, (0 ,153 ,10))
         
         # draw line for joystick aim vector
-        if controllerInput and not ball.isAlive:
+        if controllerInput and not ball.isAlive and len(balls) < 2:
             drawLine(ball.pos.vx, ball.pos.vy, inputAim.vx+ball.pos.vx, inputAim.vy+ball.pos.vy)
-        elif not controllerInput and not ball.isAlive:
+        elif not controllerInput and not ball.isAlive and len(balls) < 2:
             drawLine(ball.pos.vx, ball.pos.vy, mouseAim.vx+ball.pos.vx, mouseAim.vy+ball.pos.vy)
 
         if controllerInput:
@@ -895,4 +896,4 @@ while True:
     # anti aliasing the game screen
     
     pygame.display.update()
-    clock.tick(frameRate)  # lock game framerate to a specified tickrate (default is 144)
+    clock.tick(frameRate)  # lock game framerate to a specified tickrate (default is 144){}
