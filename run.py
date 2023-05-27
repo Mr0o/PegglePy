@@ -112,7 +112,10 @@ longShotTextTimer = TimedEvent()
 delayTimer = TimedEvent(1)
 
 pegs : list[Peg]
-pegs, originPegs, orangeCount = loadLevel(createPegColors)
+pegs, originPegs, orangeCount, levelFileName = loadLevel(createPegColors)
+
+# set the caption to include the level name
+pygame.display.set_caption("Peggle Clone   -   " + levelFileName)
 
 # assign each peg a screen location, this is to better optimize collison detection (only check pegs on the same screen location as the ball)
 assignPegScreenLocation(pegs, segmentCount)
@@ -174,7 +177,9 @@ while True:
                     debugTrajectory = False
             if event.key == pygame.K_l: # load a new level
                 pygame.mixer.music.stop()
-                pegs, originPegs, orangeCount = loadLevel(createPegColors)
+                pegs, originPegs, orangeCount, levelFileName = loadLevel(createPegColors)
+                # set the caption to include the level name
+                pygame.display.set_caption("Peggle Clone   -   " + levelFileName)
                 # horrifying function that resets the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver ,alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                 if not musicEnabled: pygame.mixer.music.stop()
