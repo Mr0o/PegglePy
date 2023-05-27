@@ -118,9 +118,8 @@ def loadData():
     for xyPos in posList:
         x, y = xyPos
         pegs.append(Peg(x, y))
-
     
-    return pegs
+    return pegs, filePath
 
 
 def saveData(pegs):
@@ -298,7 +297,7 @@ def createDefaultPegsPos():
 if __name__ == '__main__':
     print("Warning !!! Be careful, files may be overwritten or deleted")
 
-    testPegs = loadData()
+    testPegs, filepath = loadData()
     print (str(len(testPegs)) + " pegs found in the level")
     
     testPegs = [Peg(1,1)]
