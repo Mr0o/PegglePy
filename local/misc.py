@@ -102,7 +102,7 @@ def createPegColors(pegs: list[Peg]) -> list[Peg]:
 
 def loadLevel(createPegColors) -> tuple[list[Peg], list[Peg], int]:
     # load the pegs from a level file (pickle)
-    pegs = loadData()
+    pegs, levelFileName = loadData()
     originPegs = pegs.copy()
 
     pegs = createPegColors(pegs)
@@ -111,7 +111,17 @@ def loadLevel(createPegColors) -> tuple[list[Peg], list[Peg], int]:
     for peg in pegs:
         if peg.color == "orange": orangeCount += 1
 
-    return pegs, originPegs, orangeCount
+    # check that the filepath is not empty
+    if levelFileName == "" or levelFileName == None:
+        levelFileName = "Default"
+    else:
+        # strip everything from the filepath except the filename
+        levelFileName = levelFileName.split("/")[-1]
+        # remove the file extension '.lvl'
+        levelFileName = levelFileName[:-4]
+    
+
+    return pegs, originPegs, orangeCount, levelFileName
 
 
 def loadRandMusic():
