@@ -19,6 +19,8 @@ from local.misc import createStaticImage, updateStaticImage
 
 from local.trigger_events import TimedEvent
 
+from local.audio import playSoundPitch
+
 ##### pygame stuff #####
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
@@ -33,7 +35,7 @@ pygame.mixer.music.play(-1)
 
 # peg placement sound
 newPegSound = pygame.mixer.Sound("resources/audio/sounds/peg_pop.ogg")
-delPegSound = pygame.mixer.Sound("resources/audio/sounds/hitmarker.wav")
+#delPegSound = pygame.mixer.Sound("resources/audio/sounds/hitmarker.wav")
 invalidPegSound = pygame.mixer.Sound("resources/audio/sounds/tonelo.ogg")
 
 #Background image
@@ -47,7 +49,7 @@ debugFont = pygame.font.Font("resources/fonts/Evogria.otf", 12)
 helpFont = pygame.font.Font("resources/fonts/Evogria.otf", 14)
 warnFont = pygame.font.Font("resources/fonts/Evogria.otf", 25)
 
-# pegs img with transparency (for mouse hover and invalid peg placement (red))
+# pegs img with transparency (for mouse hover (blue) and invalid peg placement (red))
 tempPeg = Peg(0, 0)
 transparentPegImg = tempPeg.pegImg.copy()
 # set alpha to 50
@@ -73,7 +75,6 @@ validNewPegPos = True
 mouseOutofBounds = False
 
 # load the pegs from a level file (pickle)
-#pegs = loadData()
 pegs : list[Peg]
 pegs = []
 
@@ -104,7 +105,7 @@ while True:
                     saveData(pegs)
             # load level
             if event.key == pygame.K_l:
-                pegs = loadData()
+                pegs, filePath = loadData()
                 staticImg = createStaticImage(pegs)
             if event.key == pygame.K_1:
                 skipValidPegCheck = not skipValidPegCheck
@@ -118,7 +119,8 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN and mouseOutofBounds:
             if event.button == 1:
                 # play sound
-                pygame.mixer.Sound.play(invalidPegSound)
+                playSoundPitch(invalidPegSound, 0.35)
+                
 
     
     ##### update #####
@@ -128,18 +130,22 @@ while True:
     mx, my =  pygame.mouse.get_pos()  # get mouse position as 'mx' and 'my'
     mousePos = Vector(mx, my)
 
+    # check if mouse is out of bounds
+    mouseOutofBounds = False
+    if mousePos.vy > HEIGHT - heightBound or mousePos.vy < heightBound or mousePos.vx > WIDTH - widthBound or mousePos.vx < widthBound:
+        mouseOutofBounds = True
+
     #if mouse clicked, create a new ball at the mouse position
     if mouseClicked[0]:
         validNewPegPos = True
-        mouseOutofBounds = False
         if not skipValidPegCheck:
-            # check if the mouse is in a valid position to place a peg
-            if mousePos.vy > HEIGHT - heightBound or mousePos.vy < heightBound or mousePos.vx > WIDTH - widthBound or mousePos.vx < widthBound:
+            # check if mouse is out of bounds
+            if mouseOutofBounds:
                 validNewPegPos = False
-                mouseOutofBounds = True
+            # check if mouse is touching any other already existing pegs
             else:
                 for peg in pegs:
-                    if  isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
+                    if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
                         validNewPegPos = False
                         break
         
@@ -157,7 +163,7 @@ while True:
             pegs.append(newPeg)
             staticImg = updateStaticImage(staticImg, newPeg)
             # play sound
-            pygame.mixer.Sound.play(newPegSound)
+            playSoundPitch(newPegSound, 0.35)
     
     # if right clicked, remove peg
     elif mouseClicked[2]:
@@ -173,7 +179,7 @@ while True:
         if len(selectedPegs) > 0:
             staticImg = createStaticImage(pegs)
             # play sound
-            pygame.mixer.Sound.play(delPegSound)
+            playSoundPitch(newPegSound, 0.55)
         
         
 
@@ -181,26 +187,22 @@ while True:
     screen.blit(staticImg, (0, 0))
 
     # check if the mouse is in a valid position to place a peg
-    # draw a red line across the screen to indicate that bounds
-    if mousePos.vy > HEIGHT - heightBound:
-        drawLine(0, HEIGHT-heightBound, WIDTH, HEIGHT-heightBound)
-        # draw red invalid peg
+    # draw a sqaure bounding box to indicate the valid area (using 4 lines)
+    if mouseOutofBounds:
+        drawLine(widthBound, heightBound, WIDTH - widthBound, heightBound)
+        drawLine(widthBound, HEIGHT - heightBound, WIDTH - widthBound, HEIGHT - heightBound)
+        drawLine(widthBound, heightBound, widthBound, HEIGHT - heightBound)
+        drawLine(WIDTH - widthBound, heightBound, WIDTH - widthBound, HEIGHT - heightBound)
+
+
+        # draw invalid transparent peg img (red peg)
         screen.blit(invalidPegImg, (mousePos.vx - tempPeg.posAdjust, mousePos.vy - tempPeg.posAdjust))
-    elif mousePos.vy < heightBound:
-        drawLine(0, heightBound, WIDTH, heightBound)
-        # draw red invalid peg
-        screen.blit(invalidPegImg, (mousePos.vx - tempPeg.posAdjust, mousePos.vy - tempPeg.posAdjust))
-    elif mousePos.vx > WIDTH - widthBound:
-        drawLine(WIDTH-widthBound, 0, WIDTH-widthBound, HEIGHT)
-        # draw red invalid peg
-        screen.blit(invalidPegImg, (mousePos.vx - tempPeg.posAdjust, mousePos.vy - tempPeg.posAdjust))
-    elif mousePos.vx < widthBound:
-        drawLine(widthBound, 0, widthBound, HEIGHT)
-        # draw red invalid peg
-        screen.blit(invalidPegImg, (mousePos.vx - tempPeg.posAdjust, mousePos.vy - tempPeg.posAdjust))
-    else: # its a valid position
-        # draw transparent peg
+
+    else:
+        # draw blue transparent peg img
         screen.blit(transparentPegImg, (mousePos.vx - tempPeg.posAdjust, mousePos.vy - tempPeg.posAdjust))
+
+    
 
     # draw peg count text
     pegCountColor = (5, 30, 100)
