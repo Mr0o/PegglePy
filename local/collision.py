@@ -3,14 +3,41 @@ from local.ball import Ball
 from local.peg import Peg
 from local.config import debug
 
+import ctypes
 
-def isBallTouchingPeg(b1x, b1y, b1r, b2x, b2y, b2r) -> bool:
+try:
+    # Load the shared library into ctypes
+    collisionLib = ctypes.CDLL('./collision.so')
+
+    isBallTouchingPegFunc = collisionLib.isBallTouchingPeg
+    resolveCollisionFunc = collisionLib.resolveCollision
+
+    isBallTouchingPegFunc.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+    isBallTouchingPegFunc.restype = ctypes.c_int
+
+    resolveCollisionFunc.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+    resolveCollisionFunc.restype = ctypes.POINTER(ctypes.c_float * 4)
+except:
+    print("WARN: Failed to load collision.so. Using python implementation instead.")
+    collisionLib = None
+
+    # swap the c functions with the 'old' functions
+    def isBallTouchingPeg(b1x, b1y, b1r, b2x, b2y, b2r) -> bool:
+        return isBallTouchingPeg_old(b1x, b1y, b1r, b2x, b2y, b2r)
+    
+    def resolveCollision(ball : Ball, peg : Peg) -> Ball:
+        return resolveCollision_old(ball, peg)
+
+    
+
+
+def isBallTouchingPeg_old(b1x, b1y, b1r, b2x, b2y, b2r) -> bool:
     return ((b1x-b2x)*(b1x-b2x) + (b1y-b2y)*(b1y-b2y)) < (b1r+b2r)*(b1r+b2r)
 
 
-def resolveCollision(ball : Ball, peg : Peg) -> Ball:
+def resolveCollision_old(ball : Ball, peg : Peg) -> Ball:
     """
-    Resolve elastic collisions against two spheres:
+    (old) Resolve elastic collisions against two spheres:
 
     - Both arguments are expected to be objects with a mass, radius, position and velocity\n
     - Returns an object with the updated position and velocity from the collision
@@ -54,3 +81,44 @@ def resolveCollision(ball : Ball, peg : Peg) -> Ball:
 
 
     return ball
+
+
+if collisionLib is not None:
+    def isBallTouchingPeg(b1x : float, b1y : float, b1r : float, b2x : float, b2y : float, b2r : float) -> bool:
+        # use the c function to check if the ball is touching the peg
+        # args: (float b1x, float b1y, float b1r, float p1x, float p1y, float p1r)
+        results = collisionLib.isBallTouchingPeg(b1x, b1y, b1r, b2x, b2y, b2r)
+
+        if results == 1:
+            return True
+        else:
+            return False
+
+
+    # c function implementation of resolveCollision 
+    # in theory this *should* be faster than the python implementation
+    def resolveCollision(ball : Ball, peg : Peg) -> Ball:
+        ballx = ball.pos.vx
+        bally = ball.pos.vy
+        ballvx = ball.vel.vx
+        ballvy = ball.vel.vy
+        ballRad = ball.radius
+        ballMass = ball.mass
+        pegRad = peg.radius
+        pegx = peg.pos.vx
+        pegy = peg.pos.vy
+
+
+        # use the c function to resolve the collision
+        # args: (float ballx, float bally, float ballvx, float ballvy, float ballRad, float ballMass, float pegRad, float pegx, float pegy)
+        results = resolveCollisionFunc(ballx, bally, ballvx, ballvy, ballRad, ballMass, pegRad, pegx, pegy).contents
+
+        # the c function returns a pointer to a float array (ballx, bally, ballVelocityX, ballVelocityY)
+
+        # update the ball position and velocity
+        ball.pos.vx = results[0]
+        ball.pos.vy = results[1]
+        ball.vel.vx = results[2]
+        ball.vel.vy = results[3]
+
+        return ball
