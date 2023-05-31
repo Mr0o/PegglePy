@@ -6,8 +6,16 @@ from local.config import debug
 import ctypes
 
 try:
-    # Load the shared library into ctypes
-    collisionLib = ctypes.CDLL('./collision.so')
+    # check which platform we are running on
+    import platform
+    if platform.system() == "Windows":
+        # windows
+        collisionLib = ctypes.CDLL('./bin/collision.dll')
+    elif platform.system() == "Linux":
+        # linux
+        collisionLib = ctypes.CDLL('./bin/collision.so')
+    else:
+        raise Exception("Unsupported platform: " + platform.system())
 
     isBallTouchingPegFunc = collisionLib.isBallTouchingPeg
     resolveCollisionFunc = collisionLib.resolveCollision
@@ -17,8 +25,18 @@ try:
 
     resolveCollisionFunc.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
     resolveCollisionFunc.restype = ctypes.POINTER(ctypes.c_float * 4)
-except:
-    print("WARN: Failed to load collision.so. Using python implementation instead.")
+except Exception as e:
+    # if exception is unsupported platform, print a warning and use the python implementation instead
+    # check if the exception contains the words unsupported platform
+    if str(e).find("Unsupported platform") != -1:
+        print("WARN: " + str(e))
+        print("Unable to use collision C shared library. Using python implementation instead.")
+    else:
+        print("WARN: Failed to load the collision C shared library. Using python implementation instead.")
+        print(str(e))
+        print("Traceback:")
+        print(str(e.__traceback__))
+
     collisionLib = None
 
     # swap the c functions with the 'old' functions
