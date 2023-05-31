@@ -6,3 +6,4 @@ PegglePy_Demo.mkv
 .gitignore
 
 __pycache__
+.vscode/c_cpp_properties.json
