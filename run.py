@@ -13,7 +13,7 @@ try:
 
     # refer to the vectors.py module for information on these functions
     from local.vectors import Vector, subVectors
-    from local.collision import isBallTouchingPeg, resolveCollision
+    from local.collision import isBallTouchingPeg, resolveCollision, isBallTouchingPeg_old, resolveCollision_old
 
     from local.ball import Ball
     from local.peg import Peg
@@ -105,6 +105,7 @@ hasPegBeenRemoved = False
 controllerInput = False
 inputAim = Vector(WIDTH/2, (HEIGHT/25)+50)
 gamePadFineTuneAmount = 0
+useFastCollisionCheck = True
 
 
 longShotTextTimer = TimedEvent()
@@ -223,6 +224,11 @@ while True:
                     debugAutoRemovePegsTimer = True
                 else:
                     debugAutoRemovePegsTimer = False
+            if event.key == pygame.K_r:
+                if useFastCollisionCheck == False:
+                    useFastCollisionCheck = True
+                else:
+                    useFastCollisionCheck = False
 
         if event.type == pygame.MOUSEWHEEL:
             fineTuneAmount -= event.y / 5
@@ -573,7 +579,12 @@ while True:
                     if shouldCheckCollision:
                         if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius):
                             # resolve the collision between the ball and peg
-                            b = resolveCollision(b, p)
+                            if useFastCollisionCheck:
+                                # use the c implementation of the collision check
+                                b = resolveCollision(b, p)
+                            else:
+                                # use the python implementation of the collision check
+                                b = resolveCollision_old(b, p)
 
                             # save the peg that was last hit, used for when the ball is stuck and for bonus points
                             b.lastPegHit = p
@@ -718,7 +729,12 @@ while True:
                 isBallCollidedBucket, collidedPeg = bucket.isBallCollidingWithBucketEdge(
                     b)
                 if isBallCollidedBucket:
-                    b = resolveCollision(b, collidedPeg)
+                    if useFastCollisionCheck:
+                        # use the c implementation of the collision check
+                        b = resolveCollision(b, collidedPeg)
+                    else:
+                        # use the python implementation of the collision check
+                        b = resolveCollision_old(b, collidedPeg)
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
@@ -940,6 +956,10 @@ while True:
         ballVelText = debugFont.render(
             "Velocity: " + str(ball.vel.getMag()), False, (255, 255, 255))
         screen.blit(ballVelText, (100, 20))
+        # print which collision method is being used
+        collisionMethodText = debugFont.render(
+            "Using fast collision: " + str(useFastCollisionCheck), False, (255, 255, 255))
+        screen.blit(collisionMethodText, (245, 50))
         # draw zenball trajectory (can cause a noticable performance hit due to the number of circles being drawn)
         if not done and powerUpType == "zenball":
             for fb in bestTrajectory:
