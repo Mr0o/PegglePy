@@ -1,8 +1,7 @@
 # PegglePy
 A clone of peggle written in python using pygame
 
-Hope you like spaghetti because there is quite a mess here. I plan to eventually refactor this project because it is very much hacked together and not very well organized. This orignally started as a fun side project so keeping it clean was never the goal. But now that I have made it this far, I would like to clean it up a bit
-Eventually I would like to polish this entire game with a complete menu and more feature rich level editor, but for now consider this a demo of sorts.
+The codebase is a bit of a mess... maybe some day I will be able to clean this up and create a better architecture for the game. But most of the core elements of the game have been implemented, and getting it working has been more important than following strict conventions and *proper* design patterns, etc. If you have stumbled upon this repo, feel free to play the game and use the editor to create your own levels.
 
 
 # Screenshots
