@@ -32,10 +32,10 @@ except Exception as e:
         print("WARN: " + str(e))
         print("Unable to use collision C shared library. Using python implementation instead.")
     else:
-        print("WARN: Failed to load the collision C shared library. Using python implementation instead.")
         print(str(e))
         print("Traceback:")
         print(str(e.__traceback__))
+        print("WARN: Failed to load the collision C shared library. Using python implementation instead.")
 
     collisionLib = None
 
