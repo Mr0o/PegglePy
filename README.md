@@ -97,3 +97,8 @@ Tkinter will need to be installed separately on linux
 - To enable a perfomance hack (speedHack), press 8
 - to show the timer values on all the pegs, press 9 (must have debug enabled)
 - To enable slow motion (cap framerate to 30), press 0
+
+### Additional notes
+- There is some C code in the c_src folder, I am working on some C implementations of the physics calculations to improve performance
+- In the config.py there is a useCPhysics variable, this can be set to True to use the C code or False to use the python code. By default it is set to True.
+- The C code is using ctypes and currently does seem to have an increased overhead, so it can actually be slower than the python code. But in most cases it makes almost no difference. (Hopefully this will lead to some performance improvements in the future)
