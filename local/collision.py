@@ -1,42 +1,55 @@
 from math import sqrt
 from local.ball import Ball
 from local.peg import Peg
-from local.config import debug
+from local.config import debug, useCPhysics
 
 import ctypes
 
-try:
-    # check which platform we are running on
-    import platform
-    if platform.system() == "Windows":
-        # windows
-        collisionLib = ctypes.CDLL('./bin/collision.dll')
-    elif platform.system() == "Linux":
-        # linux
-        collisionLib = ctypes.CDLL('./bin/collision.so')
-    else:
-        raise Exception("Unsupported platform: " + platform.system())
+# use the c implementation as per the config
+if useCPhysics:
+    try:
+        # check which platform we are running on
+        import platform
+        if platform.system() == "Windows":
+            # windows
+            collisionLib = ctypes.CDLL('./bin/collision.dll')
+        elif platform.system() == "Linux":
+            # linux
+            collisionLib = ctypes.CDLL('./bin/collision.so')
+        else:
+            raise Exception("Unsupported platform: " + platform.system())
 
-    isBallTouchingPegFunc = collisionLib.isBallTouchingPeg
-    resolveCollisionFunc = collisionLib.resolveCollision
+        isBallTouchingPegFunc = collisionLib.isBallTouchingPeg
+        resolveCollisionFunc = collisionLib.resolveCollision
 
-    isBallTouchingPegFunc.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    isBallTouchingPegFunc.restype = ctypes.c_int
+        isBallTouchingPegFunc.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+        isBallTouchingPegFunc.restype = ctypes.c_int
 
-    resolveCollisionFunc.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    resolveCollisionFunc.restype = ctypes.POINTER(ctypes.c_float * 4)
-except Exception as e:
-    # if exception is unsupported platform, print a warning and use the python implementation instead
-    # check if the exception contains the words unsupported platform
-    if str(e).find("Unsupported platform") != -1:
-        print("WARN: " + str(e))
-        print("Unable to use collision C shared library. Using python implementation instead.")
-    else:
-        print(str(e))
-        print("Traceback:")
-        print(str(e.__traceback__))
-        print("WARN: Failed to load the collision C shared library. Using python implementation instead.")
+        resolveCollisionFunc.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+        resolveCollisionFunc.restype = ctypes.POINTER(ctypes.c_float * 4)
+    except Exception as e:
+        # if exception is unsupported platform, print a warning and use the python implementation instead
+        # check if the exception contains the words unsupported platform
+        if str(e).find("Unsupported platform") != -1:
+            print("WARN: " + str(e))
+            print("Unable to use collision C shared library. Using python implementation instead.")
+        else:
+            print(str(e))
+            print("Traceback:")
+            print(str(e.__traceback__))
+            print("WARN: Failed to load the collision C shared library. Using python implementation instead.")
 
+        collisionLib = None
+
+        # swap the c functions with the 'old' functions
+        def isBallTouchingPeg(b1x, b1y, b1r, b2x, b2y, b2r) -> bool:
+            return isBallTouchingPeg_old(b1x, b1y, b1r, b2x, b2y, b2r)
+        
+        def resolveCollision(ball : Ball, peg : Peg) -> Ball:
+            return resolveCollision_old(ball, peg)
+        
+# we will not use the c implementation as per the config
+else:
     collisionLib = None
 
     # swap the c functions with the 'old' functions
@@ -45,6 +58,8 @@ except Exception as e:
     
     def resolveCollision(ball : Ball, peg : Peg) -> Ball:
         return resolveCollision_old(ball, peg)
+    
+    print("NOTE: UseCPhysics is set to False. Using python implementation instead. To use the C implementation, change the UseCPhysics variable in the config.")
 
     
 
