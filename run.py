@@ -105,7 +105,6 @@ hasPegBeenRemoved = False
 controllerInput = False
 inputAim = Vector(WIDTH/2, (HEIGHT/25)+50)
 gamePadFineTuneAmount = 0
-useFastCollisionCheck = True
 
 
 longShotTextTimer = TimedEvent()
@@ -225,10 +224,10 @@ while True:
                 else:
                     debugAutoRemovePegsTimer = False
             if event.key == pygame.K_r:
-                if useFastCollisionCheck == False:
-                    useFastCollisionCheck = True
+                if useCPhysics == False:
+                    useCPhysics = True
                 else:
-                    useFastCollisionCheck = False
+                    useCPhysics = False
 
         if event.type == pygame.MOUSEWHEEL:
             fineTuneAmount -= event.y / 5
@@ -556,7 +555,11 @@ while True:
 
                     # if the current peg is the last remaining orange peg then apply special effects
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
-                        if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius):
+                        if useCPhysics:
+                            ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
+                        else:
+                            ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
+                        if ballTouchingPeg:
                             if frameRate != 27 and len(balls) < 2:
                                 if soundEnabled:
                                     # only play sound once
@@ -577,9 +580,13 @@ while True:
                                 shouldCheckCollision = True
 
                     if shouldCheckCollision:
-                        if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius):
+                        if useCPhysics:
+                            ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
+                        else:
+                            ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
+                        if ballTouchingPeg:
                             # resolve the collision between the ball and peg
-                            if useFastCollisionCheck:
+                            if useCPhysics:
                                 # use the c implementation of the collision check
                                 b = resolveCollision(b, p)
                             else:
@@ -729,7 +736,7 @@ while True:
                 isBallCollidedBucket, collidedPeg = bucket.isBallCollidingWithBucketEdge(
                     b)
                 if isBallCollidedBucket:
-                    if useFastCollisionCheck:
+                    if useCPhysics:
                         # use the c implementation of the collision check
                         b = resolveCollision(b, collidedPeg)
                     else:
@@ -957,9 +964,10 @@ while True:
             "Velocity: " + str(ball.vel.getMag()), False, (255, 255, 255))
         screen.blit(ballVelText, (100, 20))
         # print which collision method is being used
-        collisionMethodText = debugFont.render(
-            "Using fast collision: " + str(useFastCollisionCheck), False, (255, 255, 255))
-        screen.blit(collisionMethodText, (245, 50))
+        if useCPhysics:
+            collisionMethodText = debugFont.render(
+                "Using C collision: True", False, (255, 255, 255))
+            screen.blit(collisionMethodText, (245, 50))
         # draw zenball trajectory (can cause a noticable performance hit due to the number of circles being drawn)
         if not done and powerUpType == "zenball":
             for fb in bestTrajectory:
