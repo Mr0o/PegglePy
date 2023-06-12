@@ -67,6 +67,9 @@ soundEnabled = True
 # enable or disable music
 musicEnabled = True
 
+# use c implementation of the collision physics (should be faster, but I have found in testing that it can actually be slower. Probably because of increased overhead)
+useCPhysics = True
+
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 5.0
 maxBallVelocity = 8 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
