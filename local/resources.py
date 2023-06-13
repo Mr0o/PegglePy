@@ -42,7 +42,6 @@ helpFont = pygame.font.Font("resources/fonts/Evogria.otf", 14)
 warnFont = pygame.font.Font("resources/fonts/Evogria.otf", 25)
 
 #EDITOR stuff
-
 # peg placement sound
 newPegSound = pygame.mixer.Sound("resources/audio/sounds/peg_pop.ogg")
 # delPegSound = pygame.mixer.Sound("resources/audio/sounds/hitmarker.wav")
@@ -57,3 +56,9 @@ transparentPegImg.fill((255, 255, 255, 50), None, pygame.BLEND_RGBA_MULT)
 # create a second copy of the peg image, but with a red tint
 invalidPegImg = tempPeg.pegImg.copy()
 invalidPegImg.fill((255, 0, 0, 60), None, pygame.BLEND_RGBA_MULT)
+
+#MENU stuff
+# menu music
+menuMusicPath = "resources/audio/music/Menu (Duel {Peggle Deluxe}).mp3"
+buttonHoverSound = pygame.mixer.Sound("resources/audio/sounds/button_hover.ogg")
+buttonClickSound = pygame.mixer.Sound("resources/audio/sounds/button_press.ogg")
