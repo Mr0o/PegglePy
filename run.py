@@ -24,7 +24,7 @@ except ImportError as e:
     print("Exiting...")
     sys.exit(1)
 
-from menu import mainMenu
+from menu import mainMenu, getPauseScreen
 from editor import levelEditor
 
 import pygame
@@ -85,9 +85,7 @@ controllerInput = False
 inputAim = Vector(WIDTH/2, (HEIGHT/25)+50)
 gamePadFineTuneAmount = 0
 
-
 longShotTextTimer = TimedEvent()
-delayTimer = TimedEvent(1)
 
 ### main menu ###
 selection = mainMenu(screen)
@@ -97,12 +95,15 @@ if selection == "quit":
     pygame.quit()
     sys.exit()
 elif selection == "editor":
+    time.sleep(0.5) # prevent accidental click on launch
     levelEditor(screen, clock)
+
+# prevent accidental click on launch
+delayTimer = TimedEvent(0.5)
 
 pegs: list[Peg]
 #pegs, originPegs, orangeCount, levelFileName = loadLevel()
 pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
-time.sleep(0.5)
 
 # set the caption to include the level name
 pygame.display.set_caption("PegglePy   -   " + levelFileName)
@@ -218,6 +219,29 @@ while True:
                     useCPhysics = True
                 else:
                     useCPhysics = False
+            # open the main menu
+            if event.key == pygame.K_z:
+                selection = mainMenu(screen)
+
+                if selection == "quit":
+                    print("Goodbye")
+                    pygame.quit()
+                    sys.exit()
+                elif selection == "editor":
+                    time.sleep(0.5) # prevent accidental click on launch
+                    levelEditor(screen, clock)
+                
+                # prevent accidental click on launch
+                delayTimer = TimedEvent(0.5)
+
+                # reset the game
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                if not musicEnabled:
+                    # change the song
+                    pygame.mixer.music.stop()
+                    loadRandMusic()
+                    pygame.mixer.music.play(-1) # looping forever
 
         if event.type == pygame.MOUSEWHEEL:
             fineTuneAmount -= event.y / 5
@@ -887,9 +911,13 @@ while True:
 
     # show if paused
     if gamePaused and not gameOver:
-        pauseText = menuFont.render("PAUSED", False, (255, 255, 255))
-        screen.blit(pauseText, (WIDTH/2.65, HEIGHT/4))
-
+        pauseScreen, pauseSelection = getPauseScreen(mx, my, mouseClicked[0])
+        screen.blit(pauseScreen, (0, 0))
+        if pauseSelection == "resume":
+            gamePaused = False
+        elif pauseSelection == "quit":
+            pygame.quit()
+            sys.exit()
     # show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
