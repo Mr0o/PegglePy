@@ -3,7 +3,7 @@ from math import sqrt
 from random import randint
 
 ### local imports ###
-from local.load_level import loadData
+from local.load_level import loadData, createDefaultPegsPos
 from local.config import WIDTH, HEIGHT, debug, segmentCount
 from local.resources import backgroundImg
 from local.peg import Peg
@@ -100,7 +100,7 @@ def createPegColors(pegs: list[Peg]) -> list[Peg]:
     return pegs
 
 
-def loadLevel(createPegColors) -> tuple[list[Peg], list[Peg], int]:
+def loadLevel() -> tuple[list[Peg], list[Peg], int]:
     # load the pegs from a level file (pickle)
     pegs, levelFileName = loadData()
     originPegs = pegs.copy()
@@ -120,6 +120,27 @@ def loadLevel(createPegColors) -> tuple[list[Peg], list[Peg], int]:
         # remove the file extension '.lvl'
         levelFileName = levelFileName[:-4]
     
+
+    return pegs, originPegs, orangeCount, levelFileName
+
+
+def loadDefaultLevel() -> tuple[list[Peg], list[Peg], int]:
+    pegsPosList = createDefaultPegsPos()
+    # using x and y tuple, create list of peg objects
+    pegs = []
+    for xyPos in pegsPosList:
+        x, y = xyPos
+        pegs.append(Peg(x, y))
+
+    originPegs = pegs.copy()
+
+    pegs = createPegColors(pegs)
+
+    orangeCount = 0
+    for peg in pegs:
+        if peg.color == "orange": orangeCount += 1
+
+    levelFileName = "Default"
 
     return pegs, originPegs, orangeCount, levelFileName
 
