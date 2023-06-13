@@ -1,4 +1,3 @@
-levels/*
 PegglePy_Demo.mkv
 
 .vscode/settings.json
@@ -7,3 +6,9 @@ PegglePy_Demo.mkv
 
 __pycache__
 .vscode/c_cpp_properties.json
+
+# ignore all level files except 'Level 1.lvl'
+```
+*.lvl
+!Level 1.lvl
+```
