@@ -24,13 +24,16 @@ except ImportError as e:
     print("Exiting...")
     sys.exit(1)
 
+from menu import mainMenu
+from editor import levelEditor
+
 import pygame
 
 ##### pygame stuff #####
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
 clock = pygame.time.Clock()  # game clock
-pygame.display.set_caption("Peggle Clone")
+pygame.display.set_caption("PegglePy")
 
 # set the icon
 pygame.display.set_icon(gameIconImg)
@@ -43,30 +46,6 @@ def drawCircle(x, y, rad=5, rgb=(255, 255, 255)):
 
 def drawLine(x1, y1, x2, y2):
     pygame.draw.line(screen, (255, 0, 0), [x1, y1], [x2, y2])
-
-
-# find the angle needed to hit the target position
-# https://en.wikipedia.org/wiki/Projectile_motion
-def findAngleToTarget(startPos: Vector, targetPos: Vector, v: float = maxBallVelocity, g: Vector = gravity):
-    # angle = (theta = (1/2) * arccos(gd/v^2) (steep trajectory)
-    # angle = (1/2) * atan2((g.vy * (targetPos.vx - startPos.vx)**2) / (v**2), (targetPos.vy - startPos.vy))
-    x = targetPos.vx
-    y = targetPos.vy
-
-    root = v*v*v*v - g.vy*(g.vy*(x*x)+2*y*(v*v))
-
-    if root > 0:
-        root = sqrt(root)
-    else:
-        root = 0
-
-    angle = atan2(v*v - root, g.vy*x)
-
-    angleDegrees = angle * (180 / 3.141592654)
-
-    print(angle)
-    print(angleDegrees)
-    return angleDegrees
 
 
 ### testing stuff ###
@@ -110,11 +89,23 @@ gamePadFineTuneAmount = 0
 longShotTextTimer = TimedEvent()
 delayTimer = TimedEvent(1)
 
+### main menu ###
+selection = mainMenu(screen)
+
+if selection == "quit":
+    print("Goodbye")
+    pygame.quit()
+    sys.exit()
+elif selection == "editor":
+    levelEditor(screen, clock)
+
 pegs: list[Peg]
-pegs, originPegs, orangeCount, levelFileName = loadLevel(createPegColors)
+#pegs, originPegs, orangeCount, levelFileName = loadLevel()
+pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
+time.sleep(0.5)
 
 # set the caption to include the level name
-pygame.display.set_caption("Peggle Clone   -   " + levelFileName)
+pygame.display.set_caption("PegglePy   -   " + levelFileName)
 
 # assign each peg a screen location, this is to better optimize collison detection (only check pegs on the same screen location as the ball)
 assignPegScreenLocation(pegs, segmentCount)
@@ -181,11 +172,10 @@ while True:
                     debugTrajectory = False
             if event.key == pygame.K_l:  # load a new level
                 pygame.mixer.music.stop()
-                pegs, originPegs, orangeCount, levelFileName = loadLevel(
-                    createPegColors)
+                pegs, originPegs, orangeCount, levelFileName = loadLevel()
                 # set the caption to include the level name
                 pygame.display.set_caption(
-                    "Peggle Clone   -   " + levelFileName)
+                    "PegglePy   -   " + levelFileName)
                 # horrifying function that resets the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
