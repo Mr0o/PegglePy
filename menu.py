@@ -1,7 +1,7 @@
 import pygame
 
 from local.config import WIDTH, HEIGHT
-from local.resources import backgroundImg, menuFont, menuButtonFont, menuMusicPath, buttonHoverSound, buttonClickSound
+from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch
 
@@ -13,20 +13,22 @@ def mainMenu(screen: pygame.Surface):
     pygame.mixer.music.play(-1)
 
     # button positions
-    startButtonPos = Vector(100, 100)
-    startButtonSize = Vector(100, 50)
-    startButtoncolor = (0, 200, 0)
-    startButtoncolorOriginal = startButtoncolor
-    editorButtonPos = Vector(100, 200)
-    editorButtonSize = Vector(100, 50)
-    editorButtonColor = (0, 0, 200)
-    editorButtonColorOriginal = editorButtonColor
-    quitButtonPos = Vector(100, 300)
-    quitButtonSize = Vector(100, 50)
-    quitButtonColor = (200, 0, 0)
-    quitButtonColorOriginal = quitButtonColor
+    buttonScale = 2.5
+    startButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 - 30*buttonScale)
+    startButtonSize = Vector(100*buttonScale, 50*buttonScale)
+    editorButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 30*buttonScale)
+    editorButtonSize = Vector(100*buttonScale, 50*buttonScale)
+    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale)
+    quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
+    settingsButtonPos = Vector(WIDTH - 50*buttonScale-20, HEIGHT - 50*buttonScale-20)
+    settingsButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
     selection: str = "none" # this will be returned as the user selection made in the menu
+
+    # scale the button images
+    menuButtonUnpressedImg = pygame.transform.scale(largeButtonUnpressedImg, (editorButtonSize.vx, editorButtonSize.vy))
+    menuButtonPressedImg = pygame.transform.scale(largeButtonPressedImg, (editorButtonSize.vx, editorButtonSize.vy))
+    settingsButtonImgScaled = pygame.transform.scale(settingsButtonImg, (int(50*buttonScale), int(50*buttonScale)))
 
     # main loop
     while True:
@@ -48,57 +50,65 @@ def mainMenu(screen: pygame.Surface):
         ## check mouse input
 
         # check if mouse is over start button
-        startButtoncolor = startButtoncolorOriginal
         if mousePos.vx > startButtonPos.vx and mousePos.vx < startButtonPos.vx + startButtonSize.vx and mousePos.vy > startButtonPos.vy and mousePos.vy < startButtonPos.vy + startButtonSize.vy:
             # mouse button is down
             if mouseDown:
                 selection = "start"
-                playSoundPitch(buttonClickSound)
-            
-            # increase the green value of the start button color
-            startButtoncolor = (startButtoncolor[0], startButtoncolor[1] + 50, startButtoncolor[2])
         
         # check if mouse is over editor button
-        editorButtonColor = editorButtonColorOriginal
         if mousePos.vx > editorButtonPos.vx and mousePos.vx < editorButtonPos.vx + editorButtonSize.vx and mousePos.vy > editorButtonPos.vy and mousePos.vy < editorButtonPos.vy + editorButtonSize.vy:
             # mouse button is down
             if mouseDown:
                 selection = "editor"
-                playSoundPitch(buttonClickSound)
-            
-            # increase the blue value of the editor button color
-            editorButtonColor = (editorButtonColor[0], editorButtonColor[1], editorButtonColor[2] + 50)
         
         # check if mouse is over quit button
-        quitButtonColor = quitButtonColorOriginal
         if mousePos.vx > quitButtonPos.vx and mousePos.vx < quitButtonPos.vx + quitButtonSize.vx and mousePos.vy > quitButtonPos.vy and mousePos.vy < quitButtonPos.vy + quitButtonSize.vy:
             # mouse button is down
             if mouseDown:
                 selection = "quit"
-                playSoundPitch(buttonClickSound)
-            
-            # increase the red value of the quit button color
-            quitButtonColor = (quitButtonColor[0] + 50, quitButtonColor[1], quitButtonColor[2])
+        
+        # check if mouse is over settings button
+        if mousePos.vx > settingsButtonPos.vx and mousePos.vx < settingsButtonPos.vx + settingsButtonSize.vx and mousePos.vy > settingsButtonPos.vy and mousePos.vy < settingsButtonPos.vy + settingsButtonSize.vy:
+            # mouse button is down
+            if mouseDown:
+                selection = "settings"
 
 
         # draw the background
         screen.blit(backgroundImg, (0, 0))
 
+        # draw the title
+        menuTitle = menuFont.render("Peggle Py", True, (255, 255, 255))
+        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/4 - menuTitle.get_height()/2))
+
         # draw the buttons
         # start button
-        pygame.draw.rect(screen, (startButtoncolor), (startButtonPos.vx, startButtonPos.vy, startButtonSize.vx, startButtonSize.vy))
-        text = menuButtonFont.render("Start", True, (0, 0, 0))
+        if selection != "start":
+            screen.blit(menuButtonUnpressedImg, (startButtonPos.vx, startButtonPos.vy))
+        else:
+            screen.blit(menuButtonPressedImg, (startButtonPos.vx, startButtonPos.vy))
+        text = menuButtonFont.render("Start", True, (255, 255, 255))
         screen.blit(text, (startButtonPos.vx + (startButtonSize.vx - text.get_width()) / 2, startButtonPos.vy + (startButtonSize.vy - text.get_height()) / 2))
 
         # editor button
-        pygame.draw.rect(screen, (editorButtonColor), (editorButtonPos.vx, editorButtonPos.vy, editorButtonSize.vx, editorButtonSize.vy))
-        text = menuButtonFont.render("Editor", True, (0, 0, 0))
+        if selection != "editor":
+            screen.blit(menuButtonUnpressedImg, (editorButtonPos.vx, editorButtonPos.vy))
+        else:
+            screen.blit(menuButtonPressedImg, (editorButtonPos.vx, editorButtonPos.vy))
+        text = menuButtonFont.render("Editor", True, (255, 255, 255))
         screen.blit(text, (editorButtonPos.vx + (editorButtonSize.vx - text.get_width()) / 2, editorButtonPos.vy + (editorButtonSize.vy - text.get_height()) / 2))
 
         # quit button
-        pygame.draw.rect(screen, (quitButtonColor), (quitButtonPos.vx, quitButtonPos.vy, quitButtonSize.vx, quitButtonSize.vy))
-        text = menuButtonFont.render("Quit", True, (0, 0, 0))
+        if selection != "quit":
+            screen.blit(menuButtonUnpressedImg, (quitButtonPos.vx, quitButtonPos.vy))
+        else:
+            screen.blit(menuButtonPressedImg, (quitButtonPos.vx, quitButtonPos.vy))
+        text = menuButtonFont.render("Quit", True, (255, 255, 255))
         screen.blit(text, (quitButtonPos.vx + (quitButtonSize.vx - text.get_width()) / 2, quitButtonPos.vy + (quitButtonSize.vy - text.get_height()) / 2))
+
+        # settings button (bottom right corner)
+        screen.blit(settingsButtonImgScaled, (settingsButtonPos.vx, settingsButtonPos.vy))
+
 
         # update display
         pygame.display.update()
@@ -106,6 +116,7 @@ def mainMenu(screen: pygame.Surface):
 
         # check if the user has made a selection
         if selection != "none":
+            playSoundPitch(buttonClickSound)
             return selection
 
 
