@@ -12,7 +12,7 @@ from local.peg import Peg
 from local.misc import createStaticImage, updateStaticImage
 from local.trigger_events import TimedEvent
 from local.audio import playSoundPitch
-from local.resources import editorIconImg, backgroundImg, infoFont, warnFont, helpFont, transparentPegImg, invalidPegImg, newPegSound, invalidPegSound
+from local.resources import editorIconImg, backgroundImg, infoFont, warnFont, helpFont, transparentPegImg, invalidPegImg, newPegSound, invalidPegSound, debugFont
 
 # warning timer for displaying warning messages
 warningTimer = TimedEvent()
@@ -22,7 +22,7 @@ isRunning = True
 
 
 ## the level editor function (called from run.py via the user menu selection) ##
-def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock) -> None:
+def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = debug) -> None:
     pegs: list[Peg]
     pegs = []
 
@@ -37,7 +37,6 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock) -> None:
     heightBound = 150
 
     pygame.display.set_caption("PegglePy  -  Level Editor")
-    pygame.display.set_icon(editorIconImg)
 
     # play random music
     r = randint(1, 10)
@@ -69,6 +68,8 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock) -> None:
                     pegs, filePath = loadData()
                     staticImg = createStaticImage(pegs)
                 if event.key == pygame.K_1:
+                    debug = not debug
+                if event.key == pygame.K_2:
                     skipValidPegCheck = not skipValidPegCheck
                 # print all the peg positions (x,y) to the terminal
                 if event.key == pygame.K_p:
@@ -188,6 +189,20 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock) -> None:
             warningText = warnFont.render(
                 "Level must have at least 30 pegs...", False, (200, 20, 25))
             screen.blit(warningText, (int(WIDTH/2 - 200), HEIGHT/2))
+
+        # draw debug text
+        if debug:
+            if (clock.get_rawtime() < 16):  # decide whether green text or red text
+                frameColor = (0, 255, 50)  # green
+            else:
+                frameColor = (255, 50, 0)  # red
+            # print frametime
+            frameTime = debugFont.render(
+                str(clock.get_rawtime()) + " ms", False, (frameColor))
+            screen.blit(frameTime, (5, 10))
+            framesPerSec = debugFont.render(
+                str(round(clock.get_fps())) + " fps", False, (255, 255, 255))
+            screen.blit(framesPerSec, (5, 25))
 
         pygame.display.update()
         clock.tick(144)  # lock game framerate to 144 fps

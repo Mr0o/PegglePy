@@ -87,22 +87,23 @@ gamePadFineTuneAmount = 0
 
 longShotTextTimer = TimedEvent()
 
+gameRunning = True
+
 ### main menu ###
 selection = mainMenu(screen)
 
 if selection == "quit":
     print("Goodbye")
-    pygame.quit()
-    sys.exit()
+    gameRunning = False
 elif selection == "editor":
-    time.sleep(0.5) # prevent accidental click on launch
-    levelEditor(screen, clock)
+    time.sleep(0.5)  # prevent accidental click on launch
+    levelEditor(screen, clock, debug)
 
 # prevent accidental click on launch
 delayTimer = TimedEvent(0.5)
 
 pegs: list[Peg]
-#pegs, originPegs, orangeCount, levelFileName = loadLevel()
+# pegs, originPegs, orangeCount, levelFileName = loadLevel()
 pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
 
 # set the caption to include the level name
@@ -118,13 +119,12 @@ if musicEnabled:
     pygame.mixer.music.play(-1)  # looping forever
 
 ##### main loop #####
-while True:
+while gameRunning:
     launch_button = False
     gamePadFineTuneAmount = 0
     for event in pygame.event.get():  # check events and quit if the program is closed
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            gameRunning = False
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 # horrifying function that resets the game
@@ -133,15 +133,9 @@ while True:
                 if not musicEnabled:
                     pygame.mixer.music.stop()
             if event.key == pygame.K_1:  # enable or disable debug features
-                if debug == False:
-                    debug = True
-                else:
-                    debug = False
+                debug = not debug
             if event.key == pygame.K_2:  # enable or disable cheats
-                if cheats == False:
-                    cheats = True
-                else:
-                    cheats = False
+                cheats = not cheats
             if event.key == pygame.K_3:  # cycle through all power up types
                 if powerUpType == "spooky":
                     powerUpType = "multiball"
@@ -154,10 +148,7 @@ while True:
                 elif powerUpType == "spooky-multiball":
                     powerUpType = "spooky"
             if event.key == pygame.K_4:  # enable or disable debug view of collision segments
-                if debugCollision == False:
-                    debugCollision = True
-                else:
-                    debugCollision = False
+                debugCollision = not debugCollision
             if event.key == pygame.K_5:  # debug - decrease collision segment count
                 segmentCount -= 1
                 # reassign each pegs segment location
@@ -167,10 +158,7 @@ while True:
                 # reassign each pegs segment location
                 assignPegScreenLocation(pegs, segmentCount)
             if event.key == pygame.K_7:  # debug - enable or disable full trajectory drawing
-                if debugTrajectory == False:
-                    debugTrajectory = True
-                else:
-                    debugTrajectory = False
+                debugTrajectory = not debugTrajectory
             if event.key == pygame.K_l:  # load a new level
                 pygame.mixer.music.stop()
                 pegs, originPegs, orangeCount, levelFileName = loadLevel()
@@ -183,20 +171,14 @@ while True:
                 if not musicEnabled:
                     pygame.mixer.music.stop()
             if event.key == pygame.K_ESCAPE:  # enable or disable cheats
-                if gamePaused == False:
-                    gamePaused = True
-                else:
-                    gamePaused = False
+                gamePaused = not gamePaused
             if event.key == pygame.K_0:
                 if frameRate == 144:
                     frameRate = 30
                 else:
                     frameRate = 144
             if event.key == pygame.K_m:
-                if soundEnabled == False:
-                    soundEnabled = True
-                else:
-                    soundEnabled = False
+                soundEnabled = not soundEnabled
             if event.key == pygame.K_n:
                 if musicEnabled == False:
                     musicEnabled = True
@@ -205,43 +187,38 @@ while True:
                     musicEnabled = False
                     pygame.mixer.music.stop()
             if event.key == pygame.K_8:
-                if speedHack == False:
-                    speedHack = True
-                else:
-                    speedHack = False
+                speedHack = not speedHack
             if event.key == pygame.K_9:
-                if debugAutoRemovePegsTimer == False:
-                    debugAutoRemovePegsTimer = True
-                else:
-                    debugAutoRemovePegsTimer = False
+                debugAutoRemovePegsTimer = not debugAutoRemovePegsTimer
             if event.key == pygame.K_r:
-                if useCPhysics == False:
-                    useCPhysics = True
-                else:
-                    useCPhysics = False
+                useCPhysics = not useCPhysics
             # open the main menu
             if event.key == pygame.K_z:
                 selection = mainMenu(screen)
 
                 if selection == "quit":
                     print("Goodbye")
-                    pygame.quit()
-                    sys.exit()
+                    gameRunning = False
                 elif selection == "editor":
-                    time.sleep(0.5) # prevent accidental click on launch
-                    levelEditor(screen, clock)
-                
-                # prevent accidental click on launch
-                delayTimer = TimedEvent(0.5)
+                    time.sleep(0.5)  # prevent accidental click on launch
+                    levelEditor(screen, clock, debug)
 
                 # reset the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+
+                # prevent accidental click on launch
+                delayTimer = TimedEvent(0.5)
+
                 if not musicEnabled:
                     # change the song
                     pygame.mixer.music.stop()
                     loadRandMusic()
-                    pygame.mixer.music.play(-1) # looping forever
+                    pygame.mixer.music.play(-1)  # looping forever
+
+                # set the caption to include the level name
+                pygame.display.set_caption(
+                    "PegglePy   -   " + levelFileName)
 
         if event.type == pygame.MOUSEWHEEL:
             fineTuneAmount -= event.y / 5
@@ -298,22 +275,13 @@ while True:
                         joystick.rumble(1, 1, 100)
                 if event.button == 5:  # the 'R1' button on a ps4 controller
                     # cheats
-                    if cheats == False:
-                        cheats = True
-                    else:
-                        cheats = False
+                    cheats = not cheats
                 if event.button == 8:  # the 'share' button on a ps4 controller
                     # enable or disable debug
-                    if debug == False:
-                        debug = True
-                    else:
-                        debug = False
+                    debug = not debug
                 if event.button == 9:  # the 'options' button on a ps4 controller
                     # pause the game
-                    if gamePaused == False:
-                        gamePaused = True
-                    else:
-                        gamePaused = False
+                    gamePaused = not gamePaused
                 if event.button == 11 or event.button == 12:  # the 'L3' or 'R3' joystick buttons on a ps4 controller
                     # enable or disable sound and music
                     if musicEnabled == False:
@@ -322,10 +290,8 @@ while True:
                     else:
                         musicEnabled = False
                         pygame.mixer.music.stop()
-                    if soundEnabled == False:
-                        soundEnabled = True
-                    else:
-                        soundEnabled = False
+
+                    soundEnabled = not soundEnabled
 
             else:  # xbox controller (default)
                 if event.button == 0:  # the 'A' button on an xbox controller
@@ -570,9 +536,11 @@ while True:
                     # if the current peg is the last remaining orange peg then apply special effects
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
                         if useCPhysics:
-                            ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
+                            ballTouchingPeg = isBallTouchingPeg(
+                                p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
                         else:
-                            ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
+                            ballTouchingPeg = isBallTouchingPeg_old(
+                                p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
                         if ballTouchingPeg:
                             if frameRate != 27 and len(balls) < 2:
                                 if soundEnabled:
@@ -595,9 +563,11 @@ while True:
 
                     if shouldCheckCollision:
                         if useCPhysics:
-                            ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
+                            ballTouchingPeg = isBallTouchingPeg(
+                                p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
                         else:
-                            ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
+                            ballTouchingPeg = isBallTouchingPeg_old(
+                                p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
                         if ballTouchingPeg:
                             # resolve the collision between the ball and peg
                             if useCPhysics:
@@ -915,9 +885,31 @@ while True:
         screen.blit(pauseScreen, (0, 0))
         if pauseSelection == "resume":
             gamePaused = False
+            delayTimer = TimedEvent(0.50)
+        elif pauseSelection == "restart":
+            # reset the game
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+            if not musicEnabled:
+                pygame.mixer.music.stop()
+            gamePaused = False
+            delayTimer = TimedEvent(0.50)
+        elif pauseSelection == "load":
+            pygame.mixer.music.stop()
+            pegs, originPegs, orangeCount, levelFileName = loadLevel()
+            # set the caption to include the level name
+            pygame.display.set_caption(
+                "PegglePy   -   " + levelFileName)
+            # horrifying function that resets the game
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+            if not musicEnabled:
+                pygame.mixer.music.stop()
+            gamePaused = False
+            delayTimer = TimedEvent(0.50)
         elif pauseSelection == "quit":
-            pygame.quit()
-            sys.exit()
+            gameRunning = False
+            time.sleep(0.15)
     # show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
@@ -949,7 +941,7 @@ while True:
         # show the long shot score
         longShotText = infoFont.render("25,000", False, (255, 110, 0))
         screen.blit(longShotText, (longShotPos.vx-28, longShotPos.vy+11))
-        # show the long shot text 
+        # show the long shot text
         longShotText = infoFont.render("Long Shot!", False, (255, 110, 0))
         screen.blit(longShotText, (longShotPos.vx-35, longShotPos.vy-20))
 
@@ -1041,5 +1033,8 @@ while True:
         screen.blit(cheatsIcon, (100, 6))
 
     pygame.display.update()
-    # lock game framerate to a specified tickrate (default is 144){}
-    clock.tick(frameRate)
+    # lock game framerate to a specified tickrate (default is 144)
+    if gamePaused:
+        clock.tick(30) # no need for high tickrate when paused
+    else:
+        clock.tick(frameRate)

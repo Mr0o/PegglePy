@@ -1,13 +1,13 @@
 import pygame
+import time
 
-from local.config import WIDTH, HEIGHT
+from local.config import WIDTH, HEIGHT, debug
 from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch
 
-
 # this menu will serve as the point where the game and the editor can both be accessed
-def mainMenu(screen: pygame.Surface):
+def mainMenu(screen: pygame.Surface, debug: bool = debug):
     # play menu music
     pygame.mixer.music.load(menuMusicPath)
     pygame.mixer.music.play(-1)
@@ -23,12 +23,16 @@ def mainMenu(screen: pygame.Surface):
     settingsButtonPos = Vector(WIDTH - 50*buttonScale-20, HEIGHT - 50*buttonScale-20)
     settingsButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
-    selection: str = "none" # this will be returned as the user selection made in the menu
-
-    # scale the button images
+     # scale the button images
     menuButtonUnpressedImg = pygame.transform.scale(largeButtonUnpressedImg, (editorButtonSize.vx, editorButtonSize.vy))
     menuButtonPressedImg = pygame.transform.scale(largeButtonPressedImg, (editorButtonSize.vx, editorButtonSize.vy))
     settingsButtonImgScaled = pygame.transform.scale(settingsButtonImg, (int(50*buttonScale), int(50*buttonScale)))
+
+    selection: str = "none" # this will be returned as the user selection made in the menu
+
+    clock = pygame.time.Clock()
+
+    pygame.display.set_caption("PegglePy  -  Main Menu")
 
     # main loop
     while True:
@@ -42,7 +46,11 @@ def mainMenu(screen: pygame.Surface):
             # check if the mouse button is pressed (mouse button down)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouseDown = True
-
+            
+            # check if 1 is pressed (debug)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    debug = not debug
         # update mouse posistion
         mx, my = pygame.mouse.get_pos()
         mousePos = Vector(mx, my)
@@ -110,8 +118,26 @@ def mainMenu(screen: pygame.Surface):
         screen.blit(settingsButtonImgScaled, (settingsButtonPos.vx, settingsButtonPos.vy))
 
 
+        # debug
+        if debug:
+            if (clock.get_rawtime() < 16):  # decide whether green text or red text
+                frameColor = (0, 255, 50)  # green
+            else:
+                frameColor = (255, 50, 0)  # red
+            # print frametime
+            frameTime = debugFont.render(
+                str(clock.get_rawtime()) + " ms", False, (frameColor))
+            screen.blit(frameTime, (5, 10))
+            framesPerSec = debugFont.render(
+                str(round(clock.get_fps())) + " fps", False, (255, 255, 255))
+            screen.blit(framesPerSec, (5, 25))
+
+
+
         # update display
         pygame.display.update()
+
+        clock.tick(60)
 
 
         # check if the user has made a selection
@@ -120,9 +146,58 @@ def mainMenu(screen: pygame.Surface):
             return selection
 
 
-# returns a surface of the pause screen to be overlayed on the game screen, also returns a boolean value to indicate a button press
+# returns a surface of the pause screen to be overlayed on the game screen, also returns a string value to indicate a button press
 def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     selection = "none"
+
+    buttonScale = 2.5
+    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale)
+    quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
+    resumeButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 - 30*buttonScale)
+    resumeButtonSize = Vector(50*buttonScale, 50*buttonScale)
+    restartButtonPos = Vector(resumeButtonPos.vx + resumeButtonSize.vx, resumeButtonPos.vy+5)
+    restartButtonSize = Vector(50*buttonScale-10, 50*buttonScale-15)
+    # position above the quit button
+    loadLevelButtonPos = Vector(quitButtonPos.vx, quitButtonPos.vy - 50*buttonScale)
+    loadLevelButtonSize = Vector(100*buttonScale, 50*buttonScale)
+
+
+    # scale the button images
+    menuButtonUnpressedImg = pygame.transform.scale(largeButtonUnpressedImg, (quitButtonSize.vx, quitButtonSize.vy))
+    menuButtonPressedImg = pygame.transform.scale(largeButtonPressedImg, (quitButtonSize.vx, quitButtonSize.vy))
+    smallMenuButtonUnpressedImg = pygame.transform.scale(buttonUnpressedImg, (int(50*buttonScale), int(50*buttonScale)))
+    smallMenuButtonPressedImg = pygame.transform.scale(buttonPressedImg, (restartButtonSize.vx, restartButtonSize.vy))
+    resumeButtonImg = pygame.transform.scale(startButtonImg, (int(50*buttonScale), int(50*buttonScale)))
+    restartButtonImgScaled = pygame.transform.scale(restartButtonImg, (restartButtonSize.vx, restartButtonSize.vy))
+
+    ## check for button clicks ##
+    # check if the mouse is over the resume button
+    if mx > resumeButtonPos.vx and mx < resumeButtonPos.vx + resumeButtonSize.vx and my > resumeButtonPos.vy and my < resumeButtonPos.vy + resumeButtonSize.vy:
+        # mouse button is down
+        if mouseClick:
+            selection = "resume"
+            playSoundPitch(buttonClickSound)
+    
+    # check if the mouse is over the restart button
+    if mx > restartButtonPos.vx and mx < restartButtonPos.vx + restartButtonSize.vx and my > restartButtonPos.vy and my < restartButtonPos.vy + restartButtonSize.vy:
+        # mouse button is down
+        if mouseClick:
+            selection = "restart"
+            playSoundPitch(buttonClickSound)
+    
+    # check if the mouse is over the load level button
+    if mx > loadLevelButtonPos.vx and mx < loadLevelButtonPos.vx + loadLevelButtonSize.vx and my > loadLevelButtonPos.vy and my < loadLevelButtonPos.vy + loadLevelButtonSize.vy:
+        # mouse button is down
+        if mouseClick:
+            selection = "load"
+            playSoundPitch(buttonClickSound)
+
+    # check if the mouse is over the quit button
+    if mx > quitButtonPos.vx and mx < quitButtonPos.vx + quitButtonSize.vx and my > quitButtonPos.vy and my < quitButtonPos.vy + quitButtonSize.vy:
+        # mouse button is down
+        if mouseClick:
+            selection = "quit"
+            playSoundPitch(buttonClickSound)
 
     # create a surface for the pause screen
     pauseScreen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -134,31 +209,32 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     pauseScreen.blit(pauseText, (WIDTH/2.65, HEIGHT/4))
 
     # draw the resume button
-    resumeButton = pygame.Rect(WIDTH/2.5 + 150, HEIGHT/3, 100, 50)
-    pygame.draw.rect(pauseScreen, (0, 200, 0), resumeButton)
-    resumeText = menuButtonFont.render("Resume", False, (0, 0, 0))
-    pauseScreen.blit(resumeText, (resumeButton.x + (resumeButton.width - resumeText.get_width()) / 2, resumeButton.y + (resumeButton.height - resumeText.get_height()) / 2))
+    if selection != "resume":
+        pauseScreen.blit(resumeButtonImg, (resumeButtonPos.vx, resumeButtonPos.vy))
+    else:
+        pauseScreen.blit(smallMenuButtonPressedImg, (resumeButtonPos.vx, resumeButtonPos.vy))
+
+    # draw the restart button
+    if selection != "restart":
+        pauseScreen.blit(restartButtonImgScaled, (restartButtonPos.vx, restartButtonPos.vy))
+    else:
+        pauseScreen.blit(smallMenuButtonPressedImg, (restartButtonPos.vx, restartButtonPos.vy))
+
+    # draw the load level button
+    if selection != "load":
+        pauseScreen.blit(menuButtonUnpressedImg, (loadLevelButtonPos.vx, loadLevelButtonPos.vy))
+    else:
+        pauseScreen.blit(menuButtonPressedImg, (loadLevelButtonPos.vx, loadLevelButtonPos.vy))
+    loadText = menuButtonFont.render("Load Level", False, (255, 255, 255))
+    pauseScreen.blit(loadText, (loadLevelButtonPos.vx + (loadLevelButtonSize.vx - loadText.get_width()) / 2, loadLevelButtonPos.vy + (loadLevelButtonSize.vy - loadText.get_height()) / 2))
 
     # draw the quit button
-    quitButton = pygame.Rect(WIDTH/2.5 + 150, HEIGHT/2 - 60, 100, 50)
-    pygame.draw.rect(pauseScreen, (200, 0, 0), quitButton)
-    quitText = menuButtonFont.render("Quit", False, (0, 0, 0))
-    pauseScreen.blit(quitText, (quitButton.x + (quitButton.width - quitText.get_width()) / 2, quitButton.y + (quitButton.height - quitText.get_height()) / 2))
-
-
-    ## check for button clicks ##
-    # check if the mouse is over the resume button
-    if mx > resumeButton.x and mx < resumeButton.x + resumeButton.width and my > resumeButton.y and my < resumeButton.y + resumeButton.height:
-        # mouse button is down
-        if mouseClick:
-            selection = "resume"
-            playSoundPitch(buttonClickSound)
-
-    if mx > quitButton.x and mx < quitButton.x + quitButton.width and my > quitButton.y and my < quitButton.y + quitButton.height:
-        # mouse button is down
-        if mouseClick:
-            selection = "quit"
-            playSoundPitch(buttonClickSound)
+    if selection != "quit":
+        pauseScreen.blit(menuButtonUnpressedImg, (quitButtonPos.vx, quitButtonPos.vy))
+    else:
+        pauseScreen.blit(menuButtonPressedImg, (quitButtonPos.vx, quitButtonPos.vy))
+    quitText = menuButtonFont.render("Quit", False, (255, 255, 255))
+    pauseScreen.blit(quitText, (quitButtonPos.vx + (quitButtonSize.vx - quitText.get_width()) / 2, quitButtonPos.vy + (quitButtonSize.vy - quitText.get_height()) / 2))
 
     # return the surface
     return pauseScreen, selection
