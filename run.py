@@ -194,7 +194,7 @@ while gameRunning:
                 useCPhysics = not useCPhysics
             # open the main menu
             if event.key == pygame.K_z:
-                selection = mainMenu(screen)
+                selection = mainMenu(screen, debug)
 
                 if selection == "quit":
                     print("Goodbye")
@@ -910,6 +910,34 @@ while gameRunning:
         elif pauseSelection == "quit":
             gameRunning = False
             time.sleep(0.15)
+        elif pauseSelection == "mainMenu":
+            gamePaused = False
+            selection = mainMenu(screen, debug)
+
+            if selection == "quit":
+                print("Goodbye")
+                gameRunning = False
+            elif selection == "editor":
+                time.sleep(0.5)  # prevent accidental click on launch
+                levelEditor(screen, clock, debug)
+
+            # reset the game
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+
+            # prevent accidental click on launch
+            delayTimer = TimedEvent(0.5)
+
+            if not musicEnabled:
+                # change the song
+                pygame.mixer.music.stop()
+                loadRandMusic()
+                pygame.mixer.music.play(-1)  # looping forever
+
+            # set the caption to include the level name
+            pygame.display.set_caption(
+                "PegglePy   -   " + levelFileName)
+
     # show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
@@ -1035,6 +1063,6 @@ while gameRunning:
     pygame.display.update()
     # lock game framerate to a specified tickrate (default is 144)
     if gamePaused:
-        clock.tick(30) # no need for high tickrate when paused
+        clock.tick(30)  # no need for high tickrate when paused
     else:
         clock.tick(frameRate)
