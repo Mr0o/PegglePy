@@ -87,17 +87,21 @@ gamePadFineTuneAmount = 0
 
 longShotTextTimer = TimedEvent()
 
+debugStaticImage: pygame.Surface = None
+
 gameRunning = True
 
 ### main menu ###
-selection = mainMenu(screen)
+selection = "none"
+while selection != "start" and selection != "quit":
+    selection = mainMenu(screen)
 
-if selection == "quit":
-    print("Goodbye")
-    gameRunning = False
-elif selection == "editor":
-    time.sleep(0.5)  # prevent accidental click on launch
-    levelEditor(screen, clock, debug)
+    if selection == "quit":
+        print("Goodbye")
+        gameRunning = False
+    elif selection == "editor":
+        time.sleep(0.5)  # prevent accidental click on launch
+        levelEditor(screen, clock, debug)
 
 # prevent accidental click on launch
 delayTimer = TimedEvent(0.5)
@@ -1004,12 +1008,15 @@ while gameRunning:
         # print which collision method is being used
         if useCPhysics:
             collisionMethodText = debugFont.render(
-                "Using C collision: True", False, (255, 255, 255))
+                "Using Ctypes: True", False, (255, 255, 255))
             screen.blit(collisionMethodText, (245, 50))
         # draw zenball trajectory (can cause a noticable performance hit due to the number of circles being drawn)
         if not done and powerUpType == "zenball":
-            for fb in bestTrajectory:
-                drawCircle(fb.pos.vx, fb.pos.vy, 1, (0, 153, 10))
+            if debugStaticImage == None:
+                debugStaticImage = createStaticCircles(bestTrajectory)
+            screen.blit(debugStaticImage, (0, 0))
+        else:
+            debugStaticImage = None
 
         # draw line for joystick aim vector
         if controllerInput and not ball.isAlive and len(balls) < 2:
