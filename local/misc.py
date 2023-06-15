@@ -190,7 +190,7 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
     staticCircles.set_colorkey((0, 0, 0))
 
     for fb in trajectory:
-        pygame.draw.circle(staticCircles, (0, 153, 10), [fb.pos.vx, fb.pos.vy], 1)
+        pygame.draw.circle(staticCircles, (0, 220, 10), [fb.pos.vx, fb.pos.vy], 1)
 
     return staticCircles
 
