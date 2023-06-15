@@ -82,7 +82,7 @@ extern "C"
     }
 
     // divide this vector by a scalar
-    void div(Vector v, float scalar)
+    void divide(Vector v, float scalar)
     {
         v.vx /= scalar;
         v.vy /= scalar;

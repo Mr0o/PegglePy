@@ -101,7 +101,9 @@ while selection != "start" and selection != "quit":
         gameRunning = False
     elif selection == "editor":
         time.sleep(0.5)  # prevent accidental click on launch
-        levelEditor(screen, clock, debug)
+        if levelEditor(screen, clock, debug) == "quit":
+            gameRunning = False
+            selection = "quit"
 
 # prevent accidental click on launch
 delayTimer = TimedEvent(0.5)
@@ -923,7 +925,8 @@ while gameRunning:
                 gameRunning = False
             elif selection == "editor":
                 time.sleep(0.5)  # prevent accidental click on launch
-                levelEditor(screen, clock, debug)
+                if levelEditor(screen, clock, debug) == "quit":
+                    gameRunning = False
 
             # reset the game
             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
