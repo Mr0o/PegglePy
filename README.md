@@ -36,7 +36,7 @@ git clone https://github.com/Mr0o/PegglePy.git
 - Open a terminal in the PegglePy folder
 - Run the following command
 ```
-python3 run.py
+python3 run.pyw
 ```
 </br>
 
@@ -53,7 +53,7 @@ Tkinter will need to be installed separately on linux
 
 # Usage instructions
 ### Play the game
--  To start, execute 'run.py' or click on ```start.bat``` if you are on windows
+-  To start, execute 'run.pyw' or click on ```start.bat``` if you are on windows
 -  Once started, you will be taken to the main menu. (see the first screenshot above)
 -  Press the 'Start' button to start playing the game
 -  The game works similar to peggle, to launch the ball just point with the mouse and left click
