@@ -265,15 +265,21 @@ def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     selection = "none"
 
     buttonScale = 2.5
-    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale)
-    quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
     resumeButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 - 30*buttonScale)
     resumeButtonSize = Vector(50*buttonScale, 50*buttonScale)
     restartButtonPos = Vector(resumeButtonPos.vx + resumeButtonSize.vx, resumeButtonPos.vy+5)
     restartButtonSize = Vector(50*buttonScale-10, 50*buttonScale-15)
-    # position above the quit button
-    loadLevelButtonPos = Vector(quitButtonPos.vx, quitButtonPos.vy - 50*buttonScale)
+    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale+40)
+    quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
+    # position above the quit button and to the left
+    loadLevelButtonPos = Vector(quitButtonPos.vx - 100*buttonScale, quitButtonPos.vy - 50*buttonScale)
     loadLevelButtonSize = Vector(100*buttonScale, 50*buttonScale)
+    # position to the right of the load level button
+    saveButtonPos = Vector(loadLevelButtonPos.vx + loadLevelButtonSize.vx, loadLevelButtonPos.vy)
+    saveButtonSize = Vector(100*buttonScale, 50*buttonScale)
+    # position to the right of the save button
+    playLevelButtonPos = Vector(saveButtonPos.vx + saveButtonSize.vx, saveButtonPos.vy)
+    playLevelButtonSize = Vector(100*buttonScale, 50*buttonScale)
     # main menu button (positioned bottom left corner)
     mainMenuButtonPos = Vector(10, HEIGHT - 25*buttonScale-10)
     mainMenuButtonSize = Vector(50*buttonScale, 25*buttonScale)
@@ -309,6 +315,20 @@ def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
         # mouse button is down
         if mouseClick:
             selection = "load"
+            playSoundPitch(buttonClickSound)
+
+    # check if the mouse is over the save button
+    if mx > saveButtonPos.vx and mx < saveButtonPos.vx + saveButtonSize.vx and my > saveButtonPos.vy and my < saveButtonPos.vy + saveButtonSize.vy:
+        # mouse button is down
+        if mouseClick:
+            selection = "save"
+            playSoundPitch(buttonClickSound)
+
+    # check if the mouse is over the play level button
+    if mx > playLevelButtonPos.vx and mx < playLevelButtonPos.vx + playLevelButtonSize.vx and my > playLevelButtonPos.vy and my < playLevelButtonPos.vy + playLevelButtonSize.vy:
+        # mouse button is down
+        if mouseClick:
+            selection = "play"
             playSoundPitch(buttonClickSound)
 
     # check if the mouse is over the quit button
@@ -353,6 +373,22 @@ def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
         pauseScreen.blit(menuButtonPressedImg, (loadLevelButtonPos.vx, loadLevelButtonPos.vy))
     loadText = menuButtonFont.render("Load Level", False, (255, 255, 255))
     pauseScreen.blit(loadText, (loadLevelButtonPos.vx + (loadLevelButtonSize.vx - loadText.get_width()) / 2, loadLevelButtonPos.vy + (loadLevelButtonSize.vy - loadText.get_height()) / 2))
+
+    # draw the save button
+    if selection != "save":
+        pauseScreen.blit(menuButtonUnpressedImg, (saveButtonPos.vx, saveButtonPos.vy))
+    else:
+        pauseScreen.blit(menuButtonPressedImg, (saveButtonPos.vx, saveButtonPos.vy))
+    saveText = menuButtonFont.render("Save Level", False, (255, 255, 255))
+    pauseScreen.blit(saveText, (saveButtonPos.vx + (saveButtonSize.vx - saveText.get_width()) / 2, saveButtonPos.vy + (saveButtonSize.vy - saveText.get_height()) / 2))
+
+    # draw the play level button
+    if selection != "play":
+        pauseScreen.blit(menuButtonUnpressedImg, (playLevelButtonPos.vx, playLevelButtonPos.vy))
+    else:
+        pauseScreen.blit(menuButtonPressedImg, (playLevelButtonPos.vx, playLevelButtonPos.vy))
+    playText = menuButtonFont.render("Play Level", False, (255, 255, 255))
+    pauseScreen.blit(playText, (playLevelButtonPos.vx + (playLevelButtonSize.vx - playText.get_width()) / 2, playLevelButtonPos.vy + (playLevelButtonSize.vy - playText.get_height()) / 2))
 
     # draw the quit button
     if selection != "quit":

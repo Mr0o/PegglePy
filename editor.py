@@ -22,6 +22,7 @@ from menu import getEditorPauseScreen
 def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = debug) -> str:
     # warning timer for displaying warning messages
     warningTimer = TimedEvent()
+    savedTimer = TimedEvent()
 
     tempPeg = Peg(0, 0)
     isRunning = True
@@ -66,6 +67,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                         warningTimer.setTimer(4)
                     else:
                         saveData(pegs)
+                        savedTimer.setTimer(4)
                 # load level
                 if event.key == pygame.K_l:
                     pegs, filePath = loadData()
@@ -197,6 +199,13 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 "Level must have at least 30 pegs...", False, (200, 20, 25))
             screen.blit(warningText, (int(WIDTH/2 - 200), HEIGHT/2))
 
+        # draw saved text
+        savedTimer.update()
+        if savedTimer.isActive:
+            savedText = warnFont.render(
+                "Level saved!", False, (20, 200, 25))
+            screen.blit(savedText, (int(WIDTH/2 - 100), HEIGHT/2))
+
         if editorPaused:
             pausedScreen, pauseSelection = getEditorPauseScreen(mx, my, mouseClicked[0])
             # blit over the scree
@@ -210,6 +219,24 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 staticImg = createStaticImage(pegs)
                 editorPaused = False
                 time.sleep(0.15)
+            elif pauseSelection == "save":
+                if len(pegs) == 0 or len(pegs) < 30:
+                    print(
+                        "WARN: Level must have at least 30 pegs before it is saved...")
+                    # start the warning timer to display the message for 4 seconds
+                    warningTimer.setTimer(4)
+                    time.sleep(0.15)
+                else:
+                    saveData(pegs)
+                    editorPaused = False
+                    savedTimer.setTimer(4)
+            elif pauseSelection == "load":
+                pegs, filePath = loadData()
+                staticImg = createStaticImage(pegs)
+                editorPaused = False
+                time.sleep(0.15)
+            elif pauseSelection == "play":
+                return "play"
             elif pauseSelection == "mainMenu":
                 return "mainMenu"
             elif pauseSelection == "quit":
