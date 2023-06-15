@@ -1014,12 +1014,13 @@ while gameRunning:
                 "Using Ctypes: True", False, (255, 255, 255))
             screen.blit(collisionMethodText, (245, 50))
         # draw zenball trajectory (can cause a noticable performance hit due to the number of circles being drawn)
-        if not done and powerUpType == "zenball":
+        if not done and powerUpType == "zenball" and bestTrajectory:
             if debugStaticImage == None:
                 debugStaticImage = createStaticCircles(bestTrajectory)
             screen.blit(debugStaticImage, (0, 0))
         else:
             debugStaticImage = None
+            bestTrajectory = None
 
         # draw line for joystick aim vector
         if controllerInput and not ball.isAlive and len(balls) < 2:
