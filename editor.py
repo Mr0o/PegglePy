@@ -19,7 +19,7 @@ from menu import getEditorPauseScreen
 
 
 ## the level editor function (called from run.py via the user menu selection) ##
-def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = debug) -> str:
+def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = debug, standalone: bool = False) -> str:
     # warning timer for displaying warning messages
     warningTimer = TimedEvent()
     savedTimer = TimedEvent()
@@ -189,7 +189,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
         screen.blit(helpText3, (int(WIDTH-150), 40))
 
         if editorPaused:
-            pausedScreen, pauseSelection = getEditorPauseScreen(mx, my, mouseClicked[0])
+            pausedScreen, pauseSelection = getEditorPauseScreen(mx, my, mouseClicked[0], standalone)
             # blit over the scree
             screen.blit(pausedScreen, (0, 0))
 
@@ -272,4 +272,4 @@ if __name__ == "__main__":
 
     pygame.display.set_icon(editorIconImg)
 
-    levelEditor(screen, clock)
+    levelEditor(screen, clock, standalone=True)

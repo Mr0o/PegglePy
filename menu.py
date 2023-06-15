@@ -261,7 +261,7 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     
 
 # returns a surface of the editor pause screen to be overlayed on the editor screen, also returns a string value to indicate a button press
-def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
+def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[pygame.Surface, str]:
     selection = "none"
 
     buttonScale = 2.5
@@ -325,7 +325,7 @@ def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
             playSoundPitch(buttonClickSound)
 
     # check if the mouse is over the play level button
-    if mx > playLevelButtonPos.vx and mx < playLevelButtonPos.vx + playLevelButtonSize.vx and my > playLevelButtonPos.vy and my < playLevelButtonPos.vy + playLevelButtonSize.vy:
+    if mx > playLevelButtonPos.vx and mx < playLevelButtonPos.vx + playLevelButtonSize.vx and my > playLevelButtonPos.vy and my < playLevelButtonPos.vy + playLevelButtonSize.vy and not standalone:
         # mouse button is down
         if mouseClick:
             selection = "play"
@@ -339,7 +339,7 @@ def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
             playSoundPitch(buttonClickSound)
         
     # check if the mouse is over the main menu button
-    if mx > mainMenuButtonPos.vx and mx < mainMenuButtonPos.vx + mainMenuButtonSize.vx and my > mainMenuButtonPos.vy and my < mainMenuButtonPos.vy + mainMenuButtonSize.vy:
+    if mx > mainMenuButtonPos.vx and mx < mainMenuButtonPos.vx + mainMenuButtonSize.vx and my > mainMenuButtonPos.vy and my < mainMenuButtonPos.vy + mainMenuButtonSize.vy and not standalone:
         # mouse button is down
         if mouseClick:
             selection = "mainMenu"
@@ -383,12 +383,13 @@ def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     pauseScreen.blit(saveText, (saveButtonPos.vx + (saveButtonSize.vx - saveText.get_width()) / 2, saveButtonPos.vy + (saveButtonSize.vy - saveText.get_height()) / 2))
 
     # draw the play level button
-    if selection != "play":
-        pauseScreen.blit(menuButtonUnpressedImg, (playLevelButtonPos.vx, playLevelButtonPos.vy))
-    else:
-        pauseScreen.blit(menuButtonPressedImg, (playLevelButtonPos.vx, playLevelButtonPos.vy))
-    playText = menuButtonFont.render("Play Level", False, (255, 255, 255))
-    pauseScreen.blit(playText, (playLevelButtonPos.vx + (playLevelButtonSize.vx - playText.get_width()) / 2, playLevelButtonPos.vy + (playLevelButtonSize.vy - playText.get_height()) / 2))
+    if not standalone:
+        if selection != "play":
+            pauseScreen.blit(menuButtonUnpressedImg, (playLevelButtonPos.vx, playLevelButtonPos.vy))
+        else:
+            pauseScreen.blit(menuButtonPressedImg, (playLevelButtonPos.vx, playLevelButtonPos.vy))
+        playText = menuButtonFont.render("Play Level", False, (255, 255, 255))
+        pauseScreen.blit(playText, (playLevelButtonPos.vx + (playLevelButtonSize.vx - playText.get_width()) / 2, playLevelButtonPos.vy + (playLevelButtonSize.vy - playText.get_height()) / 2))
 
     # draw the quit button
     if selection != "quit":
@@ -399,12 +400,13 @@ def getEditorPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     pauseScreen.blit(quitText, (quitButtonPos.vx + (quitButtonSize.vx - quitText.get_width()) / 2, quitButtonPos.vy + (quitButtonSize.vy - quitText.get_height()) / 2))
 
     # draw the main menu button
-    if selection != "mainMenu":
-        pauseScreen.blit(mainMenuButtonImgScaled, (mainMenuButtonPos.vx, mainMenuButtonPos.vy))
-    else:
-        pauseScreen.blit(mainMenuButtonPressedImgScaled, (mainMenuButtonPos.vx, mainMenuButtonPos.vy))
-    mainMenuText = infoFont.render("Main Menu", False, (255, 255, 255))
-    pauseScreen.blit(mainMenuText, (mainMenuButtonPos.vx + (mainMenuButtonSize.vx - mainMenuText.get_width()) / 2, mainMenuButtonPos.vy + (mainMenuButtonSize.vy - mainMenuText.get_height()) / 2))
+    if not standalone:
+        if selection != "mainMenu":
+            pauseScreen.blit(mainMenuButtonImgScaled, (mainMenuButtonPos.vx, mainMenuButtonPos.vy))
+        else:
+            pauseScreen.blit(mainMenuButtonPressedImgScaled, (mainMenuButtonPos.vx, mainMenuButtonPos.vy))
+        mainMenuText = infoFont.render("Main Menu", False, (255, 255, 255))
+        pauseScreen.blit(mainMenuText, (mainMenuButtonPos.vx + (mainMenuButtonSize.vx - mainMenuText.get_width()) / 2, mainMenuButtonPos.vy + (mainMenuButtonSize.vy - mainMenuText.get_height()) / 2))
 
     # return the surface
     return pauseScreen, selection
