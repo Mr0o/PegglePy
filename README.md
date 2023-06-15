@@ -54,7 +54,8 @@ Tkinter will need to be installed separately on linux
 # Usage instructions
 ### Play the game
 -  To start, execute 'run.py' or click on ```start.bat``` if you are on windows
--  You will be prompted to select a level, if you dont have any levels just click cancel, this will load a default level
+-  Once started, you will be taken to the main menu. (see the first screenshot above)
+-  Press the 'Start' button to start playing the game
 -  The game works similar to peggle, to launch the ball just point with the mouse and left click
 -  To win, try to hit all the orange pegs before you run out of balls (you start with 10)
 -  Each peg scores a number of points and the total score is represented by the blue text in the top left
@@ -74,12 +75,12 @@ Tkinter will need to be installed separately on linux
 - "spooky-multiball" : A combination of the spooky and multiball powerups
 
 ### Create Levels
--  To start the editor, execute 'editor.py' or click on ```start_editor.bat``` if you are on windows
+-  To start the editor, click on the 'Editor' button on the main menu
 -  Left click anywhere on the game window to place a peg on the screen
 -  All of your pegs will be blue, but when you play the game, they will be randomly assigned a color
 -  To delete pegs, click on a peg with the right mouse button
 -  To save your level, press S on the keyboard and enter the name of the level
--  To play the level exit the editor and execute 'run.py', then select your level when prompted
+-  To play the level, press excape and press L, then select your level when prompted
 -  To load a level into the editor, press L on the keyboard and select the level you want to edit
 
 ### Settings and debug
