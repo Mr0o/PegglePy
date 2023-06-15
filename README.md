@@ -5,9 +5,10 @@ The codebase is a bit of a mess... maybe some day I will be able to clean this u
 
 
 # Screenshots
-<img src="screenshots/Screenshot from 2022-10-25 01-02-09.png" width="700"/>
-<img src="screenshots/Screenshot from 2022-10-31 00-19-20.png" width="700"/>
-<img src="screenshots/Screenshot from 2022-10-31 00-20-01.png" width="700"/>
+<img src="screenshots/Screenshot from 2023-06-14 21-07-23.png" width="700"/>
+<img src="screenshots/Screenshot from 2023-06-14 21-07-53.png" width="700"/>
+<img src="screenshots/Screenshot from 2023-06-14 21-15-21.png" width="700"/>
+
 
 
 
