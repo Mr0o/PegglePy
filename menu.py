@@ -151,7 +151,7 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     selection = "none"
 
     buttonScale = 2.5
-    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale)
+    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale+40)
     quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
     resumeButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 - 30*buttonScale)
     resumeButtonSize = Vector(50*buttonScale, 50*buttonScale)
