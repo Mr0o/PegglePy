@@ -188,24 +188,6 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
         helpText3 = helpFont.render("L = Load", False, (255, 255, 255))
         screen.blit(helpText3, (int(WIDTH-150), 40))
 
-        # draw warning text
-        warningTimer.update()
-        if warningTimer.isActive and len(pegs) == 0:
-            warningText = warnFont.render(
-                "Cannot save empty level...", False, (200, 20, 25))
-            screen.blit(warningText, (int(WIDTH/2 - 150), HEIGHT/2))
-        elif warningTimer.isActive and len(pegs) > 0 and len(pegs) < 30:
-            warningText = warnFont.render(
-                "Level must have at least 30 pegs...", False, (200, 20, 25))
-            screen.blit(warningText, (int(WIDTH/2 - 200), HEIGHT/2))
-
-        # draw saved text
-        savedTimer.update()
-        if savedTimer.isActive:
-            savedText = warnFont.render(
-                "Level saved!", False, (20, 200, 25))
-            screen.blit(savedText, (int(WIDTH/2 - 100), HEIGHT/2))
-
         if editorPaused:
             pausedScreen, pauseSelection = getEditorPauseScreen(mx, my, mouseClicked[0])
             # blit over the scree
@@ -241,6 +223,24 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 return "mainMenu"
             elif pauseSelection == "quit":
                 return "quit"
+
+        # draw warning text
+        warningTimer.update()
+        if warningTimer.isActive and len(pegs) == 0:
+            warningText = warnFont.render(
+                "Cannot save empty level...", False, (200, 20, 25))
+            screen.blit(warningText, (int(WIDTH/2 - 150), HEIGHT/2 +55))
+        elif warningTimer.isActive and len(pegs) > 0 and len(pegs) < 30:
+            warningText = warnFont.render(
+                "Level must have at least 30 pegs...", False, (200, 20, 25))
+            screen.blit(warningText, (int(WIDTH/2 - 200), HEIGHT/2 +55))
+
+        # draw saved text
+        savedTimer.update()
+        if savedTimer.isActive:
+            savedText = warnFont.render(
+                "Level saved!", False, (20, 200, 25))
+            screen.blit(savedText, (int(WIDTH/2 - 100), HEIGHT/2))
 
         # draw debug text
         if debug:
