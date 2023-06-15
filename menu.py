@@ -83,7 +83,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
 
 
         # draw the background
-        screen.blit(backgroundImg, (0, 0))
+        screen.blit(altBackgroundImg, (0, 0))
 
         # draw the title
         menuTitle = menuFont.render("Peggle Py", True, (255, 255, 255))
