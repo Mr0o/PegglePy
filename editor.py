@@ -270,4 +270,6 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
 
+    pygame.display.set_icon(editorIconImg)
+
     levelEditor(screen, clock)
