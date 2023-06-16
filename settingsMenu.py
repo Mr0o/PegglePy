@@ -68,6 +68,14 @@ def settingsMenu(screen: pygame.Surface, debug: bool = debug):
         menuTitle = menuFont.render("Settings", True, (255, 255, 255))
         screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/4 - menuTitle.get_height()/2))
 
+        # stub
+        # draw a message text
+        messageText = menuButtonFont.render("This menu is a stub", True, (255, 255, 255))
+        screen.blit(messageText, (WIDTH/2 - messageText.get_width()/2, HEIGHT/2 - messageText.get_height()/2))
+
+        messageText = menuButtonFont.render("Settings have not been implemented yet", True, (255, 255, 255))
+        screen.blit(messageText, (WIDTH/2 - messageText.get_width()/2, HEIGHT/2 - messageText.get_height()/2 + 30))
+
         # draw the buttons
 
         # settings button (bottom right corner)
