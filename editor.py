@@ -177,7 +177,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
             pegCountColor = (120, 30, 60)
         pegCount = infoFont.render(
             "Pegs : " + str(len(pegs)), False, pegCountColor)
-        screen.blit(pegCount, (int(WIDTH/2 - 50), 20))
+        screen.blit(pegCount, (int(WIDTH/2 - 45), 50))
 
         # draw help text
         helpText = helpFont.render(
@@ -187,6 +187,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
         screen.blit(helpText2, (int(WIDTH-150), 25))
         helpText3 = helpFont.render("L = Load", False, (255, 255, 255))
         screen.blit(helpText3, (int(WIDTH-150), 40))
+
+        # draw a circle where the ball would be
+        pygame.draw.circle(screen, (255, 255, 255), [WIDTH/2, HEIGHT/25], 5)
 
         if editorPaused:
             pausedScreen, pauseSelection = getEditorPauseScreen(mx, my, mouseClicked[0], standalone)
