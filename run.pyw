@@ -25,6 +25,7 @@ except ImportError as e:
     sys.exit(1)
 
 from menu import mainMenu, getPauseScreen
+from settingsMenu import settingsMenu
 from editor import levelEditor
 
 import pygame
@@ -103,6 +104,10 @@ while selection != "start" and selection != "quit":
         if levelEditor(screen, clock, debug) == "quit":
             gameRunning = False
             selection = "quit"
+    elif selection == "settings":
+        time.sleep(0.15)
+        if settingsMenu(screen, debug) == "mainMenu":
+            selection = "none"
 
 # prevent accidental click on launch
 delayTimer = TimedEvent(0.5)
@@ -202,7 +207,6 @@ while gameRunning:
                 selection = mainMenu(screen, debug)
 
                 if selection == "quit":
-                    print("Goodbye")
                     gameRunning = False
                 elif selection == "editor":
                     time.sleep(0.5)  # prevent accidental click on launch
@@ -917,15 +921,22 @@ while gameRunning:
             time.sleep(0.15)
         elif pauseSelection == "mainMenu":
             gamePaused = False
-            selection = mainMenu(screen, debug)
-
-            if selection == "quit":
-                print("Goodbye")
-                gameRunning = False
-            elif selection == "editor":
-                time.sleep(0.5)  # prevent accidental click on launch
-                if levelEditor(screen, clock, debug) == "quit":
+            # run the main menu until either the editor or start button is selected
+            selection = "mainMenu"
+            while selection == "mainMenu":
+                selection = mainMenu(screen, debug)
+                if selection == "quit":
                     gameRunning = False
+                elif selection == "editor":
+                    time.sleep(0.5)  # prevent accidental click on launch
+                    levelEditorPauseSelection = levelEditor(screen, clock, debug)
+                    if levelEditorPauseSelection == "quit":
+                        gameRunning = False
+                    elif levelEditorPauseSelection == "mainMenu":
+                        selection = "mainMenu"
+                elif selection == "settings":
+                    if settingsMenu(screen, debug) == "mainMenu":
+                        selection = "mainMenu"
 
             # reset the game
             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
