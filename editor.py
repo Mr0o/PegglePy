@@ -205,7 +205,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 editorPaused = False
                 time.sleep(0.15)
             elif pauseSelection == "save":
-                if len(pegs) == 0 or len(pegs) < 30:
+                if len(pegs) < 30:
                     print(
                         "WARN: Level must have at least 30 pegs before it is saved...")
                     # start the warning timer to display the message for 4 seconds
@@ -221,17 +221,24 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 editorPaused = False
                 time.sleep(0.15)
             elif pauseSelection == "play":
-                return "play"
+                if len(pegs) < 30:
+                    print(
+                        "WARN: Level must have at least 30 pegs before it can be played...")
+                    # start the warning timer to display the message for 4 seconds
+                    warningTimer.setTimer(4)
+                    time.sleep(0.15)
+                else:
+                    return "play", pegs.copy()
             elif pauseSelection == "mainMenu":
-                return "mainMenu"
+                return "mainMenu", []
             elif pauseSelection == "quit":
-                return "quit"
+                return "quit", []
 
         # draw warning text
         warningTimer.update()
         if warningTimer.isActive and len(pegs) == 0:
             warningText = warnFont.render(
-                "Cannot save empty level...", False, (200, 20, 25))
+                "Level cannot be empty...", False, (200, 20, 25))
             screen.blit(warningText, (int(WIDTH/2 - 150), HEIGHT/2 +55))
         elif warningTimer.isActive and len(pegs) > 0 and len(pegs) < 30:
             warningText = warnFont.render(

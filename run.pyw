@@ -92,8 +92,11 @@ debugStaticImage: pygame.Surface = None
 
 gameRunning = True
 
+pegs: list[Peg]
+
 ### main menu ###
 selection = "none"
+editorSelection = "none"
 while selection != "start" and selection != "quit":
     selection = mainMenu(screen)
 
@@ -101,9 +104,13 @@ while selection != "start" and selection != "quit":
         gameRunning = False
     elif selection == "editor":
         time.sleep(0.5)  # prevent accidental click on launch
-        if levelEditor(screen, clock, debug) == "quit":
+        editorSelection, pegs = levelEditor(screen, clock, debug)
+        if editorSelection == "quit":
             gameRunning = False
             selection = "quit"
+        elif editorSelection == "play":
+            selection = "start"
+
     elif selection == "settings":
         time.sleep(0.15)
         if settingsMenu(screen, debug) == "mainMenu":
@@ -112,9 +119,19 @@ while selection != "start" and selection != "quit":
 # prevent accidental click on launch
 delayTimer = TimedEvent(0.5)
 
-pegs: list[Peg]
-# pegs, originPegs, orangeCount, levelFileName = loadLevel()
-pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
+if editorSelection != "play":
+    # pegs, originPegs, orangeCount, levelFileName = loadLevel()
+    pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
+else:
+    levelFileName = "Editor Level"
+    originPegs = pegs.copy()
+
+    pegs = createPegColors(pegs)
+
+    orangeCount = 0
+    for peg in pegs:
+        if peg.color == "orange":
+            orangeCount += 1
 
 # set the caption to include the level name
 pygame.display.set_caption("PegglePy   -   " + levelFileName)
@@ -929,11 +946,26 @@ while gameRunning:
                     gameRunning = False
                 elif selection == "editor":
                     time.sleep(0.5)  # prevent accidental click on launch
-                    levelEditorPauseSelection = levelEditor(screen, clock, debug)
+                    levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug)
                     if levelEditorPauseSelection == "quit":
                         gameRunning = False
                     elif levelEditorPauseSelection == "mainMenu":
                         selection = "mainMenu"
+                    elif levelEditorPauseSelection == "play":
+                        levelFileName = "Editor Level"
+                        originPegs = editorPegs.copy()
+
+                        pegs = createPegColors(editorPegs.copy())
+
+                        orangeCount = 0
+                        for peg in pegs:
+                            if peg.color == "orange":
+                                orangeCount += 1
+
+                        # reset the game
+                        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                            balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+
                 elif selection == "settings":
                     if settingsMenu(screen, debug) == "mainMenu":
                         selection = "mainMenu"
