@@ -92,6 +92,9 @@ debugStaticImage: pygame.Surface = None
 
 gameRunning = True
 
+zoomInOnBall = False
+zoom = 1
+
 pegs: list[Peg]
 
 ### main menu ###
@@ -219,6 +222,9 @@ while gameRunning:
                 debugAutoRemovePegsTimer = not debugAutoRemovePegsTimer
             if event.key == pygame.K_r:
                 useCPhysics = not useCPhysics
+            # toggle zoom
+            if event.key == pygame.K_x:
+                zoomInOnBall = not zoomInOnBall
             # open the main menu
             if event.key == pygame.K_z:
                 selection = mainMenu(screen, debug)
@@ -551,6 +557,7 @@ while gameRunning:
                 newCheatBall = Ball(mx, my)
                 newCheatBall.isAlive = True
                 balls.append(newCheatBall)
+                ball = newCheatBall
 
         # update ball physics and pegs, additional game logic
         for b in balls:
@@ -575,10 +582,10 @@ while gameRunning:
                             frameRate = 27  # gives the "slow motion" effect
                             closeBall = b
                         elif frameRate != 144:
-                            frameRate = 144
                             if soundEnabled:
                                 # only play sound once
                                 playSoundPitch(sighSound)
+                            frameRate = 144
 
                     # ball physics and game logic
                     shouldCheckCollision = False
@@ -880,7 +887,78 @@ while gameRunning:
             done = False
     if done and not gameOver and not gamePaused:
         for fb in trajectory:
-            drawCircle(fb.pos.vx, fb.pos.vy, 4, (10, 70, 163))
+            drawCircle(fb.pos.vx, fb.pos.vy, 4, (10, 70, 163))        
+
+    # "zoom in" on the ball by transorming the static image
+    # scale the static image and blit it at the position of the ball
+    if frameRate == 27 or zoomInOnBall:
+        zoom += 0.005
+        if zoom > 1.8:
+            zoom = 1.8
+
+        zoomedScreen = pygame.transform.smoothscale(screen, (int(WIDTH*zoom), int(HEIGHT*zoom)))
+
+        # calculate the position of the zoomedScreen
+        # if there is only one orange peg left, then zoom in on the orange peg
+        if orangeCount < 2:
+            # get the psosition of the orange peg
+            for p in pegs:
+                if p.color == "orange" and not p.isHit:
+                    zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.vy*zoom)
+                    break
+        else:
+            # zoom in on the ball
+            zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - ball.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - ball.pos.vy*zoom)
+
+        # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
+        if zoomedScreenPos[0] > 0:
+            zoomedScreenPos = (0, zoomedScreenPos[1])
+        elif zoomedScreenPos[0] < WIDTH - zoomedScreen.get_width():
+            zoomedScreenPos = (WIDTH - zoomedScreen.get_width(), zoomedScreenPos[1])
+        
+        # if the zoomedScreen moves too far up or down, then set the y position to the edge of the screen
+        if zoomedScreenPos[1] > 0:
+            zoomedScreenPos = (zoomedScreenPos[0], 0)
+        elif zoomedScreenPos[1] < HEIGHT - zoomedScreen.get_height():
+            zoomedScreenPos = (zoomedScreenPos[0], HEIGHT - zoomedScreen.get_height())
+
+        screen.blit(zoomedScreen, zoomedScreenPos)
+    else:
+        if zoom > 1.0:
+            if alreadyPlayedOdeToJoy:
+                zoom -= 0.0025
+            else:
+                zoom -= 0.005
+            
+            zoomedScreen = pygame.transform.smoothscale(screen, (int(WIDTH*zoom), int(HEIGHT*zoom)))
+
+            # calculate the position of the zoomedScreen
+            # zoom in on the ball
+            # if there is only one orange peg left, then zoom in on the orange peg
+            if orangeCount < 2:
+                # get the psosition of the orange peg
+                for p in pegs:
+                    if p.color == "orange":
+                        zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.vy*zoom)
+                        break
+            else:
+                # zoom in on the ball
+                zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - ball.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - ball.pos.vy*zoom)
+
+            # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
+            if zoomedScreenPos[0] > 0:
+                zoomedScreenPos = (0, zoomedScreenPos[1])
+            elif zoomedScreenPos[0] < WIDTH - zoomedScreen.get_width():
+                zoomedScreenPos = (WIDTH - zoomedScreen.get_width(), zoomedScreenPos[1])
+            
+            # if the zoomedScreen moves too far up or down, then set the y position to the edge of the screen
+            if zoomedScreenPos[1] > 0:
+                zoomedScreenPos = (zoomedScreenPos[0], 0)
+            elif zoomedScreenPos[1] < HEIGHT - zoomedScreen.get_height():
+                zoomedScreenPos = (zoomedScreenPos[0], HEIGHT - zoomedScreen.get_height())
+
+            screen.blit(zoomedScreen, zoomedScreenPos)
+
     # draw text
     if not gameOver:
         # show how many balls are left
@@ -990,7 +1068,7 @@ while gameRunning:
     # show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
-        screen.blit(pauseText, (WIDTH/3 - 20, HEIGHT/4))
+        screen.blit(pauseText, (WIDTH/2 - pauseText.get_width()/2, HEIGHT/4))
         if ballsRemaining >= 0 and orangeCount < 1:
             # add commas to the score (e.g. 1000000 -> 1,000,000)
             formattedScore = ""
@@ -1000,10 +1078,10 @@ while gameRunning:
                     formattedScore += ","
 
             scoreText = menuFont.render(formattedScore, False, (20, 60, 255))
-            screen.blit(scoreText, (WIDTH/3 - 10, HEIGHT/2.2))
+            screen.blit(scoreText, (WIDTH/2 - scoreText.get_width()/2, HEIGHT/3 + 50))
         else:
             tryAgainText = menuFont.render("Try Again", False, (255, 60, 20))
-            screen.blit(tryAgainText, (WIDTH/3, HEIGHT/2.2))
+            screen.blit(tryAgainText, (WIDTH/2 - tryAgainText.get_width()/2, HEIGHT/2.2))
 
     # show the long shot score text only for a few seconds
     longShotTextTimer.update()
