@@ -981,7 +981,7 @@ while gameRunning:
             powerUpTextColor = (50, 170, 20)
         powerUpText = infoFont.render(
             powerUpType + ": " + str(powerUpCount), False, powerUpTextColor)
-        screen.blit(powerUpText, (int(WIDTH/2 - 50), 5))
+        screen.blit(powerUpText, (int(WIDTH/2 - powerUpText.get_width()/2), 5))
 
     # show if paused
     if gamePaused and not gameOver:
