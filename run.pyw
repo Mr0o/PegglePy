@@ -1,6 +1,5 @@
 import sys  # used to exit the program immediately
 import time
-from math import atan2
 
 ##### local imports #####
 try:
@@ -253,7 +252,7 @@ while gameRunning:
                     "PegglePy   -   " + levelFileName)
 
         if event.type == pygame.MOUSEWHEEL:
-            fineTuneAmount -= event.y / 5
+            fineTuneAmount -= event.y / 12
 
         if event.type == pygame.MOUSEMOTION and controllerInput:
             controllerInput = False
@@ -437,6 +436,9 @@ while gameRunning:
         # use angle of reach to find angle needed for the projectile to hit the mouse position
         # adjustedAngle = findAngleToTarget(ball.pos, Vector(mx, my))
         # inputAim.setAngleDeg(adjustedAngle)
+
+        # apply the fine tune amount
+        inputAim.setAngleDeg(inputAim.getAngleDeg() + fineTuneAmount)
 
         posX = inputAim.vx
         posY = inputAim.vy
@@ -887,11 +889,13 @@ while gameRunning:
             done = False
     if done and not gameOver and not gamePaused:
         for fb in trajectory:
-            drawCircle(fb.pos.vx, fb.pos.vy, 4, (10, 70, 163))        
+            drawCircle(fb.pos.vx, fb.pos.vy, 4, (10, 70, 163)) 
+        
 
-    # "zoom in" on the ball by transorming the static image
-    # scale the static image and blit it at the position of the ball
+    # "zoom in" on the ball by transorming the image
+    # scale the image and blit it at the position of the ball
     if frameRate == 27 or zoomInOnBall:
+        # zoom in
         zoom += 0.005
         if zoom > 1.8:
             zoom = 1.8
@@ -924,8 +928,9 @@ while gameRunning:
 
         screen.blit(zoomedScreen, zoomedScreenPos)
     else:
+        # zoom out
         if zoom > 1.0:
-            if alreadyPlayedOdeToJoy:
+            if alreadyPlayedOdeToJoy or frameRate == 27:
                 zoom -= 0.0025
             else:
                 zoom -= 0.005
@@ -933,12 +938,11 @@ while gameRunning:
             zoomedScreen = pygame.transform.smoothscale(screen, (int(WIDTH*zoom), int(HEIGHT*zoom)))
 
             # calculate the position of the zoomedScreen
-            # zoom in on the ball
             # if there is only one orange peg left, then zoom in on the orange peg
             if orangeCount < 2:
                 # get the psosition of the orange peg
                 for p in pegs:
-                    if p.color == "orange":
+                    if p.color == "orange" and not p.isHit:
                         zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.vy*zoom)
                         break
             else:
@@ -958,6 +962,8 @@ while gameRunning:
                 zoomedScreenPos = (zoomedScreenPos[0], HEIGHT - zoomedScreen.get_height())
 
             screen.blit(zoomedScreen, zoomedScreenPos)
+        else:
+            zoom = 1.0
 
     # draw text
     if not gameOver:
