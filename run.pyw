@@ -126,10 +126,8 @@ if selection != "quit":
     if editorSelection != "play":
         pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
         #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
-        if len(pegs) > 200:
-            delayTimer = TimedEvent(1)
-        else:
-            delayTimer = TimedEvent(0.5)
+
+        delayTimer = TimedEvent(0.5)
     else:
         levelFileName = "Unsaved Editor Level"
         originPegs = pegs.copy()
