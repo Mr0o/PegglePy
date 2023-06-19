@@ -93,8 +93,9 @@ else:
         return None
 
 
-def loadData():
-    filePath = fileSelectWindow()
+def loadData(filePath: str | None = None):
+    if filePath == None:
+        filePath = fileSelectWindow()
 
     posList = createDefaultPegsPos()
     if filePath != None:
@@ -104,7 +105,7 @@ def loadData():
 
         except Exception: # if the file selected is invalid generate the default level and use it instead
             if debug:
-                print("WARN: Unable to open file, using default level (No file created or loaded)")
+                print("WARN: Unable to open file: \"" + str(filePath) + "\". using default level (No file created or loaded)")
 
             posList = createDefaultPegsPos()
 
@@ -122,16 +123,18 @@ def loadData():
     return pegs, filePath
 
 
-def saveData(pegs):
-    filePath = fileSaveWindow()
+def saveData(pegs: list[Peg], filePath: str | None = None):
+    if filePath == None:
+        filePath = fileSaveWindow()
+
     posList = getPegPosList(pegs)
     try:
         # create a new pickle file
         with open(filePath, 'wb') as f:
             pickle.dump(posList, f)
-    except Exception:
+    except Exception as e:
         if debug:
-            print("ERROR: Unable to save file - Exception: " + str(Exception))
+            print("ERROR: Unable to save file: \"" + str(filePath) + "\". Exception: " + str(e))
             print("Check that the file path is valid and that you have write permissions")
         return str(Exception)
 
