@@ -188,7 +188,20 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
         # check if the user has made a selection
         if selection != "none":
             playSoundPitch(buttonClickSound)
-            return loadLevel(selection)
+            # draw a loading screen
+            # draw the background
+            screen.blit(altBackgroundImg, (0, 0))
+            # draw the title
+            menuTitle = menuFont.render("Loading...", True, (255, 255, 255))
+            screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/2 - menuTitle.get_height()/2))
+
+            pegs, originPegs, orangeCount, levelFileName = loadLevel(selection)
+            if len(pegs) > 400:
+                # update display (draw loading screen)
+                pygame.display.update()
+
+            return pegs, originPegs, orangeCount, levelFileName
+
 
 
 if __name__ == "__main__":
