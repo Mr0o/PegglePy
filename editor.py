@@ -1,3 +1,4 @@
+import math
 import sys
 import time  # used to exit the program immediately
 
@@ -16,6 +17,7 @@ from local.audio import playSoundPitch
 from local.resources import editorIconImg, backgroundImg, infoFont, warnFont, helpFont, transparentPegImg, invalidPegImg, newPegSound, invalidPegSound, debugFont
 
 from menu import getEditorPauseScreen
+from loadLevelMenu import loadLevelMenu
 
 
 ## the level editor function (called from run.py via the user menu selection) ##
@@ -70,8 +72,14 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                         savedTimer.setTimer(4)
                 # load level
                 if event.key == pygame.K_l:
-                    pegs, filePath = loadData()
+                    pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, debug)
                     staticImg = createStaticImage(pegs)
+                    # play random music
+                    r = randint(1, 10)
+                    pygame.mixer.music.load(
+                        "resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
+                    pygame.mixer.music.play(-1)
+
                 if event.key == pygame.K_1:
                     debug = not debug
                 if event.key == pygame.K_2:
@@ -216,9 +224,16 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                     editorPaused = False
                     savedTimer.setTimer(4)
             elif pauseSelection == "load":
-                pegs, filePath = loadData()
+                pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, debug)
                 staticImg = createStaticImage(pegs)
                 editorPaused = False
+
+                # play random music
+                r = randint(1, 10)
+                pygame.mixer.music.load(
+                    "resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
+                pygame.mixer.music.play(-1)
+
                 time.sleep(0.15)
             elif pauseSelection == "play":
                 if len(pegs) < 30:

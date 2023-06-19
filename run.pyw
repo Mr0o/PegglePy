@@ -26,6 +26,7 @@ except ImportError as e:
 from menu import mainMenu, getPauseScreen
 from settingsMenu import settingsMenu
 from editor import levelEditor
+from loadLevelMenu import loadLevelMenu
 
 import pygame
 
@@ -122,10 +123,10 @@ while selection != "start" and selection != "quit":
 delayTimer = TimedEvent(0.5)
 
 if editorSelection != "play":
-    # pegs, originPegs, orangeCount, levelFileName = loadLevel()
-    pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
+    pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
+    #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
 else:
-    levelFileName = "Editor Level"
+    levelFileName = "Unsaved Editor Level"
     originPegs = pegs.copy()
 
     pegs = createPegColors(pegs)
@@ -190,7 +191,7 @@ while gameRunning:
                 debugTrajectory = not debugTrajectory
             if event.key == pygame.K_l:  # load a new level
                 pygame.mixer.music.stop()
-                pegs, originPegs, orangeCount, levelFileName = loadLevel()
+                pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
                 # set the caption to include the level name
                 pygame.display.set_caption(
                     "PegglePy   -   " + levelFileName)
@@ -407,21 +408,23 @@ while gameRunning:
         minJoystickValue = 0.15
 
         if abs(joystickX) < 0.70:
-            angleStep = joystickX * 0.35 + gamePadFineTuneAmount
+            angleStep = joystickX * 0.35
         elif abs(joystickX) < 0.80:
-            angleStep = joystickX * 0.65 + gamePadFineTuneAmount
+            angleStep = joystickX * 0.65
         elif abs(joystickX) < 0.90:
-            angleStep = joystickX * 0.90 + gamePadFineTuneAmount
+            angleStep = joystickX * 0.90
         else:
-            angleStep = joystickX * 1.15 + gamePadFineTuneAmount
+            angleStep = joystickX * 1.15
 
         angle = inputAim.getAngleDeg()
 
         if abs(angleStep) > minJoystickValue:
             angle -= angleStep
 
-        inputAim.setAngleDeg(angle)
+        inputAim.setAngleDeg(angle + gamePadFineTuneAmount)
         inputAim.setMag(500)
+
+        gamePadFineTuneAmount = 0
 
         posX = inputAim.vx + ball.pos.vx
         posY = inputAim.vy + ball.pos.vy
@@ -942,7 +945,7 @@ while gameRunning:
             if orangeCount < 2:
                 # get the psosition of the orange peg
                 for p in pegs:
-                    if p.color == "orange" and not p.isHit:
+                    if p.color == "orange":
                         zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.vy*zoom)
                         break
             else:
@@ -1006,7 +1009,7 @@ while gameRunning:
             delayTimer = TimedEvent(0.50)
         elif pauseSelection == "load":
             pygame.mixer.music.stop()
-            pegs, originPegs, orangeCount, levelFileName = loadLevel()
+            pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
             # set the caption to include the level name
             pygame.display.set_caption(
                 "PegglePy   -   " + levelFileName)
