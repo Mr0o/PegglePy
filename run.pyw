@@ -122,31 +122,39 @@ while selection != "start" and selection != "quit":
 # prevent accidental click on launch
 delayTimer = TimedEvent(0.5)
 
-if editorSelection != "play":
-    pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
-    #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
+if selection != "quit":
+    if editorSelection != "play":
+        pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
+        #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
+        if len(pegs) > 200:
+            delayTimer = TimedEvent(1)
+        else:
+            delayTimer = TimedEvent(0.5)
+    else:
+        levelFileName = "Unsaved Editor Level"
+        originPegs = pegs.copy()
+
+        pegs = createPegColors(pegs)
+
+        orangeCount = 0
+        for peg in pegs:
+            if peg.color == "orange":
+                orangeCount += 1
+        
+    # set the caption to include the level name
+    pygame.display.set_caption("PegglePy   -   " + levelFileName)
+
+    # assign each peg a screen location, this is to better optimize collison detection (only check pegs on the same screen location as the ball)
+    assignPegScreenLocation(pegs, segmentCount)
+
+    staticImage = createStaticImage(pegs)
+
+    loadRandMusic()
+    if musicEnabled:
+        pygame.mixer.music.play(-1)  # looping forever
+
 else:
-    levelFileName = "Unsaved Editor Level"
-    originPegs = pegs.copy()
-
-    pegs = createPegColors(pegs)
-
-    orangeCount = 0
-    for peg in pegs:
-        if peg.color == "orange":
-            orangeCount += 1
-
-# set the caption to include the level name
-pygame.display.set_caption("PegglePy   -   " + levelFileName)
-
-# assign each peg a screen location, this is to better optimize collison detection (only check pegs on the same screen location as the ball)
-assignPegScreenLocation(pegs, segmentCount)
-
-staticImage = createStaticImage(pegs)
-
-loadRandMusic()
-if musicEnabled:
-    pygame.mixer.music.play(-1)  # looping forever
+    gameRunning = False
 
 ##### main loop #####
 while gameRunning:
@@ -200,6 +208,7 @@ while gameRunning:
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                 if not musicEnabled:
                     pygame.mixer.music.stop()
+                delayTimer = TimedEvent(0.50)
             if event.key == pygame.K_ESCAPE:  # enable or disable cheats
                 gamePaused = not gamePaused
             if event.key == pygame.K_0:
