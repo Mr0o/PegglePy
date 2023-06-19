@@ -7,7 +7,7 @@ from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch
 from local.load_level import loadData
-from local.misc import createPegColors
+from local.misc import createPegColors, loadDefaultLevel
 
 
 def getLevelName(levelFilePath: str) -> str:
@@ -120,10 +120,6 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
         # draw the background
         screen.blit(altBackgroundImg, (0, 0))
 
-        # draw the title
-        menuTitle = menuFont.render("Select a level", True, (255, 255, 255))
-        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, menuTitle.get_height()/2))
-
         # draw the buttons
 
         # settings button (bottom right corner)
@@ -154,14 +150,27 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
         
             # draw the level selection rectangle
             # position it at WIDHT/3 at the same length across all levels
-            rect = pygame.Rect(WIDTH/5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height()-10, WIDTH/5*3, levelNameText.get_height()+10)
+            rect = pygame.Rect(WIDTH/5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, WIDTH/5*3, levelNameText.get_height() -1)
+
+            # maximum scroll value (scale the value by the height of the level name text)
+            maxScrollValue = -len(levelsList)*levelNameText.get_height()
+            if scrollValue < maxScrollValue:
+                scrollValue = maxScrollValue
+            elif scrollValue > 0:
+                scrollValue = 0
+            print(scrollValue)
+
             # apply scroll value
             rect.y += scrollValue*levelNameText.get_height()
+
             pygame.draw.rect(screen, color, rect, 2)
             
-            #apply scroll value
-            screen.blit(levelNameText, (WIDTH/5 +5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height()-5 + scrollValue*levelNameText.get_height()))
+            # apply scroll value
+            screen.blit(levelNameText, (WIDTH/5 +5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + scrollValue*levelNameText.get_height()))
 
+        # draw the title (applying the scroll value)
+        menuTitle = menuFont.render("Select a level", True, (255, 255, 255))
+        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/5 - menuTitle.get_height()/2 + scrollValue*levelNameText.get_height()))
 
         # debug
         if debug:
@@ -187,6 +196,9 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
 
         # check if the user has made a selection
         if selection != "none":
+            if selection == "mainMenu":
+                return loadDefaultLevel()
+                #return [], [], 0, selection
             playSoundPitch(buttonClickSound)
             # draw a loading screen
             # draw the background
@@ -200,7 +212,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                 # update display (draw loading screen)
                 pygame.display.update()
 
-            return pegs, originPegs, orangeCount, levelFileName
+            return pegs, originPegs, orangeCount, selection
 
 
 
@@ -211,4 +223,4 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     # run the menu
-    loadLevelMenu(screen)
+    print(loadLevelMenu(screen)[3])
