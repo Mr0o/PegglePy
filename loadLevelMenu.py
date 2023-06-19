@@ -71,7 +71,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
 
     clock = pygame.time.Clock()
 
-    pygame.display.set_caption("PegglePy  -  Settings")
+    pygame.display.set_caption("PegglePy  -  Level Select")
 
     scrollValue = 0
     # get the names of each level in the levels folder
