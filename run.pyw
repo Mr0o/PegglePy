@@ -1046,7 +1046,7 @@ while gameRunning:
                     elif levelEditorPauseSelection == "mainMenu":
                         selection = "mainMenu"
                     elif levelEditorPauseSelection == "play":
-                        levelFileName = "Editor Level"
+                        levelFileName = "Unsaved Editor Level"
                         originPegs = editorPegs.copy()
 
                         pegs = createPegColors(editorPegs.copy())
@@ -1080,6 +1080,79 @@ while gameRunning:
             # set the caption to include the level name
             pygame.display.set_caption(
                 "PegglePy   -   " + levelFileName)
+
+        elif pauseSelection == "editor":
+            gamePaused = False
+            time.sleep(0.5)  # prevent accidental click on launch
+            levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug, False, pegs)
+            if levelEditorPauseSelection == "quit":
+                gameRunning = False
+            elif levelEditorPauseSelection == "mainMenu":
+                selection = "mainMenu"
+                while selection == "mainMenu":
+                    selection = mainMenu(screen, debug)
+                    if selection == "quit":
+                        gameRunning = False
+                    elif selection == "editor":
+                        time.sleep(0.5)
+                        levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug)
+                        if levelEditorPauseSelection == "quit":
+                            gameRunning = False
+                        elif levelEditorPauseSelection == "mainMenu":
+                            selection = "mainMenu"
+                        elif levelEditorPauseSelection == "play":
+                            levelFileName = "Unsaved Editor Level"
+                            originPegs = editorPegs.copy()
+
+                            pegs = createPegColors(editorPegs.copy())
+
+                            orangeCount = 0
+                            for peg in pegs:
+                                if peg.color == "orange":
+                                    orangeCount += 1
+
+                            # reset the game
+                            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                            
+                            delayTimer = TimedEvent(0.50)
+                        
+                        
+                    elif selection == "settings":
+                        if settingsMenu(screen, debug) == "mainMenu":
+                            selection = "mainMenu"
+                    
+                # reset the game
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                
+                # prevent accidental click on launch
+                delayTimer = TimedEvent(0.5)
+
+                if not musicEnabled:
+                    # change the song
+                    pygame.mixer.music.stop()
+                    loadRandMusic()
+                    pygame.mixer.music.play(-1)
+
+            elif levelEditorPauseSelection == "play":
+                levelFileName = "Unsaved Editor Level"
+                originPegs = editorPegs.copy()
+
+                pegs = createPegColors(editorPegs.copy())
+
+                orangeCount = 0
+                for peg in pegs:
+                    if peg.color == "orange":
+                        orangeCount += 1
+
+                # reset the game
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                
+                delayTimer = TimedEvent(0.50)
+
+                
 
     # show if gameOver
     if gameOver:
