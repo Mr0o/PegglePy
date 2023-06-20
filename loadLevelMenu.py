@@ -33,6 +33,10 @@ def getLevelsList(levelsDirectory: str = "levels") -> list[str]:
         if file.endswith(".lvl"):
             levelsList.append(os.path.join(levelsDirectory, file))
     
+
+    # sort the list of levels by name alphabetically
+    levelsList.sort()
+    
     return levelsList
 
 
