@@ -15,8 +15,11 @@ def getLevelName(levelFilePath: str) -> str:
     if levelFilePath == "" or levelFilePath == None:
         levelFilePath = "Default"
     else:
-        # strip everything from the filepath except the filename
-        levelFilePath = levelFilePath.split("/")[-1]
+        # remove the path from the file path (check for both "/" and "\")
+        if "/" in levelFilePath:
+            levelFilePath = levelFilePath.split("/")[-1]
+        elif "\\" in levelFilePath:
+            levelFilePath = levelFilePath.split("\\")[-1]
         # remove the file extension '.lvl'
         levelFilePath = levelFilePath[:-4]
     
