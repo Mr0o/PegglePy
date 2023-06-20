@@ -45,7 +45,15 @@ import pygame
 
 # hard coded window size, the game is not designed to be resized, even though it technically can be
 WIDTH = 1200
-HEIGHT = 900
+HEIGHT = 900 
+FULLSCREEN = True
+
+if FULLSCREEN:
+    # get the resolution of the display monitor
+    pygame.init()
+    infoObject = pygame.display.Info()
+    WIDTH = infoObject.current_w
+    HEIGHT = infoObject.current_h
 
 #power up (spooky, multiball, zenball, guideball, spooky-multiball)
 powerUpType = "spooky"
