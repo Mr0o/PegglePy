@@ -29,10 +29,21 @@ def getLevelName(levelFilePath: str) -> str:
 def getLevelsList(levelsDirectory: str = "levels") -> list[str]:
     # get a list of all the level files in the levels folder
     levelsList = []
-    for file in os.listdir(levelsDirectory):
-        if file.endswith(".lvl"):
-            levelsList.append(os.path.join(levelsDirectory, file))
-    
+    try:
+        for file in os.listdir(levelsDirectory):
+            if file.endswith(".lvl"):
+                levelsList.append(os.path.join(levelsDirectory, file))
+
+    except FileNotFoundError:
+        levelsList = []
+        print("Levels folder not found, creating folder...")
+        try:
+            os.mkdir(levelsDirectory)
+            print("Levels folder created.")
+        except Exception:
+            print("ERROR: Unable to create levels folder, please create the folder manually.")
+        
+        print("Loading default level...")
 
     # sort the list of levels by name alphabetically
     levelsList.sort()
@@ -83,6 +94,10 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
     scrollValue = 0
     # get the names of each level in the levels folder
     levelsList = getLevelsList()
+
+    # if there are no levels in the levels folder, load the default level
+    if len(levelsList) == 0:
+        return loadDefaultLevel()
 
     # main loop
     while True:
@@ -196,13 +211,10 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                 str(round(clock.get_fps())) + " fps", False, (255, 255, 255))
             screen.blit(framesPerSec, (5, 25))
 
-
-
         # update display
         pygame.display.update()
 
         clock.tick(60)
-
 
         # check if the user has made a selection
         if selection != "none":
