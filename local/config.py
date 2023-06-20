@@ -68,7 +68,11 @@ powerUpType = "spooky"
 cheats = False
 
 # debugging (displays debugging information to the screen)
-debug = False
+# check if the script has been passed '-d' or '--debug' as an argument
+if "-d" in sys.argv or "--debug" in sys.argv:
+    debug = True
+else:
+    debug = False
 
 # when there are lots of pegs on the screen (perhaps more than a few hundred, lol), you might see performance hiccups
 # this can be set to true to improve performance at the cost of visual weirdness 
@@ -82,7 +86,11 @@ soundEnabled = True
 musicEnabled = True
 
 # use c implementation of the collision physics (should be faster, but I have found in testing that it can actually be slower. Probably because of increased overhead)
-useCPhysics = True
+# check if the script has been passed '--no-cphysics' as an argument
+if "--no-cphysics" in sys.argv:
+    useCPhysics = False
+else:
+    useCPhysics = True
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 5.0
