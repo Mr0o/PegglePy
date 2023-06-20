@@ -46,7 +46,7 @@ import pygame
 # hard coded window size, the game is not designed to be resized, even though it technically can be
 WIDTH = 1200
 HEIGHT = 900 
-FULLSCREEN = True
+FULLSCREEN = False
 
 if FULLSCREEN:
     # get the resolution of the display monitor
