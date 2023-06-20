@@ -21,7 +21,7 @@ from loadLevelMenu import loadLevelMenu
 
 
 ## the level editor function (called from run.py via the user menu selection) ##
-def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = debug, standalone: bool = False) -> str:
+def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = debug, standalone: bool = False, pegs: list[Peg] = []) -> str:
     # warning timer for displaying warning messages
     warningTimer = TimedEvent()
     savedTimer = TimedEvent()
@@ -29,9 +29,6 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
     tempPeg = Peg(0, 0)
     isRunning = True
     editorPaused = False
-
-    pegs: list[Peg]
-    pegs = []
 
     staticImg = createStaticImage(pegs)
 
@@ -130,10 +127,10 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
 
                 else:
                     validNewPegPos = True
-                    for peg in pegs:
-                        if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius/6):
-                            validNewPegPos = False
-                            break
+                    # for peg in pegs:
+                    #     if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius/6):
+                    #         validNewPegPos = False
+                    #         break
 
                 # valid position, add peg
                 if validNewPegPos:
