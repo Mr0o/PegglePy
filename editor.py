@@ -30,6 +30,10 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
     isRunning = True
     editorPaused = False
 
+    # reset the pegs
+    for peg in pegs:
+        peg.reset()
+
     staticImg = createStaticImage(pegs)
 
     skipValidPegCheck = False
