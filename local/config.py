@@ -94,12 +94,20 @@ else:
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 5.0
-maxBallVelocity = 8 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
+# check if the script has been passed '--no-max-velocity' as an argument
+if "--no-max-velocity" in sys.argv:
+    maxBallVelocity = 9999
+else:
+    maxBallVelocity = 8 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
 defaultBallMass = 6
 defaultPegMass = 32 # the pegs mass doesnt really matter, but they need to have a mass in order for the physics to be calculated when a ball hits the pegs (in this case I have determined that 32 is a good number, magic)
-gravity = Vector(0, 0.035)
+# check if the script has been passed '--no-gravity' as an argument
+if "--no-gravity" in sys.argv:
+    gravity = Vector(0,0)
+else:
+    gravity = Vector(0, 0.035)
 trajectoryDepth = 75 # how many steps to take in the normal (non-powerup) launch trajectory calculation
-bucketVelocity = 2.5 # max set velocity of the bucket
+bucketVelocity = 2.8 # max set velocity of the bucket
 ballsRemaining = 10
 freeBall = False
 powerUpActive = False
