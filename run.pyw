@@ -1090,7 +1090,7 @@ while gameRunning:
         elif pauseSelection == "editor":
             gamePaused = False
             time.sleep(0.5)  # prevent accidental click on launch
-            levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug, False, pegs)
+            levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug, False, originPegs.copy())
             if levelEditorPauseSelection == "quit":
                 gameRunning = False
             elif levelEditorPauseSelection == "mainMenu":
