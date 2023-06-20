@@ -93,7 +93,7 @@ else:
         return None
 
 
-def loadData(filePath: str | None = None):
+def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list[Peg], str]:
     if filePath == None:
         filePath = fileSelectWindow()
 
@@ -119,6 +119,31 @@ def loadData(filePath: str | None = None):
     for xyPos in posList:
         x, y = xyPos
         pegs.append(Peg(x, y))
+    
+    if centerPegs:
+        # adjust the positions of every peg to be centered on the screen based on WIDTH and HEIGHT
+        # get the position of the left most peg
+        leftMostPeg = pegs[0]
+        for peg in pegs:
+            if peg.pos.vx < leftMostPeg.pos.vx:
+                leftMostPeg = peg
+        rightMostPeg = pegs[0]
+        for peg in pegs:
+            if peg.pos.vx > rightMostPeg.pos.vx:
+                rightMostPeg = peg
+
+        # find the center of the left most and right most pegs
+        centerOfLeftAndRightPegs = (leftMostPeg.pos.vx + rightMostPeg.pos.vx)/2
+        # find the center of the screen
+        screenCenter = WIDTH/2
+        # find the difference between the center of the screen and the center of the left and right most pegs
+        difference = screenCenter - centerOfLeftAndRightPegs
+
+        # adjust the position of every peg by the difference
+        for peg in pegs:
+            peg.pos.vx += difference
+
+
     
     return pegs, filePath
 
