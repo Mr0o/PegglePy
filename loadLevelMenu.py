@@ -136,9 +136,12 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             levelNameText = menuButtonFont.render(levelName, True, (255, 255, 255))
             color = (255, 255, 255)
 
+            # draw the level selection rectangle
+            # position it at WIDHT/3 at the same length across all levels
+            rect = pygame.Rect(WIDTH/5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, WIDTH/5*3, levelNameText.get_height() -1)
+
             # check if the mouse is over the level selection rectangle (apply scroll value)
-            if mousePos.vx > WIDTH/5 and mousePos.vx < WIDTH/5 + WIDTH/5*3 and mousePos.vy > HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height()-10 + scrollValue*levelNameText.get_height() and mousePos.vy < HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height()-10 + scrollValue*levelNameText.get_height() + levelNameText.get_height()+10:
-                # mouse button is down
+            if pygame.Rect(mousePos.vx, mousePos.vy - scrollValue*levelNameText.get_height(), 1, 1).colliderect(rect):
                 if mouseDown:
                     selection = levelFilePath
                     if debug:
@@ -147,10 +150,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                 else:
                     color = (0, 255, 0)
                     levelNameText = menuButtonFont.render(levelName, True, color)
-        
-            # draw the level selection rectangle
-            # position it at WIDHT/3 at the same length across all levels
-            rect = pygame.Rect(WIDTH/5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, WIDTH/5*3, levelNameText.get_height() -1)
+    
 
             # maximum scroll value (scale the value by the height of the level name text)
             # get the position of the last level rect
