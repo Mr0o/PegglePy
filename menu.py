@@ -163,6 +163,9 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     # main menu button (positioned bottom left corner)
     mainMenuButtonPos = Vector(10, HEIGHT - 25*buttonScale-10)
     mainMenuButtonSize = Vector(50*buttonScale, 25*buttonScale)
+    # editor button (positioned bottom right corner)
+    editorButtonPos = Vector(WIDTH - 50*buttonScale-10, HEIGHT - 50*buttonScale-10)
+    editorButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
 
     # scale the button images
@@ -210,6 +213,13 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
         if mouseClick:
             selection = "mainMenu"
             playSoundPitch(buttonClickSound)
+    
+    # check if the mouse is over the editor button
+    if mx > editorButtonPos.vx and mx < editorButtonPos.vx + editorButtonSize.vx and my > editorButtonPos.vy and my < editorButtonPos.vy + editorButtonSize.vy:
+        # mouse button is down
+        if mouseClick:
+            selection = "editor"
+            playSoundPitch(buttonClickSound)
 
     # create a surface for the pause screen
     pauseScreen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -255,6 +265,14 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
         pauseScreen.blit(mainMenuButtonPressedImgScaled, (mainMenuButtonPos.vx, mainMenuButtonPos.vy))
     mainMenuText = infoFont.render("Main Menu", False, (255, 255, 255))
     pauseScreen.blit(mainMenuText, (mainMenuButtonPos.vx + (mainMenuButtonSize.vx - mainMenuText.get_width()) / 2, mainMenuButtonPos.vy + (mainMenuButtonSize.vy - mainMenuText.get_height()) / 2))
+
+    # draw the editor button
+    if selection != "editor":
+        pauseScreen.blit(smallMenuButtonUnpressedImg, (editorButtonPos.vx, editorButtonPos.vy))
+    else:
+        pauseScreen.blit(smallMenuButtonPressedImg, (editorButtonPos.vx, editorButtonPos.vy))
+    editorText = infoFont.render("Editor", False, (255, 255, 255))
+    pauseScreen.blit(editorText, (editorButtonPos.vx + (editorButtonSize.vx - editorText.get_width()) / 2, editorButtonPos.vy + (editorButtonSize.vy - editorText.get_height()) / 2))
 
     # return the surface
     return pauseScreen, selection
