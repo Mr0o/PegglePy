@@ -153,12 +153,15 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             rect = pygame.Rect(WIDTH/5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, WIDTH/5*3, levelNameText.get_height() -1)
 
             # maximum scroll value (scale the value by the height of the level name text)
-            maxScrollValue = -len(levelsList)*levelNameText.get_height()
+            # get the position of the last level rect
+            if i == len(levelsList)-1:
+                maxScrollValue = -(rect.y + rect.height - HEIGHT + levelNameText.get_height())
+            else:
+                maxScrollValue = -HEIGHT*10
             if scrollValue < maxScrollValue:
                 scrollValue = maxScrollValue
             elif scrollValue > 0:
                 scrollValue = 0
-            print(scrollValue)
 
             # apply scroll value
             rect.y += scrollValue*levelNameText.get_height()
@@ -212,7 +215,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                 # update display (draw loading screen)
                 pygame.display.update()
 
-            return pegs, originPegs, orangeCount, selection
+            return pegs, originPegs, orangeCount, getLevelName(selection)
 
 
 
