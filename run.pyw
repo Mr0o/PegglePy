@@ -32,8 +32,14 @@ import pygame
 
 ##### pygame stuff #####
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
+# set fullscreen
+if FULLSCREEN:
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)  # display surface
+else:
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
+
 clock = pygame.time.Clock()  # game clock
+
 pygame.display.set_caption("PegglePy")
 
 # set the icon
