@@ -370,7 +370,7 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
 
     # draw the text
     pauseText = menuFont.render("PAUSED", False, (255, 255, 255))
-    pauseScreen.blit(pauseText, (WIDTH/2.65, HEIGHT/4))
+    pauseScreen.blit(pauseText, (WIDTH/2 - pauseText.get_width()/2, HEIGHT/4 - pauseText.get_height()/2))
 
     # draw the resume button
     if selection != "resume":
