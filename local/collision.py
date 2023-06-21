@@ -59,7 +59,7 @@ else:
     def resolveCollision(ball : Ball, peg : Peg) -> Ball:
         return resolveCollision_old(ball, peg)
     
-    print("NOTE: UseCPhysics is set to False. Using python implementation instead. To use the C implementation, change the UseCPhysics variable in the config.")
+    print("NOTE: UseCPhysics is set to False, using python implementation of collision functions.")
 
     
 
