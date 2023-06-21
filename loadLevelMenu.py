@@ -100,6 +100,33 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
     if len(levelsList) == 0:
         return loadDefaultLevel()
 
+    # create a list of pygame.Surface objects and load the level preview images
+    levelPreviewImgSizeW = WIDTH*0.3
+    levelPreviewImgSizeH = HEIGHT*0.3
+    # find the value that should be used to scale the peg img and positions
+    levelPreviewImgScaleW = levelPreviewImgSizeW / WIDTH
+    levelPreviewImgScaleH = levelPreviewImgSizeH / HEIGHT
+    levelPreviewImgs: list[pygame.Surface] = []
+    for i in range(len(levelsList)):
+        levelFilePath = levelsList[i]
+        pegs = loadData(levelFilePath, False)[0]
+        # create a surface to draw the level preview on
+        levelPreviewImg = pygame.Surface((int(levelPreviewImgSizeW), int(levelPreviewImgSizeH)))
+
+        # blit the background
+        scaledBackgroundImg = pygame.transform.scale(backgroundImg, (int(levelPreviewImgSizeW), int(levelPreviewImgSizeH)))
+        levelPreviewImg.blit(scaledBackgroundImg, (0, 0))
+
+        # scale the peg image
+        p = pegs[0]
+        scaledPegImg = pygame.transform.scale(p.pegImg.copy(), (int(p.pegImg.get_width()*levelPreviewImgScaleW), int(p.pegImg.get_height()*levelPreviewImgScaleH)))
+        # draw the pegs
+        for peg in pegs:
+            levelPreviewImg.blit(scaledPegImg, (peg.pos.vx*levelPreviewImgScaleW, peg.pos.vy*levelPreviewImgScaleW))
+        
+        # add the level preview image to the list    
+        levelPreviewImgs.append(levelPreviewImg)
+
     # main loop
     while True:
         mouseDown = False
@@ -163,18 +190,6 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             # position it at WIDHT/3 at the same length across all levels
             rect = pygame.Rect(WIDTH/5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, WIDTH/5*3, levelNameText.get_height() -1)
 
-            # check if the mouse is over the level selection rectangle (apply scroll value)
-            if pygame.Rect(mousePos.vx, mousePos.vy - scrollValue*levelNameText.get_height(), 1, 1).colliderect(rect):
-                if mouseDown:
-                    selection = levelFilePath
-                    if debug:
-                        print ("Level selected: " + str(levelFilePath))
-                # mouse is hovering over the level selection rectangle
-                else:
-                    color = (0, 255, 0)
-                    levelNameText = menuButtonFont.render(levelName, True, color)
-    
-
             # maximum scroll value (scale the value by the height of the level name text)
             # get the position of the last level rect
             if scrollValue > 0:
@@ -194,18 +209,35 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             if abs(scrollValue*levelNameText.get_height()) > lastRectPos - maxNumOfLevels*levelNameText.get_height():
                 scrollValue = -lastRectPos/levelNameText.get_height() + maxNumOfLevels
 
+            # move the rect over to the left
+            rect.x -= WIDTH/6
+
+            # check if the mouse is over the level selection rectangle (apply scroll value)
+            if pygame.Rect(mousePos.vx, mousePos.vy - scrollValue*levelNameText.get_height(), 1, 1).colliderect(rect):
+                if mouseDown:
+                    selection = levelFilePath
+                    if debug:
+                        print ("Level selected: " + str(levelFilePath))
+                # mouse is hovering over the level selection rectangle
+                else:
+                    color = (0, 255, 0)
+                    levelNameText = menuButtonFont.render(levelName, True, color)
+
+                    # blit the preview image at the top right corner of the screen
+                    screen.blit(levelPreviewImgs[i], (WIDTH - levelPreviewImgSizeW - 20, 20))
+
             # apply scroll value
             rect.y += scrollValue*levelNameText.get_height()
 
             pygame.draw.rect(screen, color, rect, 2)
             
             # apply scroll value
-            screen.blit(levelNameText, (WIDTH/5 +5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + scrollValue*levelNameText.get_height()))
+            screen.blit(levelNameText, (WIDTH/5 +5 -WIDTH/6, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + scrollValue*levelNameText.get_height()))
 
         # draw the title (applying the scroll value)
         menuTitle = menuFont.render("Select a level", True, (255, 255, 255))
         # position at HEIGHT/5 and apply the scroll value
-        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/5 + (scrollValue*menuButtonFont.render("", True, (255, 255, 255)).get_height())))
+        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2 -WIDTH/6, HEIGHT/7 + (scrollValue*menuButtonFont.render("", True, (255, 255, 255)).get_height())))
 
         # debug
         if debug:
