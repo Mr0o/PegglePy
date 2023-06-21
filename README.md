@@ -105,6 +105,11 @@ Tkinter will need to be installed separately on linux
 - In the config.py there is a useCPhysics variable, this can be set to True to use the C code or False to use the python code. By default it is set to True.
 - The C code is using ctypes and currently does seem to have an increased overhead, so it can actually be slower than the python code. But in most cases it makes almost no difference. (Hopefully this will lead to some performance improvements in the future)
 
+### Command line arguements
+-  You may pass the arguement '-h' or '--help' to see a list of all the command line arguements
+```
+python3 run.pyw -h
+```
 -  You may pass the arguement '-f' or '--fullscreen' to start the game in fullscreen mode
 ```
 python3 run.pyw -f
