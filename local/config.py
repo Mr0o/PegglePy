@@ -44,6 +44,18 @@ installDependencies()
 import pygame
 import sys
 
+# check if the script has been passed '-h' or '--help' as an argument
+if "-h" in sys.argv or "--help" in sys.argv:
+    print("Usage: python3 run.pyw [OPTIONS]")
+    print("Options:")
+    print(" -h, --help       \t Display this help message")
+    print(" -f, --fullscreen \t Launch the game in fullscreen mode")
+    print(" -d, --debug      \t Show debugging information")
+    print(" --no-cphysics    \t Disable the C implementation of the collision physics")
+    print(" --no-max-velocity\t Disable the maximum velocity of the ball")
+    print(" --no-gravity     \t Disable gravity")
+    sys.exit(0)
+
 # hard coded window size, the game is not designed to be resized, even though it technically can be
 WIDTH = 1200
 HEIGHT = 900 
