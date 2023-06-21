@@ -92,6 +92,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
     pygame.display.set_caption("PegglePy  -  Level Select")
 
     scrollValue = 0
+    lastRectPos = 1
     # get the names of each level in the levels folder
     levelsList = getLevelsList()
 
@@ -176,14 +177,22 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
 
             # maximum scroll value (scale the value by the height of the level name text)
             # get the position of the last level rect
-            if i == len(levelsList)-1:
-                maxScrollValue = -(rect.y + rect.height - HEIGHT + levelNameText.get_height())
-            else:
-                maxScrollValue = -HEIGHT*10
-            if scrollValue < maxScrollValue:
-                scrollValue = maxScrollValue
-            elif scrollValue > 0:
+            if scrollValue > 0:
                 scrollValue = 0
+
+            ## calculate the maximum scroll value
+            # get the position of the last level rect
+            if i == len(levelsList)-1:
+                lastRectPos = rect.y
+
+            # how many levelNameText.get_height() will fit into HEIGHT
+            maxNumOfLevels = int(HEIGHT/levelNameText.get_height()) - 1
+            # subtract maxNumOfLevels from maxNumOfLevels/5
+            maxNumOfLevels -= int(maxNumOfLevels/5)
+            
+            # if the abs(scroll value) * levelNameText.get_height() is greater than the last rect pos, set the scroll value to the maximum scroll value
+            if abs(scrollValue*levelNameText.get_height()) > lastRectPos - maxNumOfLevels*levelNameText.get_height():
+                scrollValue = -lastRectPos/levelNameText.get_height() + maxNumOfLevels
 
             # apply scroll value
             rect.y += scrollValue*levelNameText.get_height()
@@ -195,7 +204,8 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
 
         # draw the title (applying the scroll value)
         menuTitle = menuFont.render("Select a level", True, (255, 255, 255))
-        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/5 - menuTitle.get_height()/2 + scrollValue*levelNameText.get_height()))
+        # position at HEIGHT/5 and apply the scroll value
+        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/5 + (scrollValue*menuButtonFont.render("", True, (255, 255, 255)).get_height())))
 
         # debug
         if debug:
