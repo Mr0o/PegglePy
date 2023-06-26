@@ -99,6 +99,8 @@ Tkinter will need to be installed separately on linux
 - To enable a perfomance hack (speedHack), press 8
 - to show the timer values on all the pegs, press 9 (must have debug enabled)
 - To enable slow motion (cap framerate to 30), press 0
+- To enable and disable the C implementation of the physics, press R (this will have no effect if the flag '--no-cphysics' is used when starting the game)
+- To test the zoom feature, press X (Will zoom in on the ball, unless there is one last orange peg, then it will zoom in on the peg)
 
 ### Additional notes
 - There is some C code in the c_src folder, I am working on some C implementations of the physics calculations to improve performance
@@ -118,7 +120,7 @@ python3 run.pyw -f
 ```
 python3 run.pyw -d
 ```
--  You may pass the arguement '--no-cphysics to start the game without using the C implementation of the physics calculations
+-  You may pass the arguement '--no-cphysics' to start the game without using the C implementation of the physics calculations
 ```
 python3 run.pyw --no-cphysics
 ```
