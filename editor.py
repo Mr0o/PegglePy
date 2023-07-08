@@ -74,6 +74,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 # load level
                 if event.key == pygame.K_l:
                     pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, debug)
+                    # reset the pegs
+                    for peg in pegs:
+                        peg.reset()
                     staticImg = createStaticImage(pegs)
                     # play random music
                     r = randint(1, 10)
