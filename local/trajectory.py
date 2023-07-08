@@ -9,7 +9,7 @@ from local.misc import getBallScreenLocation
 
 def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
     hit = False
-    previousFakeBall = Ball(startPos.vx, startPos.vy)
+    previousFakeBall = Ball(startPos.x, startPos.y)
 
     #include bucket pegs in the trajectory calculation
     for fakePeg in bucketPegs:
@@ -17,7 +17,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
 
     fakeBalls = []
     for i in range(depth):
-        fakeBall = Ball(previousFakeBall.pos.vx, previousFakeBall.pos.vy)
+        fakeBall = Ball(previousFakeBall.pos.x, previousFakeBall.pos.y)
         
         if i == 0: # only on the first iteration
             traj = subVectors(aim, startPos)
@@ -42,9 +42,9 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
     
                 if shouldCheckCollision:
                     if useCPhysics:
-                        ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                        ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
                         return fakeBalls
         elif collisionGuideBall and not hit: # if guideBall powerup is being used
@@ -57,9 +57,9 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                             
                 if shouldCheckCollision:
                     if useCPhysics:
-                        ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                        ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
                         if useCPhysics:
                             fakeBall = resolveCollision(fakeBall, p)
@@ -76,9 +76,9 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
 
                 if shouldCheckCollision:
                     if useCPhysics:
-                        ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                        ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
                         if not debug:
                             return fakeBalls
@@ -91,7 +91,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
             
         fakeBall.update()
         
-        if fakeBall.pos.vy > HEIGHT:
+        if fakeBall.pos.y > HEIGHT:
             break # if the ball has gone off the screen, then we can stop
         
         fakeBalls.append(fakeBall)
@@ -121,11 +121,11 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
     for _ in range(maxRangeDegrees*2):
         aim.setAngleDeg(aim.getAngleDeg() + 0.5)
         fakeBalls = []
-        previousFakeBall = Ball(startPos.vx, startPos.vy)
+        previousFakeBall = Ball(startPos.x, startPos.y)
         score = 0
         
         for j in range(depth):
-            fakeBall = Ball(previousFakeBall.pos.vx, previousFakeBall.pos.vy)
+            fakeBall = Ball(previousFakeBall.pos.x, previousFakeBall.pos.y)
             
             if j == 0:
                 traj = subVectors(aim, startPos)
@@ -148,9 +148,9 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
                             
                 if shouldCheckCollision:
                     if useCPhysics:
-                            ballTouchingPeg = isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                            ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius)
+                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
                         if useCPhysics:
                             fakeBall = resolveCollision(fakeBall, p)
@@ -166,9 +166,9 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
 
             fakeBall.update()
 
-            if fakeBall.pos.vy > HEIGHT:
-                fakeBall.vel.vx = 0
-                fakeBall.vel.vy = 0
+            if fakeBall.pos.y > HEIGHT:
+                fakeBall.vel.x = 0
+                fakeBall.vel.y = 0
             
             fakeBalls.append(fakeBall)
             previousFakeBall = fakeBall

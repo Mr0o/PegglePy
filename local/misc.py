@@ -16,7 +16,7 @@ def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
     segmentWidth = WIDTH/segmentCount
     for p in pegs:
         for i in range(segmentCount+1):
-            if p.pos.vx >= segmentWidth*(i-1) - p.radius and p.pos.vx <= segmentWidth*i + p.radius:
+            if p.pos.x >= segmentWidth*(i-1) - p.radius and p.pos.x <= segmentWidth*i + p.radius:
                 p.pegScreenLocations.append(i)
 
 
@@ -24,7 +24,7 @@ def getBallScreenLocation(b: Ball, segmentCount) -> list[int]:
     segmentWidth = WIDTH/segmentCount
     locations = []
     for i in range(segmentCount+1):
-        if b.pos.vx > segmentWidth*(i-1) - b.radius and b.pos.vx < segmentWidth*i + b.radius:
+        if b.pos.x > segmentWidth*(i-1) - b.radius and b.pos.x < segmentWidth*i + b.radius:
             locations.append(i)
 
     return locations
@@ -166,7 +166,7 @@ def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
     # draw pegs
     for p in pegs:
         staticImg.blit(
-            p.pegImg, (p.pos.vx - p.posAdjust, p.pos.vy - p.posAdjust))
+            p.pegImg, (p.pos.x - p.posAdjust, p.pos.y - p.posAdjust))
 
     # anti-aliasing
     # staticImg = pygame.transform.smoothscale(staticImg, (WIDTH, HEIGHT))
@@ -176,8 +176,8 @@ def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
 
 # blit a single peg to the static image rather than redrawing the entire image (this may not look correct if the peg is overlapping another peg)
 def updateStaticImage(staticImg: pygame.Surface, peg: Peg):
-    staticImg.blit(peg.pegImg, (peg.pos.vx - peg.posAdjust,
-                   peg.pos.vy - peg.posAdjust))
+    staticImg.blit(peg.pegImg, (peg.pos.x - peg.posAdjust,
+                   peg.pos.y - peg.posAdjust))
 
     return staticImg
 
@@ -190,7 +190,7 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
     staticCircles.set_colorkey((0, 0, 0))
 
     for fb in trajectory:
-        pygame.draw.circle(staticCircles, (0, 220, 10), [fb.pos.vx, fb.pos.vy], 1)
+        pygame.draw.circle(staticCircles, (0, 220, 10), [fb.pos.x, fb.pos.y], 1)
 
     return staticCircles
 

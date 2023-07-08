@@ -93,7 +93,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                     print("Pegs:")
                     pegsPos = []
                     for peg in pegs:
-                        pegsPos.append((peg.pos.vx, peg.pos.vy))
+                        pegsPos.append((peg.pos.x, peg.pos.y))
                     print(pegsPos)
                 # return when the escape key is pressed
                 if event.key == pygame.K_ESCAPE:
@@ -115,7 +115,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
         if not editorPaused:
             # check if mouse is out of bounds
             mouseOutofBounds = False
-            if mousePos.vy > HEIGHT - heightBound or mousePos.vy < heightBound or mousePos.vx > WIDTH - widthBound or mousePos.vx < widthBound:
+            if mousePos.y > HEIGHT - heightBound or mousePos.y < heightBound or mousePos.x > WIDTH - widthBound or mousePos.x < widthBound:
                 mouseOutofBounds = True
 
             # if mouse clicked, create a new ball at the mouse position
@@ -128,20 +128,20 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                     # check if mouse is touching any other already existing pegs
                     else:
                         for peg in pegs:
-                            if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius):
+                            if isBallTouchingPeg(mousePos.x, mousePos.y, peg.radius/6, peg.pos.x, peg.pos.y, peg.radius):
                                 validNewPegPos = False
                                 break
 
                 else:
                     validNewPegPos = True
                     # for peg in pegs:
-                    #     if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius/6, peg.pos.vx, peg.pos.vy, peg.radius/6):
+                    #     if isBallTouchingPeg(mousePos.x, mousePos.y, peg.radius/6, peg.pos.x, peg.pos.y, peg.radius/6):
                     #         validNewPegPos = False
                     #         break
 
                 # valid position, add peg
                 if validNewPegPos:
-                    newPeg = Peg(mousePos.vx, mousePos.vy)
+                    newPeg = Peg(mousePos.x, mousePos.y)
                     pegs.append(newPeg)
                     staticImg = updateStaticImage(staticImg, newPeg)
                     # play sound
@@ -151,7 +151,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
             elif mouseClicked[2]:
                 selectedPegs = []
                 for peg in pegs:
-                    if isBallTouchingPeg(mousePos.vx, mousePos.vy, peg.radius, peg.pos.vx, peg.pos.vy, peg.radius):
+                    if isBallTouchingPeg(mousePos.x, mousePos.y, peg.radius, peg.pos.x, peg.pos.y, peg.radius):
                         selectedPegs.append(peg)
 
                 # remove any selected pegs
@@ -175,13 +175,13 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                                 WIDTH - widthBound*2, HEIGHT - heightBound*2), 2)
 
                 # draw invalid transparent peg img (red peg)
-                screen.blit(invalidPegImg, (mousePos.vx -
-                            tempPeg.posAdjust, mousePos.vy - tempPeg.posAdjust))
+                screen.blit(invalidPegImg, (mousePos.x -
+                            tempPeg.posAdjust, mousePos.y - tempPeg.posAdjust))
 
             else:
                 # draw blue transparent peg img
-                screen.blit(transparentPegImg, (mousePos.vx -
-                            tempPeg.posAdjust, mousePos.vy - tempPeg.posAdjust))
+                screen.blit(transparentPegImg, (mousePos.x -
+                            tempPeg.posAdjust, mousePos.y - tempPeg.posAdjust))
 
         # draw peg count text
         pegCountColor = (5, 30, 100)

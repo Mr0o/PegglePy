@@ -26,7 +26,7 @@ trajectoryLibFunc = trajectoryLib.calcTrajectory
 
 def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
     hit = False
-    previousFakeBall = Ball(startPos.vx, startPos.vy)
+    previousFakeBall = Ball(startPos.x, startPos.y)
 
     #include bucket pegs in the trajectory calculation
     for fakePeg in bucketPegs:
@@ -34,7 +34,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
 
     fakeBalls = []
     for i in range(depth):
-        fakeBall = Ball(previousFakeBall.pos.vx, previousFakeBall.pos.vy)
+        fakeBall = Ball(previousFakeBall.pos.x, previousFakeBall.pos.y)
         
         if i == 0: # only on the first iteration
             traj = subVectors(aim, startPos)
@@ -58,7 +58,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                             shouldCheckCollision = True 
     
                 if shouldCheckCollision:
-                    if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
+                    if isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius):
                         return fakeBalls
         elif collisionGuideBall and not hit: # if guideBall powerup is being used
             for p in pegs:
@@ -69,7 +69,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                             shouldCheckCollision = True 
                             
                 if shouldCheckCollision:
-                    if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
+                    if isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius):
                         fakeBall = resolveCollision(fakeBall, p) # resolve elastic collision aginst the ball and peg
                         hit = True
         elif not collisionGuideBall: # ##normal## if ball has collided then stop calculating and return
@@ -81,7 +81,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                             shouldCheckCollision = True 
 
                 if shouldCheckCollision:
-                    if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
+                    if isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius):
                         if not debug:
                             return fakeBalls
                         else:
@@ -90,7 +90,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
             
         fakeBall.update()
         
-        if fakeBall.pos.vy > HEIGHT:
+        if fakeBall.pos.y > HEIGHT:
             break # if the ball has gone off the screen, then we can stop
         
         fakeBalls.append(fakeBall)
@@ -120,11 +120,11 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
     for _ in range(maxRangeDegrees*2):
         aim.setAngleDeg(aim.getAngleDeg() + 0.5)
         fakeBalls = []
-        previousFakeBall = Ball(startPos.vx, startPos.vy)
+        previousFakeBall = Ball(startPos.x, startPos.y)
         score = 0
         
         for j in range(depth):
-            fakeBall = Ball(previousFakeBall.pos.vx, previousFakeBall.pos.vy)
+            fakeBall = Ball(previousFakeBall.pos.x, previousFakeBall.pos.y)
             
             if j == 0:
                 traj = subVectors(aim, startPos)
@@ -146,7 +146,7 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
                             shouldCheckCollision = True 
                             
                 if shouldCheckCollision:
-                    if isBallTouchingPeg(p.pos.vx, p.pos.vy, p.radius, fakeBall.pos.vx, fakeBall.pos.vy, fakeBall.radius):
+                    if isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius):
                         fakeBall = resolveCollision(fakeBall, p) # resolve elastic collision aginst the ball and peg
                         # add points
                         if not p.isHit: 
@@ -158,9 +158,9 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
 
             fakeBall.update()
 
-            if fakeBall.pos.vy > HEIGHT:
-                fakeBall.vel.vx = 0
-                fakeBall.vel.vy = 0
+            if fakeBall.pos.y > HEIGHT:
+                fakeBall.vel.x = 0
+                fakeBall.vel.y = 0
             
             fakeBalls.append(fakeBall)
             previousFakeBall = fakeBall
@@ -188,18 +188,18 @@ def calcTrajectory2(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPeg
     pegPosListX = (ctypes.c_float * len(pegs))()
     pegPosListY = (ctypes.c_float * len(pegs))()
     for i in range(len(pegs)):
-        pegPosListX[i] = pegs[i].pos.vx
-        pegPosListY[i] = pegs[i].pos.vy
+        pegPosListX[i] = pegs[i].pos.x
+        pegPosListY[i] = pegs[i].pos.y
     
     ballMass = Ball(0, 0).mass
     ballRadius = Ball(0, 0).radius
-    ballGravityX = gravity.vx
-    ballGravityY = gravity.vy
+    ballGravityX = gravity.x
+    ballGravityY = gravity.y
     ballMaxBallVelocity = maxBallVelocity
     pegRad = Peg(0, 0).radius
     launchForce = LAUNCH_FORCE
 
-    results = trajectoryLibFunc(ctypes.c_float(aim.vx), ctypes.c_float(aim.vy), ctypes.c_float(startPos.vx), ctypes.c_float(startPos.vy), ctypes.c_bool(collisionGuideBall), ctypes.c_int(depth), ctypes.c_bool(debug), 
+    results = trajectoryLibFunc(ctypes.c_float(aim.x), ctypes.c_float(aim.y), ctypes.c_float(startPos.x), ctypes.c_float(startPos.y), ctypes.c_bool(collisionGuideBall), ctypes.c_int(depth), ctypes.c_bool(debug), 
                                 ctypes.c_float(ballMass), ctypes.c_float(ballRadius), ctypes.c_float(ballGravityX), ctypes.c_float(ballGravityY), ctypes.c_float(ballMaxBallVelocity), ctypes.c_int(WIDTH), ctypes.c_int(HEIGHT), 
                                 pegPosListX, pegPosListY, ctypes.c_int(len(pegs)), ctypes.c_float(pegRad), ctypes.c_float(launchForce)).contents
 

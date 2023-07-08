@@ -19,8 +19,8 @@ def settingsMenu(screen: pygame.Surface, debug: bool = debug):
     backButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
      # scale the button images
-    menuButtonUnpressedImg = pygame.transform.scale(largeButtonUnpressedImg, (editorButtonSize.vx, editorButtonSize.vy))
-    menuButtonPressedImg = pygame.transform.scale(largeButtonPressedImg, (editorButtonSize.vx, editorButtonSize.vy))
+    menuButtonUnpressedImg = pygame.transform.scale(largeButtonUnpressedImg, (editorButtonSize.x, editorButtonSize.y))
+    menuButtonPressedImg = pygame.transform.scale(largeButtonPressedImg, (editorButtonSize.x, editorButtonSize.y))
     buttonUnpressedImgScaled = pygame.transform.scale(buttonUnpressedImg, (int(50*buttonScale), int(50*buttonScale)))
     buttonPressedImgScaled = pygame.transform.scale(buttonPressedImg, (int(50*buttonScale), int(50*buttonScale)))
 
@@ -55,7 +55,7 @@ def settingsMenu(screen: pygame.Surface, debug: bool = debug):
         ## check mouse input
         
         # check if mouse is over back button
-        if mousePos.vx > backButtonPos.vx and mousePos.vx < backButtonPos.vx + backButtonSize.vx and mousePos.vy > backButtonPos.vy and mousePos.vy < backButtonPos.vy + backButtonSize.vy:
+        if mousePos.x > backButtonPos.x and mousePos.x < backButtonPos.x + backButtonSize.x and mousePos.y > backButtonPos.y and mousePos.y < backButtonPos.y + backButtonSize.y:
             # mouse button is down
             if mouseDown:
                 selection = "mainMenu"
@@ -79,10 +79,10 @@ def settingsMenu(screen: pygame.Surface, debug: bool = debug):
         # draw the buttons
 
         # settings button (bottom right corner)
-        screen.blit(buttonUnpressedImgScaled, (backButtonPos.vx, backButtonPos.vy))
+        screen.blit(buttonUnpressedImgScaled, (backButtonPos.x, backButtonPos.y))
         # draw the text
         backText = menuButtonFont.render("Back", True, (255, 255, 255))
-        screen.blit(backText, (backButtonPos.vx + backButtonSize.vx/2 - backText.get_width()/2, backButtonPos.vy + backButtonSize.vy/2 - backText.get_height()/2))
+        screen.blit(backText, (backButtonPos.x + backButtonSize.x/2 - backText.get_width()/2, backButtonPos.y + backButtonSize.y/2 - backText.get_height()/2))
 
 
         # debug

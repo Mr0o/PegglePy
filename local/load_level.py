@@ -125,15 +125,15 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
         # get the position of the left most peg
         leftMostPeg = pegs[0]
         for peg in pegs:
-            if peg.pos.vx < leftMostPeg.pos.vx:
+            if peg.pos.x < leftMostPeg.pos.x:
                 leftMostPeg = peg
         rightMostPeg = pegs[0]
         for peg in pegs:
-            if peg.pos.vx > rightMostPeg.pos.vx:
+            if peg.pos.x > rightMostPeg.pos.x:
                 rightMostPeg = peg
 
         # find the center of the left most and right most pegs
-        centerOfLeftAndRightPegs = (leftMostPeg.pos.vx + rightMostPeg.pos.vx)/2
+        centerOfLeftAndRightPegs = (leftMostPeg.pos.x + rightMostPeg.pos.x)/2
         # find the center of the screen
         screenCenter = WIDTH/2
         # find the difference between the center of the screen and the center of the left and right most pegs
@@ -141,7 +141,7 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
 
         # adjust the position of every peg by the difference
         for peg in pegs:
-            peg.pos.vx += difference
+            peg.pos.x += difference
 
 
     
@@ -168,7 +168,7 @@ def saveData(pegs: list[Peg], filePath: str | None = None):
 def getPegPosList(pegs):
     posList = []
     for peg in pegs:
-        x, y = peg.pos.vx, peg.pos.vy
+        x, y = peg.pos.x, peg.pos.y
         posList.append((x, y))
 
     return posList

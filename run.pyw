@@ -439,15 +439,15 @@ while gameRunning:
 
         gamePadFineTuneAmount = 0
 
-        posX = inputAim.vx + ball.pos.vx
-        posY = inputAim.vy + ball.pos.vy
+        posX = inputAim.x + ball.pos.x
+        posY = inputAim.y + ball.pos.y
     elif not controllerInput:  # mouse
         inputAim = Vector(mx, my)
         mouseAim = subVectors(inputAim, ball.pos)
         # adjust the angle of the mouseAim to account for gravity
         mouseAim.setAngleDeg(mouseAim.getAngleDeg())
 
-        # print(inputAim.vx, inputAim.vy)
+        # print(inputAim.x, inputAim.y)
 
         # use angle of reach to find angle needed for the projectile to hit the mouse position
         # adjustedAngle = findAngleToTarget(ball.pos, Vector(mx, my))
@@ -456,8 +456,8 @@ while gameRunning:
         # apply the fine tune amount
         inputAim.setAngleDeg(inputAim.getAngleDeg() + fineTuneAmount)
 
-        posX = inputAim.vx
-        posY = inputAim.vy
+        posX = inputAim.x
+        posY = inputAim.y
         # check if the mouse is clicked (and that the size of the balls collections is less than 1)
         if mouseClicked[0]:
             launch_button = True
@@ -489,10 +489,10 @@ while gameRunning:
                 if debugTrajectory:
                     trajectoryDepth = 2500
             # only calculate the trajectory if the mouse has been moved - reduces cpu time
-            if previousAim.vx != launchAim.vx or previousAim.vy != launchAim.vy:
+            if previousAim.x != launchAim.x or previousAim.y != launchAim.y:
                 trajectory = calcTrajectory(launchAim, ball.pos, pegs.copy(), bucket.fakePegs.copy(
                 ), (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
-        previousAim = Vector(launchAim.vx, launchAim.vy)
+        previousAim = Vector(launchAim.x, launchAim.y)
 
         delayTimer.update()  # prevent the ball from launching instantly after the game is reset
         # if mouse clicked then trigger ball launch
@@ -538,7 +538,7 @@ while gameRunning:
                 print("Debug: Zenball launched")
                 startTime = time.time()
             bestAim, bestScore, bestTrajectory = findBestTrajectory(Vector(
-                launchAim.vx, launchAim.vy), Vector(ball.pos.vx, ball.pos.vy), pegs.copy())
+                launchAim.x, launchAim.y), Vector(ball.pos.x, ball.pos.y), pegs.copy())
 
             if debug:
                 print("Debug: Zenball best aim found in " +
@@ -569,7 +569,7 @@ while gameRunning:
         if cheats and mouseClicked[2] and ball.isAlive and not ball.isLaunch:
             isValidPlacement = True
             for ball in balls:
-                if isBallTouchingPeg(ball.pos.vx, ball.pos.vy, ball.radius, mx, my, ball.radius):
+                if isBallTouchingPeg(ball.pos.x, ball.pos.y, ball.radius, mx, my, ball.radius):
                     isValidPlacement = False
             if isValidPlacement:
                 newCheatBall = Ball(mx, my)
@@ -588,10 +588,10 @@ while gameRunning:
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
                         if useCPhysics:
                             ballTouchingPeg = isBallTouchingPeg(
-                                p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
+                                p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
                         else:
                             ballTouchingPeg = isBallTouchingPeg_old(
-                                p.pos.vx, p.pos.vy, p.radius*5, b.pos.vx, b.pos.vy, b.radius)
+                                p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
                         if ballTouchingPeg:
                             if frameRate != 27 and len(balls) < 2:
                                 if soundEnabled:
@@ -615,10 +615,10 @@ while gameRunning:
                     if shouldCheckCollision:
                         if useCPhysics:
                             ballTouchingPeg = isBallTouchingPeg(
-                                p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
+                                p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
                         else:
                             ballTouchingPeg = isBallTouchingPeg_old(
-                                p.pos.vx, p.pos.vy, p.radius, b.pos.vx, b.pos.vy, b.radius)
+                                p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
                         if ballTouchingPeg:
                             # resolve the collision between the ball and peg
                             if useCPhysics:
@@ -652,7 +652,7 @@ while gameRunning:
 
                             # check for long shot bonus
                             if b.lastPegHitPos != p.pos and b.lastPegHitPos != None and p.color == "orange" and not p.isHit:
-                                if distBetweenTwoPoints(b.lastPegHitPos.vx, b.lastPegHitPos.vy, p.pos.vx, p.pos.vy) > longShotDistance:
+                                if distBetweenTwoPoints(b.lastPegHitPos.x, b.lastPegHitPos.y, p.pos.x, p.pos.y) > longShotDistance:
                                     if not longShotBonus:
                                         if soundEnabled:
                                             playSoundPitch(longShotSound)
@@ -662,7 +662,7 @@ while gameRunning:
 
                                         # used for showing the bonus score
                                         longShotPos = Vector(
-                                            p.pos.vx, p.pos.vy)
+                                            p.pos.x, p.pos.y)
 
                                         if pygame.joystick.get_count() > 0 and controllerInput:
                                             if debug:
@@ -780,8 +780,8 @@ while gameRunning:
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
-                    if b.pos.vy + b.radius > HEIGHT:
-                        b.pos.vy = 0 + b.radius
+                    if b.pos.y + b.radius > HEIGHT:
+                        b.pos.y = 0 + b.radius
                         b.inBucket = False
                         if powerUpCount == 1 and firstSpookyHit:
                             if soundEnabled:
@@ -801,15 +801,15 @@ while gameRunning:
 
                 # if active multiball powerup
                 if addNewBall and (powerUpType == "multiball" or powerUpType == "spooky-multiball"):
-                    newBall = Ball(b.pos.vx, b.pos.vy)
-                    newBall.vel.vx = b.vel.vx * -1
-                    newBall.vel.vy = b.vel.vy * -1
+                    newBall = Ball(b.pos.x, b.pos.y)
+                    newBall.vel.x = b.vel.x * -1
+                    newBall.vel.y = b.vel.y * -1
                     newBall.isAlive = True
                     balls.append(newBall)
                     addNewBall = False
 
                 # if ball went in the bucket
-                if not b.inBucket and bucket.isInBucket(b.pos.vx, b.pos.vy):
+                if not b.inBucket and bucket.isInBucket(b.pos.x, b.pos.y):
                     b.inBucket = True  # prevent the ball from triggering it multiple times
                     if soundEnabled:
                         playSoundPitch(freeBallSound)
@@ -890,14 +890,14 @@ while gameRunning:
     screen.blit(staticImage, (0, 0))
     # draw back of bucket
     bucketBackImg, bucketFrontImg = bucket.getImage(powerUpType, powerUpActive)
-    screen.blit(bucketBackImg, (bucket.pos.vx, bucket.pos.vy))
+    screen.blit(bucketBackImg, (bucket.pos.x, bucket.pos.y))
     # draw ball(s)
     if not gameOver:
         for b in balls:
-            screen.blit(ballImg, (b.pos.vx - ballImg.get_width() /
-                        2, b.pos.vy - ballImg.get_height()/2))
+            screen.blit(ballImg, (b.pos.x - ballImg.get_width() /
+                        2, b.pos.y - ballImg.get_height()/2))
     # draw front of bucket
-    screen.blit(bucketFrontImg, (bucket.pos.vx, bucket.pos.vy))
+    screen.blit(bucketFrontImg, (bucket.pos.x, bucket.pos.y))
     # draw trajectory path
     done = True
     for b in balls:
@@ -905,7 +905,7 @@ while gameRunning:
             done = False
     if done and not gameOver and not gamePaused:
         for fb in trajectory:
-            drawCircle(fb.pos.vx, fb.pos.vy, 4, (10, 70, 163)) 
+            drawCircle(fb.pos.x, fb.pos.y, 4, (10, 70, 163)) 
         
 
     # "zoom in" on the ball by transorming the image
@@ -924,11 +924,11 @@ while gameRunning:
             # get the psosition of the orange peg
             for p in pegs:
                 if p.color == "orange" and not p.isHit:
-                    zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.vy*zoom)
+                    zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.x*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.y*zoom)
                     break
         else:
             # zoom in on the ball
-            zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - ball.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - ball.pos.vy*zoom)
+            zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - ball.pos.x*zoom, zoomedScreen.get_height()/zoom/2 - ball.pos.y*zoom)
 
         # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
         if zoomedScreenPos[0] > 0:
@@ -959,11 +959,11 @@ while gameRunning:
                 # get the psosition of the orange peg
                 for p in pegs:
                     if p.color == "orange":
-                        zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.vy*zoom)
+                        zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - p.pos.x*zoom, zoomedScreen.get_height()/zoom/2 - p.pos.y*zoom)
                         break
             else:
                 # zoom in on the ball
-                zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - ball.pos.vx*zoom, zoomedScreen.get_height()/zoom/2 - ball.pos.vy*zoom)
+                zoomedScreenPos = (zoomedScreen.get_width()/zoom/2 - ball.pos.x*zoom, zoomedScreen.get_height()/zoom/2 - ball.pos.y*zoom)
 
             # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
             if zoomedScreenPos[0] > 0:
@@ -1190,10 +1190,10 @@ while gameRunning:
     if longShotBonus and not longShotTextTimer.isTriggered:
         # show the long shot score
         longShotText = infoFont.render("25,000", False, (255, 110, 0))
-        screen.blit(longShotText, (longShotPos.vx-28, longShotPos.vy+11))
+        screen.blit(longShotText, (longShotPos.x-28, longShotPos.y+11))
         # show the long shot text
         longShotText = infoFont.render("Long Shot!", False, (255, 110, 0))
-        screen.blit(longShotText, (longShotPos.vx-35, longShotPos.vy-20))
+        screen.blit(longShotText, (longShotPos.x-35, longShotPos.y-20))
 
     # debugging stuff
     if debug:
@@ -1239,11 +1239,11 @@ while gameRunning:
 
         # draw line for joystick aim vector
         if controllerInput and not ball.isAlive and len(balls) < 2:
-            drawLine(ball.pos.vx, ball.pos.vy, inputAim.vx +
-                     ball.pos.vx, inputAim.vy+ball.pos.vy)
+            drawLine(ball.pos.x, ball.pos.y, inputAim.x +
+                     ball.pos.x, inputAim.y+ball.pos.y)
         elif not controllerInput and not ball.isAlive and len(balls) < 2:
-            drawLine(ball.pos.vx, ball.pos.vy, mouseAim.vx +
-                     ball.pos.vx, mouseAim.vy+ball.pos.vy)
+            drawLine(ball.pos.x, ball.pos.y, mouseAim.x +
+                     ball.pos.x, mouseAim.y+ball.pos.y)
 
         if controllerInput:
             joystickText = debugFont.render(
@@ -1252,7 +1252,7 @@ while gameRunning:
 
         # draw bucket fake pegs
         for fakePeg in bucket.fakePegs.copy():
-            drawCircle(fakePeg.pos.vx, fakePeg.pos.vy,
+            drawCircle(fakePeg.pos.x, fakePeg.pos.y,
                        fakePeg.radius, (255, 0, 0))
 
         if speedHack:
@@ -1275,11 +1275,11 @@ while gameRunning:
                 if p.ballStuckTimer.timeRemaining > 0:
                     stuckTimerText = debugFont.render(
                         str(round(p.ballStuckTimer.timeRemaining, 3)), False, (255, 20, 10))
-                    screen.blit(stuckTimerText, (p.pos.vx, p.pos.vy))
+                    screen.blit(stuckTimerText, (p.pos.x, p.pos.y))
                 else:
                     stuckTimerText = debugFont.render(
                         str(round(autoRemovePegsTimerValue, 3)), False, (255, 255, 255))
-                    screen.blit(stuckTimerText, (p.pos.vx, p.pos.vy))
+                    screen.blit(stuckTimerText, (p.pos.x, p.pos.y))
 
     # display red text indicating if cheats are enabled
     if cheats:

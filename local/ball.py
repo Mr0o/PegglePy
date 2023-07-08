@@ -26,7 +26,7 @@ class Ball:
     # F = M*A 
     # Adds a force(Vector) to the velocity
     def applyForce(self, force : Vector):
-        fx, fy = force.vx, force.vy
+        fx, fy = force.x, force.y
         fcopy = Vector(fx,fy) # create a copy of the force
         #fcopy.div(self.mass)
         self.vel.add(fcopy)
@@ -34,7 +34,7 @@ class Ball:
     def update(self):
         self.applyForce(gravity)
 
-        self.vel.vx *= 0.9993 #drag
+        self.vel.x *= 0.9993 #drag
         self.vel.add(self.acc)
         self.pos.add(self.vel)
         self.acc.mult(0)
@@ -42,14 +42,14 @@ class Ball:
         self.vel.limitMag(maxBallVelocity) #stop the ball from going crazy, this resolves the occasional physics glitches
 
         # if ball collided with wall or has fallen through the floor
-        if self.pos.vx > (WIDTH - self.radius) or self.pos.vx < self.radius:
-            if self.pos.vx > (WIDTH - self.radius): self.pos.vx = WIDTH - self.radius
-            elif self.pos.vx < self.radius: self.pos.vx = self.radius
-            self.vel.vx *= -1
-        if self.pos.vy < self.radius:
-            self.pos.vy = self.radius
-            self.vel.vy *= -1
-        if self.pos.vy > (HEIGHT + self.radius):
+        if self.pos.x > (WIDTH - self.radius) or self.pos.x < self.radius:
+            if self.pos.x > (WIDTH - self.radius): self.pos.x = WIDTH - self.radius
+            elif self.pos.x < self.radius: self.pos.x = self.radius
+            self.vel.x *= -1
+        if self.pos.y < self.radius:
+            self.pos.y = self.radius
+            self.vel.y *= -1
+        if self.pos.y > (HEIGHT + self.radius):
             self.isAlive = False
 
     def reset(self):

@@ -77,7 +77,7 @@ def resolveCollision_old(ball : Ball, peg : Peg) -> Ball:
     """
 
     #find the distance between ball and peg centers
-    distance = sqrt((ball.pos.vx - peg.pos.vx)*(ball.pos.vx - peg.pos.vx) + (ball.pos.vy - peg.pos.vy)*(ball.pos.vy - peg.pos.vy))
+    distance = sqrt((ball.pos.x - peg.pos.x)*(ball.pos.x - peg.pos.x) + (ball.pos.y - peg.pos.y)*(ball.pos.y - peg.pos.y))
     #find the amount of overlap between the ball and peg
     overlap =  1.0 * (distance - ball.radius - peg.radius)
 
@@ -86,31 +86,31 @@ def resolveCollision_old(ball : Ball, peg : Peg) -> Ball:
         distance = 0.0001  # arbitrary small number
 
     #displace the ball
-    ball.pos.vx -= overlap * (ball.pos.vx - peg.pos.vx) / distance
-    ball.pos.vy -= overlap * (ball.pos.vy - peg.pos.vy) / distance
+    ball.pos.x -= overlap * (ball.pos.x - peg.pos.x) / distance
+    ball.pos.y -= overlap * (ball.pos.y - peg.pos.y) / distance
 
     ## workout dynamic collisions
     #normal
-    nx = (ball.pos.vx - peg.pos.vx) / distance
-    ny = (ball.pos.vy - peg.pos.vy) / distance
+    nx = (ball.pos.x - peg.pos.x) / distance
+    ny = (ball.pos.y - peg.pos.y) / distance
 
     #tangent
     tx = -ny
     ty = nx
 
     #dot product tangent
-    dpTan = ball.vel.vx * tx + ball.vel.vy * ty
+    dpTan = ball.vel.x * tx + ball.vel.y * ty
 
     #dot product normal
-    dpNorm1 = ball.vel.vx * nx + ball.vel.vy * ny
-    dpNorm2 = peg.vel.vx * nx + peg.vel.vy * ny
+    dpNorm1 = ball.vel.x * nx + ball.vel.y * ny
+    dpNorm2 = peg.vel.x * nx + peg.vel.y * ny
 
     #conservation of momentum in 1D
     m = (dpNorm1 * (ball.mass - peg.mass) + 2.0 * peg.mass * dpNorm2) / (ball.mass + peg.mass)
 
     #update velocity of the ball
-    ball.vel.vx = tx * dpTan + nx * m
-    ball.vel.vy = ty * dpTan + ny * m
+    ball.vel.x = tx * dpTan + nx * m
+    ball.vel.y = ty * dpTan + ny * m
 
 
     return ball
@@ -131,15 +131,15 @@ if collisionLib is not None:
     # c function implementation of resolveCollision 
     # in theory this *should* be faster than the python implementation
     def resolveCollision(ball : Ball, peg : Peg) -> Ball:
-        ballx = ball.pos.vx
-        bally = ball.pos.vy
-        ballvx = ball.vel.vx
-        ballvy = ball.vel.vy
+        ballx = ball.pos.x
+        bally = ball.pos.y
+        ballvx = ball.vel.x
+        ballvy = ball.vel.y
         ballRad = ball.radius
         ballMass = ball.mass
         pegRad = peg.radius
-        pegx = peg.pos.vx
-        pegy = peg.pos.vy
+        pegx = peg.pos.x
+        pegy = peg.pos.y
 
 
         # use the c function to resolve the collision
@@ -149,9 +149,9 @@ if collisionLib is not None:
         # the c function returns a pointer to a float array (ballx, bally, ballVelocityX, ballVelocityY)
 
         # update the ball position and velocity
-        ball.pos.vx = results[0]
-        ball.pos.vy = results[1]
-        ball.vel.vx = results[2]
-        ball.vel.vy = results[3]
+        ball.pos.x = results[0]
+        ball.pos.y = results[1]
+        ball.vel.x = results[2]
+        ball.vel.y = results[3]
 
         return ball
