@@ -8,96 +8,99 @@
 from math import atan2, sqrt, cos, sin
 from random import randint  # used for random integers
 
-
-#  add two vectors and return the resulting vector
-def addVectors(vec1, vec2):
-    sum_x = vec1.vx + vec2.vx
-    sum_y = vec1.vy + vec2.vy
-
-    return Vector(sum_x, sum_y)
-
-
-#  subtract two vectors and return the resulting vector
-def subVectors(vec1, vec2):
-    diff_x = vec1.vx - vec2.vx
-    diff_y = vec1.vy - vec2.vy
-
-    return Vector(diff_x, diff_y)
-
-
-# creates a random vector with a maximum and minimum based on random_max
-def createRandomVector(random_max):
-    rx = randint(-random_max, random_max)
-    ry = randint(-random_max, random_max)
-
-    return Vector(rx, ry)
-
-
 class Vector:
-    def __init__(self, x, y):
-        self.vx = x
-        self.vy = y
-        self.angleRad = atan2(self.vy, self.vx)  # find the angle of the vector in radians
+    def __init__(self, x: float, y: float):
+        self.x = x
+        self.y = y
+        self.angleRad = atan2(self.y, self.x)  # find the angle of the vector in radians
 
-    def getMag(self):
-        mag = abs((self.vx * self.vx) + (self.vy * self.vy))  # find the magnitude using pythagorean theorem
+    # return a copy of the vector
+    def copy(self) -> 'Vector':
+        return Vector(self.x, self.y)
+
+    def getMag(self) -> float:
+        mag = abs((self.x * self.x) + (self.y * self.y))  # find the magnitude using pythagorean theorem
         mag = sqrt(mag)
 
         return mag
 
     #  given components x and y, this will normalize the vector
-    def normalize(self):
+    def normalize(self) -> None:
         mag = self.getMag()
         if mag != 0:  # divide vector by magnitude to create a unit vector
-            self.vx = self.vx / mag
-            self.vy = self.vy / mag
+            self.x = self.x / mag
+            self.y = self.y / mag
 
     #  given a magnitude and components x and y, this will normalize and scale the given vector
-    def setMag(self, mag):
+    def setMag(self, mag: float) -> None:
         self.normalize()  # normalize
 
-        self.vx *= mag  # scale the vector by the given magnitude
-        self.vy *= mag
+        self.x *= mag  # scale the vector by the given magnitude
+        self.y *= mag
 
     #  similar to setMag but this function will only scale the vector if the magnitude is greater than the limit magnitude
-    def limitMag(self, limit):
+    def limitMag(self, limit: float) -> None:
         if self.getMag() >= limit:
             self.setMag(limit)  # if the limit is reached then keep the magnitude set at the limit
 
     #  add another vector to self
-    def add(self, vec):
-        self.vx += vec.vx
-        self.vy += vec.vy
+    def add(self, vec: 'Vector') -> None:
+        self.x += vec.x
+        self.y += vec.y
 
     #  subtract another vector from self
-    def sub(self, vec):
-        self.vx -= vec.vx
-        self.vy -= vec.vy
+    def sub(self, vec: 'Vector') -> None:
+        self.x -= vec.x
+        self.y -= vec.y
 
     #  multiply a scalar value to the vector
-    def mult(self, m):
-        self.vx *= m
-        self.vy *= m
+    def mult(self, m: float) -> None:
+        self.x *= m
+        self.y *= m
     
     #  divide each component by a scalar value
-    def div(self, d):
-        self.vx /= d
-        self.vy /= d
+    def div(self, d: float) -> None:
+        self.x /= d
+        self.y /= d
     
     #  return the angle of the vector
-    def getAngleRad(self):
-        return atan2(self.vy, self.vx)
+    def getAngleRad(self) -> float:
+        return atan2(self.y, self.x)
     
     # return the angle of the vector in degrees
-    def getAngleDeg(self):
+    def getAngleDeg(self) -> float:
         return self.getAngleRad() * 180 / 3.14159265359
     
     #  set the angle of the vector in radians
-    def setAngleRad(self, angle):
+    def setAngleRad(self, angle: float) -> None:
         mag = self.getMag()
-        self.vx = mag * cos(angle)
-        self.vy = mag * sin(angle)
+        self.x = mag * cos(angle)
+        self.y = mag * sin(angle)
     
     # set the angle of the vector in degrees
-    def setAngleDeg(self, angle):
+    def setAngleDeg(self, angle: float) -> None:
         self.setAngleRad(angle * 3.14159265359 / 180)
+
+
+#  add two vectors and return the resulting vector
+def addVectors(vec1: Vector, vec2: Vector) -> Vector:
+    sum_x = vec1.x + vec2.x
+    sum_y = vec1.y + vec2.y
+
+    return Vector(sum_x, sum_y)
+
+
+#  subtract two vectors and return the resulting vector
+def subVectors(vec1: Vector, vec2: Vector) -> Vector:
+    diff_x = vec1.x - vec2.x
+    diff_y = vec1.y - vec2.y
+
+    return Vector(diff_x, diff_y)
+
+
+# creates a random vector with a maximum and minimum based on random_max
+def createRandomVector(random_max: int) -> Vector:
+    rx = randint(-random_max, random_max)
+    ry = randint(-random_max, random_max)
+
+    return Vector(rx, ry)
