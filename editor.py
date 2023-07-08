@@ -226,6 +226,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                     savedTimer.setTimer(4)
             elif pauseSelection == "load":
                 pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, debug)
+                # reset the pegs
+                for peg in pegs:
+                    peg.reset()
                 staticImg = createStaticImage(pegs)
                 editorPaused = False
 
