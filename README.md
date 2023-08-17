@@ -18,7 +18,7 @@ The codebase is a bit of a mess... maybe some day I will be able to clean this u
 - [Download](https://github.com/Mr0o/PegglePy/archive/refs/heads/main.zip) the PegglePy repository 
 - Extract the zip file
 - Navigate to the PegglePy folder within the extracted folder
-- Double click on ```run.pyw``` to start the game
+- Double click on ```run.py``` to start the game
 
 ### __Linux__
 - Make sure Python 3 and pip is installed (it should be installed by default on most distros) [(link)](https://www.python.org/downloads/)
@@ -36,7 +36,7 @@ git clone https://github.com/Mr0o/PegglePy.git
 - Open a terminal in the PegglePy folder
 - Run the following command
 ```
-python3 run.pyw
+python3 run.py
 ```
 </br>
 
@@ -53,7 +53,7 @@ Tkinter will need to be installed separately on linux
 
 # Usage instructions
 ### Play the game
--  To start, execute 'run.pyw' in python or double click on ```run.pyw``` if you are on windows
+-  To start, execute 'run.py' in python or double click on ```run.py``` if you are on windows
 -  Once started, you will be taken to the main menu. (see the first screenshot above)
 -  Press the 'Start' button to start playing the game
 -  The game works similar to peggle, to launch the ball just point with the mouse and left click
@@ -110,17 +110,17 @@ Tkinter will need to be installed separately on linux
 ### Command line arguements
 -  You may pass the arguement '-h' or '--help' to see a list of all the command line arguements
 ```
-python3 run.pyw -h
+python3 run.py -h
 ```
 -  You may pass the arguement '-f' or '--fullscreen' to start the game in fullscreen mode
 ```
-python3 run.pyw -f
+python3 run.py -f
 ```
 -  You may pass the arguement '-d' or '--debug' to start the game with debug mode enabled
 ```
-python3 run.pyw -d
+python3 run.py -d
 ```
 -  You may pass the arguement '--no-cphysics' to start the game without using the C implementation of the physics calculations
 ```
-python3 run.pyw --no-cphysics
+python3 run.py --no-cphysics
 ```

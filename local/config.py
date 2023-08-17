@@ -46,7 +46,7 @@ import sys
 
 # check if the script has been passed '-h' or '--help' as an argument
 if "-h" in sys.argv or "--help" in sys.argv:
-    print("Usage: python3 run.pyw [OPTIONS]")
+    print("Usage: python3 run.py [OPTIONS]")
     print("Options:")
     print(" -h, --help       \t Display this help message")
     print(" -f, --fullscreen \t Launch the game in fullscreen mode")
