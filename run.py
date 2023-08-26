@@ -361,15 +361,9 @@ while gameRunning:
                     if not musicEnabled:
                         pygame.mixer.music.stop()
                 if event.button == 6:  # the 'start' button on an xbox controller
-                    if debug == False:
-                        debug = True
-                    else:
-                        debug = False
+                    debug = not debug
                 if event.button == 7:  # the 'back' button on an xbox controller
-                    if gamePaused == False:
-                        gamePaused = True
-                    else:
-                        gamePaused = False
+                    gamePaused = not gamePaused
                 # the 'left stick' or 'right stick' buttons on an xbox controller
                 if event.button == 9 or event.button == 10:
                     if musicEnabled == False:
@@ -391,11 +385,7 @@ while gameRunning:
                         joystick.init()
                         joystick.rumble(1, 1, 100)
                 if event.button == 5:  # the 'right bumper' button on an xbox controller
-                    # cheats
-                    if cheats == False:
-                        cheats = True
-                    else:
-                        cheats = False
+                    cheats = not cheats
 
     mouseClicked = pygame.mouse.get_pressed()  # get the mouse click state
     mx, my = pygame.mouse.get_pos()  # get mouse position as 'mx' and 'my'
