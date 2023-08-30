@@ -270,6 +270,7 @@ while gameRunning:
 
         if event.type == pygame.MOUSEMOTION and controllerInput:
             controllerInput = False
+            pygame.mouse.set_visible(True)
 
         # check for gamepad dpad buttons
         if event.type == pygame.JOYHATMOTION:
@@ -286,6 +287,7 @@ while gameRunning:
             if event.axis == 0 or event.axis == 1:
                 if abs(event.value) > 0.15:
                     controllerInput = True
+                    pygame.mouse.set_visible(False)
         if event.type == pygame.JOYBUTTONDOWN:
             # if the controller is a 'sony' or 'playstation' controller (Sometimes "Wireless Controller" is the name of the ps4 controller, so we will include that as well)
             if joystick.get_name().lower().find("sony") != -1 or joystick.get_name().lower().find("playstation") != -1 or joystick.get_name().lower().find("wireless") != -1:
