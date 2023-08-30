@@ -163,30 +163,30 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                     debug = not debug
 
             # check for gamepad dpad buttons
-        if event.type == pygame.JOYHATMOTION:
-            if event.value == (0, 1):
-                dpadDirection = "up"
-            if event.value == (0, -1):
-                dpadDirection = "down"
+            if event.type == pygame.JOYHATMOTION:
+                if event.value == (0, 1):
+                    dpadDirection = "up"
+                if event.value == (0, -1):
+                    dpadDirection = "down"
 
-        if event.type == pygame.JOYBUTTONDOWN:
-            # if the controller is a 'sony' or 'playstation' controller (Sometimes "Wireless Controller" is the name of the ps4 controller, so we will include that as well)
-            if joystick.get_name().lower().find("sony") != -1 or joystick.get_name().lower().find("playstation") != -1 or joystick.get_name().lower().find("wireless") != -1:
-                if event.button == 0:  # the 'X'/cross button on a ps4 controller
-                    selectButtonPressed = True
-                if event.button == 1:  # the 'O'/circle button on a ps4 controller
-                    backButtonPressed = True
-                if event.button == 8:  # the 'share' button on a ps4 controller
-                    # enable or disable debug
-                    debug = not debug
+            if event.type == pygame.JOYBUTTONDOWN:
+                # if the controller is a 'sony' or 'playstation' controller (Sometimes "Wireless Controller" is the name of the ps4 controller, so we will include that as well)
+                if joystick.get_name().lower().find("sony") != -1 or joystick.get_name().lower().find("playstation") != -1 or joystick.get_name().lower().find("wireless") != -1:
+                    if event.button == 0:  # the 'X'/cross button on a ps4 controller
+                        selectButtonPressed = True
+                    if event.button == 1:  # the 'O'/circle button on a ps4 controller
+                        backButtonPressed = True
+                    if event.button == 8:  # the 'share' button on a ps4 controller
+                        # enable or disable debug
+                        debug = not debug
 
-            else:  # xbox controller (default)
-                if event.button == 0:  # the 'A' button on an xbox controller
-                    selectButtonPressed = True
-                if event.button == 1:  # the 'B' button on an xbox controller
-                    backButtonPressed = True
-                if event.button == 6:  # the 'start' button on an xbox controller
-                    debug = not debug
+                else:  # xbox controller (default)
+                    if event.button == 0:  # the 'A' button on an xbox controller
+                        selectButtonPressed = True
+                    if event.button == 1:  # the 'B' button on an xbox controller
+                        backButtonPressed = True
+                    if event.button == 6:  # the 'start' button on an xbox controller
+                        debug = not debug
         
 
         # check for joystick input
