@@ -166,8 +166,10 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             if event.type == pygame.JOYHATMOTION:
                 if event.value == (0, 1):
                     dpadDirection = "up"
+                    controllerConnected = True
                 if event.value == (0, -1):
                     dpadDirection = "down"
+                    controllerConnected = True
 
             if event.type == pygame.JOYBUTTONDOWN:
                 # if the controller is a 'sony' or 'playstation' controller (Sometimes "Wireless Controller" is the name of the ps4 controller, so we will include that as well)
