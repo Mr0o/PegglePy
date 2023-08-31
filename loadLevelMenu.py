@@ -99,7 +99,6 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
     controllerConnected = False
     controllerCursorIndex = 0
     moveControllerSelector = None
-    controllerIndexRectPos = 1
 
     # if there are no levels in the levels folder, load the default level
     if len(levelsList) == 0:
@@ -235,6 +234,12 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                 # wrap around
                 if controllerCursorIndex > len(levelsList)-1:
                     controllerCursorIndex = 0
+                    # reset the scroll value
+                    scrollValue = 0
+                elif controllerCursorIndex < 0:
+                    controllerCursorIndex = len(levelsList)-1
+                    # reset the scroll value
+                    scrollValue = 0
         else:
             # update mouse posistion
             mx, my = pygame.mouse.get_pos()
