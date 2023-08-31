@@ -403,6 +403,7 @@ while gameRunning:
         joystickX = joystick.get_axis(0)
     else:
         controllerInput = False
+        pygame.mouse.set_visible(True)
         if mouseClicked[0]:
             launch_button = True
 
