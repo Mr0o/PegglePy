@@ -45,6 +45,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
 
     pygame.display.set_caption("PegglePy  -  Level Editor")
 
+    #unhide the mouse
+    pygame.mouse.set_visible(True)
+
     # play random music
     r = randint(1, 10)
     pygame.mixer.music.load(
