@@ -12,8 +12,8 @@ def installDependencies():
         # attempt 1
         import sys
         import subprocess
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
             import pygame
             import numpy
             import samplerate
