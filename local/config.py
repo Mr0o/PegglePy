@@ -5,7 +5,7 @@ def installDependencies():
         import pygame
         import numpy
         import samplerate
-    except ImportError:
+    except Exception:
         # automatically install PegglePy dependencies
         print("Installing dependencies...")
 
@@ -17,7 +17,7 @@ def installDependencies():
             import pygame
             import numpy
             import samplerate
-        except ImportError:
+        except Exception:
             # attempt 2
             try:
                 import os
@@ -25,7 +25,7 @@ def installDependencies():
                 import pygame
                 import numpy
                 import samplerate
-            except ImportError:
+            except Exception:
                 # attempt 3
                 try:
                     import os
@@ -33,7 +33,7 @@ def installDependencies():
                     import pygame
                     import numpy
                     import samplerate
-                except ImportError as e:
+                except Exception as e:
                     print("ERROR: Failed to install dependencies. Please make sure that pip is installed and try again.")
                     print("Details: " + str(e))
                     sys.exit(1)
