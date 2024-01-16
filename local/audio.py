@@ -1,4 +1,5 @@
 import pygame.mixer, pygame.sndarray
+from random import randint
 try:
     from samplerate import resample
 except ImportError:
@@ -6,11 +7,11 @@ except ImportError:
     def resample(array, ratio, mode):
         return array
 
-from local.config import debug
+from local.config import debug, soundVolume
 
 
 pygame.mixer.init(44100,-16,2,4096)
-def playSoundPitch(sound_file, pitch = 1.0):
+def playSoundPitch(sound_file, pitch = 1.0, volume = soundVolume):
     try:
         # choose a file and make a sound object
         sound = pygame.mixer.Sound(sound_file)
@@ -23,6 +24,7 @@ def playSoundPitch(sound_file, pitch = 1.0):
 
         # take the resampled array, make it an object and stop playing after 2 seconds.
         snd_out = pygame.sndarray.make_sound(snd_resample)
+        snd_out.set_volume(volume) # set volume
         snd_out.play()
     except Exception as e:
         if debug:
@@ -30,10 +32,23 @@ def playSoundPitch(sound_file, pitch = 1.0):
             print("Does the file exist?")
 
 
-class GameAudioPlayer:
-    def __init__(self) -> None:
-        self.soundEnabled = True
-        self.musicEnabled = True
+def loadRandMusic():
+    # load random music
+    r = randint(1, 10)
+    pygame.mixer.music.load(
+        "resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
+    
+def playMusic():
+    pygame.mixer.music.play(-1) # looping forever
 
-    def playPowerUpSound(self, powerUpType : str = "spooky"):
-        playSoundPitch("")
+def pauseMusic():
+    pygame.mixer.music.pause()
+
+def unpauseMusic():
+    pygame.mixer.music.unpause()
+
+def stopMusic():
+    pygame.mixer.music.stop()
+
+def setMusicVolume(volume):
+    pygame.mixer.music.set_volume(volume)
