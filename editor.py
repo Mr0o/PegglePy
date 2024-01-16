@@ -13,7 +13,7 @@ from local.collision import isBallTouchingPeg
 from local.peg import Peg
 from local.misc import createStaticImage, updateStaticImage
 from local.trigger_events import TimedEvent
-from local.audio import playSoundPitch
+from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, setMusicVolume
 from local.resources import editorIconImg, backgroundImg, infoFont, warnFont, helpFont, transparentPegImg, invalidPegImg, newPegSound, invalidPegSound, debugFont
 
 from menu import getEditorPauseScreen
@@ -49,10 +49,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
     pygame.mouse.set_visible(True)
 
     # play random music
-    r = randint(1, 10)
-    pygame.mixer.music.load(
-        "resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
-    pygame.mixer.music.play(-1)
+    loadRandMusic()
+    playMusic()
+    setMusicVolume(musicVolume)
 
     ##### main loop #####
     while isRunning:
@@ -82,10 +81,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                         peg.reset()
                     staticImg = createStaticImage(pegs)
                     # play random music
-                    r = randint(1, 10)
-                    pygame.mixer.music.load(
-                        "resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
-                    pygame.mixer.music.play(-1)
+                    loadRandMusic()
+                    playMusic()
+                    setMusicVolume(musicVolume)
 
                 if event.key == pygame.K_1:
                     debug = not debug
@@ -105,7 +103,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
             if event.type == pygame.MOUSEBUTTONDOWN and mouseOutofBounds:
                 if event.button == 1 and not editorPaused:
                     # play sound
-                    playSoundPitch(invalidPegSound, 0.35)
+                    playSoundPitch(invalidPegSound, 0.35, soundVolume)
 
 
          # get current mouse state
@@ -148,7 +146,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                     pegs.append(newPeg)
                     staticImg = updateStaticImage(staticImg, newPeg)
                     # play sound
-                    playSoundPitch(newPegSound, 0.35)
+                    playSoundPitch(newPegSound, 0.35, soundVolume)
 
             # if right clicked, remove peg
             elif mouseClicked[2]:
@@ -164,7 +162,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 if len(selectedPegs) > 0:
                     staticImg = createStaticImage(pegs)
                     # play sound
-                    playSoundPitch(newPegSound, 0.55)
+                    playSoundPitch(newPegSound, 0.55, soundVolume)
 
         ##### draw #####
         screen.blit(staticImg, (0, 0))
@@ -239,10 +237,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 editorPaused = False
 
                 # play random music
-                r = randint(1, 10)
-                pygame.mixer.music.load(
-                    "resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
-                pygame.mixer.music.play(-1)
+                loadRandMusic()
+                playMusic()
+                setMusicVolume(musicVolume)
 
                 time.sleep(0.15)
             elif pauseSelection == "play":

@@ -8,6 +8,7 @@ from local.config import WIDTH, HEIGHT, debug, segmentCount
 from local.resources import backgroundImg
 from local.peg import Peg
 from local.ball import Ball
+from local.audio import loadRandMusic, playMusic, stopMusic
 
 # iterate through each peg x,y position to determine its location on the screen
 
@@ -148,13 +149,6 @@ def loadDefaultLevel() -> tuple[list[Peg], list[Peg], int]:
     return pegs, originPegs, orangeCount, levelFileName
 
 
-def loadRandMusic():
-    # load random music
-    r = randint(1, 10)
-    pygame.mixer.music.load(
-        "resources/audio/music/Peggle Beat " + str(r) + " (Peggle Deluxe).mp3")
-
-
 # create a static image of the background and pegs, this avoids redrawing the background and pegs every frame
 # -- dramatic performance improvement especially in levels with lots of pegs
 def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
@@ -229,9 +223,9 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     frameRate = 144
     LongShotBonus = False
     # change the song
-    pygame.mixer.music.stop()
+    stopMusic()
     loadRandMusic()
-    pygame.mixer.music.play(-1)  # looping forever
+    playMusic()
     staticImage = createStaticImage(pegs)
     return ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, LongShotBonus, staticImage
 

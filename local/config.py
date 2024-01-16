@@ -93,9 +93,11 @@ speedHack = False
 
 # enable or diasble sound effects
 soundEnabled = True
+soundVolume = 0.4 # 0.0 - 1.0
 
 # enable or disable music
 musicEnabled = True
+musicVolume = 0.4 # 0.0 - 1.0
 
 # use c implementation of the collision physics (should be faster, but I have found in testing that it can actually be slower. Probably because of increased overhead)
 # check if the script has been passed '--no-cphysics' as an argument

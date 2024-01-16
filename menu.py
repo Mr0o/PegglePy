@@ -1,7 +1,7 @@
 import pygame
 import time
 
-from local.config import WIDTH, HEIGHT, debug
+from local.config import WIDTH, HEIGHT, debug, soundVolume, musicVolume
 from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch
@@ -11,6 +11,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
     # play menu music
     pygame.mixer.music.load(menuMusicPath)
     pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(musicVolume)
 
     # button positions
     buttonScale = 2.5
@@ -251,7 +252,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
 
         # check if the user has made a selection
         if selection != "none":
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
             return selection
 
 
@@ -293,42 +294,42 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
         # mouse button is down
         if mouseClick:
             selection = "resume"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
     
     # check if the mouse is over the restart button
     if mx > restartButtonPos.x and mx < restartButtonPos.x + restartButtonSize.x and my > restartButtonPos.y and my < restartButtonPos.y + restartButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "restart"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
     
     # check if the mouse is over the load level button
     if mx > loadLevelButtonPos.x and mx < loadLevelButtonPos.x + loadLevelButtonSize.x and my > loadLevelButtonPos.y and my < loadLevelButtonPos.y + loadLevelButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "load"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
 
     # check if the mouse is over the quit button
     if mx > quitButtonPos.x and mx < quitButtonPos.x + quitButtonSize.x and my > quitButtonPos.y and my < quitButtonPos.y + quitButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "quit"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
         
     # check if the mouse is over the main menu button
     if mx > mainMenuButtonPos.x and mx < mainMenuButtonPos.x + mainMenuButtonSize.x and my > mainMenuButtonPos.y and my < mainMenuButtonPos.y + mainMenuButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "mainMenu"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
     
     # check if the mouse is over the editor button
     if mx > editorButtonPos.x and mx < editorButtonPos.x + editorButtonSize.x and my > editorButtonPos.y and my < editorButtonPos.y + editorButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "editor"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
 
     # create a surface for the pause screen
     pauseScreen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -428,49 +429,49 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
         # mouse button is down
         if mouseClick:
             selection = "resume"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
     
     # check if the mouse is over the restart button
     if mx > restartButtonPos.x and mx < restartButtonPos.x + restartButtonSize.x and my > restartButtonPos.y and my < restartButtonPos.y + restartButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "restart"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
     
     # check if the mouse is over the load level button
     if mx > loadLevelButtonPos.x and mx < loadLevelButtonPos.x + loadLevelButtonSize.x and my > loadLevelButtonPos.y and my < loadLevelButtonPos.y + loadLevelButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "load"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
 
     # check if the mouse is over the save button
     if mx > saveButtonPos.x and mx < saveButtonPos.x + saveButtonSize.x and my > saveButtonPos.y and my < saveButtonPos.y + saveButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "save"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
 
     # check if the mouse is over the play level button
     if mx > playLevelButtonPos.x and mx < playLevelButtonPos.x + playLevelButtonSize.x and my > playLevelButtonPos.y and my < playLevelButtonPos.y + playLevelButtonSize.y and not standalone:
         # mouse button is down
         if mouseClick:
             selection = "play"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
 
     # check if the mouse is over the quit button
     if mx > quitButtonPos.x and mx < quitButtonPos.x + quitButtonSize.x and my > quitButtonPos.y and my < quitButtonPos.y + quitButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "quit"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
         
     # check if the mouse is over the main menu button
     if mx > mainMenuButtonPos.x and mx < mainMenuButtonPos.x + mainMenuButtonSize.x and my > mainMenuButtonPos.y and my < mainMenuButtonPos.y + mainMenuButtonSize.y and not standalone:
         # mouse button is down
         if mouseClick:
             selection = "mainMenu"
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
 
     # create a surface for the pause screen
     pauseScreen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)

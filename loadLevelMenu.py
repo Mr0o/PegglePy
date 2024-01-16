@@ -2,7 +2,7 @@ import pygame
 import time
 import os
 
-from local.config import WIDTH, HEIGHT, debug
+from local.config import WIDTH, HEIGHT, debug, soundVolume
 from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch
@@ -71,6 +71,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
     # play menu music
     pygame.mixer.music.load(menuMusicPath)
     pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(soundVolume)
 
     # button positions
     buttonScale = 2.5
@@ -384,7 +385,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             if selection == "mainMenu":
                 return loadDefaultLevel()
                 #return [], [], 0, selection
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=soundVolume)
             # draw a loading screen
             # draw the background
             screen.blit(altBackgroundImg, (0, 0))
