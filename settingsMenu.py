@@ -1,16 +1,18 @@
 import pygame
 import time
 
-from local.config import WIDTH, HEIGHT, debug
+from local.config import WIDTH, HEIGHT, debug, musicVolume as mvolume, soundVolume as soVolume
 from local.resources import *
 from local.vectors import Vector
-from local.audio import playSoundPitch
+from local.audio import playSoundPitch, loadRandMusic, playMusic, setMusicVolume
+from local.slider import Slider
 
 # this menu will serve as the point where the game and the editor can both be accessed
 def settingsMenu(screen: pygame.Surface, debug: bool = debug):
     # play menu music
-    pygame.mixer.music.load(menuMusicPath)
-    pygame.mixer.music.play(-1)
+    loadRandMusic()
+    playMusic()
+    setMusicVolume(mvolume)
 
     # button positions
     buttonScale = 2.5
@@ -24,6 +26,16 @@ def settingsMenu(screen: pygame.Surface, debug: bool = debug):
     buttonUnpressedImgScaled = pygame.transform.scale(buttonUnpressedImg, (int(50*buttonScale), int(50*buttonScale)))
     buttonPressedImgScaled = pygame.transform.scale(buttonPressedImg, (int(50*buttonScale), int(50*buttonScale)))
 
+    # volume sliders
+    musicSlider = Slider(Vector(50, 50), 300, 50)
+    musicSlider.min = 0
+    musicSlider.max = 100
+    musicSlider.setValue(mvolume*100)
+
+    soundSlider = Slider(Vector(50, 150), 300, 50)
+    soundSlider.min = 0
+    soundSlider.max = 100
+    soundSlider.setValue(soVolume*100)
 
     selection: str = "none" # this will be returned as the user selection made in the menu
 
@@ -76,6 +88,25 @@ def settingsMenu(screen: pygame.Surface, debug: bool = debug):
         messageText = menuButtonFont.render("Settings have not been implemented yet", True, (255, 255, 255))
         screen.blit(messageText, (WIDTH/2 - messageText.get_width()/2, HEIGHT/2 - messageText.get_height()/2 + 30))
 
+        # update the volume sliders
+        musicSlider.update(mousePos, pygame.mouse.get_pressed()[0])
+        soundSlider.update(mousePos, pygame.mouse.get_pressed()[0])
+
+        # update the volume
+        setMusicVolume(musicSlider.value/100)
+        sovolume = soundSlider.value/100
+
+        # draw the volume sliders
+        screen.blit(musicSlider.getSliderSurface(), (musicSlider.pos.x, musicSlider.pos.y))
+        screen.blit(soundSlider.getSliderSurface(), (soundSlider.pos.x, soundSlider.pos.y))
+
+        # draw the volume slider labels
+        musicLabel = menuButtonFont.render("Music Volume", True, (255, 255, 255))
+        screen.blit(musicLabel, (musicSlider.pos.x + musicSlider.sliderRect.width/2 - musicLabel.get_width()/2, musicSlider.pos.y - musicLabel.get_height() - 5))
+
+        soundLabel = menuButtonFont.render("Sound Volume", True, (255, 255, 255))
+        screen.blit(soundLabel, (soundSlider.pos.x + soundSlider.sliderRect.width/2 - soundLabel.get_width()/2, soundSlider.pos.y - soundLabel.get_height() - 5))
+
         # draw the buttons
 
         # settings button (bottom right corner)
@@ -109,5 +140,20 @@ def settingsMenu(screen: pygame.Surface, debug: bool = debug):
 
         # check if the user has made a selection
         if selection != "none":
-            playSoundPitch(buttonClickSound)
+            playSoundPitch(buttonClickSound, volume=sovolume)
             return selection
+
+
+# test
+if __name__ == "__main__":
+    # basic pygame setup
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
+
+    # run the menu
+    settingsMenu(screen)
+
+    # quit pygame
+    pygame.quit()
+    quit()
