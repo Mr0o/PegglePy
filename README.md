@@ -1,7 +1,7 @@
 # PegglePy
 A clone of peggle written in python using pygame
 
-The codebase is a bit of a mess... maybe some day I will be able to clean this up and create a better architecture for the game. But most of the core elements of the game have been implemented, and getting it working has been more important than following strict conventions and *proper* design patterns, etc. If you have stumbled upon this repo, feel free to play the game and use the editor to create your own levels.
+I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the codebase is quite terryfying to look at. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
 
 
 # Screenshots
@@ -47,7 +47,7 @@ These should be installed automatically when you run the game, but if they are n
 ```
 pip3 install -r requirements.txt
 ```
-Tkinter will need to be installed separately on linux
+Tkinter may need to be installed separately on linux
 
 <br/>
 
@@ -61,7 +61,7 @@ Tkinter will need to be installed separately on linux
 -  Each peg scores a number of points and the total score is represented by the blue text in the top left
 -  Orange pegs are 100 points
 -  Blue pegs are 10 points
--  Green pegs are alos 10 points, but when they are hit, they activate your power up
+-  Green pegs are also 10 points, but when they are hit, they activate your power up
 -  Your powerup is shown by the green text at the top center of the screen, when it is glowing, your powerup is active
 -  If the ball goes into the bucket moving accross the bottom of the screen, you will get a free ball added to your ball count
 -  You can use the scroll wheel to help fine tune your aim
