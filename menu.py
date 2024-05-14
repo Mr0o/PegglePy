@@ -1,5 +1,6 @@
 import pygame
 import time
+import webbrowser # for opening github page
 
 from local.config import WIDTH, HEIGHT, debug, soundVolume, musicVolume
 from local.resources import *
@@ -226,6 +227,26 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
 
         # settings button (bottom right corner)
         screen.blit(settingsButtonImgScaled, (settingsButtonPos.x, settingsButtonPos.y))
+
+        # github link (top right corner)
+        # if the mouse is over the github link, change the color
+        githubText = infoFont.render("Github: Mr0o", True, (255, 255, 255))
+        if mousePos.x > WIDTH - githubText.get_width() - 10 and mousePos.x < WIDTH - 10 and mousePos.y > 10 and mousePos.y < 10 + githubText.get_height():
+            # if clicked, open the github page
+            if mouseDown:
+                try:
+                    webbrowser.open("https://github.com/Mr0o/PegglePy")
+                except Exception:
+                    print("webbrowser.open() failed")
+                    print("Error: ", Exception)
+            githubText = infoFont.render("Github: Mr0o", True, (0, 255, 255))
+            # draw a blue line under the text
+            pygame.draw.line(screen, (0, 255, 255), (WIDTH - githubText.get_width() - 10, 10 + githubText.get_height()), (WIDTH - 10, 10 + githubText.get_height()), 2)
+        else:
+            githubText = infoFont.render("Github: Mr0o", True, (255, 255, 255))
+            # draw a white line under the text
+            pygame.draw.line(screen, (255, 255, 255), (WIDTH - githubText.get_width() - 10, 10 + githubText.get_height()), (WIDTH - 10, 10 + githubText.get_height()), 2)
+        screen.blit(githubText, (WIDTH - githubText.get_width() - 10, 10))
 
 
         # debug
