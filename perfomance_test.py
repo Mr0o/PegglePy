@@ -6,20 +6,36 @@ from local.trajectory import findBestTrajectory
 from local.vectors import Vector
 from local.config import WIDTH, HEIGHT
 
+testMaxRange = 40
+testDepth = 1200
+testRunTime = 5
 runTest = False
 
 if __name__ == "__main__":
-    pegs, originPegs, orangeCount = loadLevel(createPegColors)
+    import sys
+    # take testMaxRange, testDepth, testRunTime and runTest as arguments
+    if len(sys.argv) == 4:
+        testMaxRange = int(sys.argv[1])
+        testDepth = int(sys.argv[2])
+        testRunTime = int(sys.argv[3])
+        runTestArg = str(sys.argv[4])
+        if runTestArg == "True":
+            runTest = True
+        elif runTestArg == "False":
+            runTest = False
+        else:
+            print("Invalid argument for runTest, must be 'True' or 'False'")
+            sys.exit(1)
+    
+    # load a level
+    pegs, originPegs, orangeCount, levelFileName = loadLevel()
+    print(f"Level: {levelFileName}")
+    print(f"Number of pegs: {len(pegs)}")
     startPos = Vector(WIDTH/2, 20)
     aim = Vector(WIDTH/2, HEIGHT/2)
 
     # run a performance test on the zenball findBestTrajectory function
     if runTest:
-        testMaxRange = 40
-        testDepth = 1200
-
-        testRunTime = 5 # how long to run the test in seconds
-
         times = []
         runStart = time.time()
 
