@@ -1,9 +1,11 @@
-#  This is my own Vector module that I created for the fun of it
-#  Plenty of vector libraries already exist that are more robust and have lots more features
-#  but the goal here is to keep it simple
-
-#  In here you will find a Vector class with methods for performing basic vector math
-#  All vector math is 2-Dimensional meaning that all Vectors have just an x and y component
+"""Author: Owen Smith (Mr0)
+\n This is my own Vector module that I created for the fun of it
+\n Plenty of vector libraries already exist that are more robust and have lots more features
+\n but the goal here is to keep it simple
+\n --
+\n In here you will find a Vector class with methods for performing basic vector math
+\n All vector math is 2-Dimensional meaning that all Vectors have just an x and y component
+"""
 
 from math import atan2, sqrt, cos, sin
 from random import randint  # used for random integers
@@ -28,8 +30,8 @@ class Vector:
     def normalize(self) -> None:
         mag = self.getMag()
         if mag != 0:  # divide vector by magnitude to create a unit vector
-            self.x = self.x / mag
-            self.y = self.y / mag
+            self.x /= mag
+            self.y /= mag
 
     #  given a magnitude and components x and y, this will normalize and scale the given vector
     def setMag(self, mag: float) -> None:
@@ -62,6 +64,22 @@ class Vector:
     def div(self, d: float) -> None:
         self.x /= d
         self.y /= d
+
+    # __add__ is a special method that allows us to use the + operator to add two vectors together
+    def __add__(self, vec: 'Vector') -> 'Vector':
+        return Vector(self.x + vec.x, self.y + vec.y)
+
+    # __sub__ is a special method that allows us to use the - operator to subtract two vectors
+    def __sub__(self, vec: 'Vector') -> 'Vector':
+        return Vector(self.x - vec.x, self.y - vec.y)
+
+    # __mul__ is a special method that allows us to use the * operator to multiply a vector by a scalar value
+    def __mul__(self, m: float) -> 'Vector':
+        return Vector(self.x * m, self.y * m)
+
+    # __truediv__ is a special method that allows us to use the / operator to divide a vector by a scalar value
+    def __truediv__(self, d: float) -> 'Vector':
+        return Vector(self.x / d, self.y / d)
     
     #  return the angle of the vector
     def getAngleRad(self) -> float:
