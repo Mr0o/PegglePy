@@ -9,7 +9,6 @@ from local.collision import isBallTouchingPeg
 
 import pygame
 
-
 class Bucket:
     def __init__(self):
         ## normal bucket
@@ -40,7 +39,7 @@ class Bucket:
         self.fakePegs = [peg1, peg2]
 
     def update(self, powerUp = "none", powerActive = False):
-
+        back_img_width = self.bucketBackImg.get_width()
         # TODO properly implemnt lerping (Only works if WIDTH == 1200)
         if WIDTH == 1200:
             # remaining distance if velocity is negative
@@ -48,8 +47,7 @@ class Bucket:
                 remainingDistToEdge = self.pos.x
             # remaining distance if velocity is positive
             elif self.vel.x > 0:
-                remainingDistToEdge = WIDTH - self.pos.x - self.bucketBackImg.get_width()
-
+                remainingDistToEdge = WIDTH - self.pos.x - back_img_width
             #slow down the bucket as it apporaches the egde of the screen
             if remainingDistToEdge < WIDTH/5.5:
                 self.vel.x *= 0.99
@@ -57,24 +55,23 @@ class Bucket:
             elif remainingDistToEdge > WIDTH/9:
                 self.vel.x /= 0.99
             
-            if self.vel.getMag() < 0.1:
-                self.vel.setMag(0.1)
+            if abs(self.vel.x) < 0.1:
+                if self.vel.x >= 0: self.vel.x = 0.1
+                else: self.vel.x = -0.1
             
-            self.vel.limitMag(bucketVelocity)
-        
-        # use static movement if the width is not 1200
+            if abs(self.vel.x) > bucketVelocity:
+                if self.vel.x >= 0: self.vel.x = bucketVelocity
+                else: self.vel.x = -bucketVelocity
 
         # if bucket collided with wall
-        if self.pos.x > (WIDTH - self.bucketBackImg.get_width()) or self.pos.x < self.bucketBackImg.get_width() - 300:
+        if self.pos.x > (WIDTH - back_img_width) or self.pos.x < back_img_width - 300:
             self.vel.x *= -1
 
         # resolve out of bounds edge cases
-        if self.pos.x < self.bucketBackImg.get_width() - 300:
-            self.pos.x = self.bucketBackImg.get_width() - 300
-        elif self.pos.x > WIDTH - self.bucketBackImg.get_width():
-            self.pos.x = WIDTH - self.bucketBackImg.get_width()
-
-        #print(self.vel.x)
+        if self.pos.x < back_img_width - 300:
+            self.pos.x = back_img_width - 300
+        elif self.pos.x > WIDTH - back_img_width:
+            self.pos.x = WIDTH - back_img_width
         
         # update position
         self.pos.add(self.vel)
@@ -90,7 +87,7 @@ class Bucket:
             self.fakePegs.append(closedBucketFakePeg)
         elif (powerUp != "spooky" or not powerActive) and len(self.fakePegs) > 2:
             self.fakePegs.pop() # remove the last peg
-    
+  
     def reset(self):
         self.pos = Vector(WIDTH/2, HEIGHT - self.bucketBackImg.get_height())  # position
         self.vel = Vector(-bucketVelocity/2, 0)  # velocity
@@ -112,10 +109,10 @@ class Bucket:
     
     # the bucket has fake pegs on the edges, this is so the ball can bounce off of the bucket
     def isBallCollidingWithBucketEdge(self, ball):
-        for fakePeg in self.fakePegs.copy():
+        for fakePeg in self.fakePegs:
             if isBallTouchingPeg(ball.pos.x, ball.pos.y, ball.radius, fakePeg.pos.x, fakePeg.pos.y, fakePeg.radius):
-                return True, fakePeg
-        return False, None
+                return fakePeg
+        return None
 
     def isInBucket(self, x, y):
         return (y > HEIGHT - self.bucketBackImg.get_height()+12 and (x > self.pos.x - self.bucketBackImg.get_width() + 165*2 and x < self.pos.x + self.bucketBackImg.get_width() - 30))

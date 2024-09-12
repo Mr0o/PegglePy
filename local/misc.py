@@ -1,5 +1,5 @@
 import pygame
-from math import sqrt
+from math import sqrt, ceil
 from random import randint
 
 ### local imports ###
@@ -23,29 +23,31 @@ def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
 
 def getBallScreenLocation(b: Ball, segmentCount) -> list[int]:
     segmentWidth = WIDTH/segmentCount
-    locations = []
-    for i in range(segmentCount+1):
-        if b.pos.x > segmentWidth*(i-1) - b.radius and b.pos.x < segmentWidth*i + b.radius:
-            locations.append(i)
+    pos1 = ceil((b.pos.x - b.radius)/segmentWidth)
+    pos2 = ceil((b.pos.x + b.radius)/segmentWidth)
 
-    return locations
+    if pos1 == pos2: return [pos1]
+    else: return [pos1, pos2]
+
+    # for i in range(segmentCount+1):
+    #     if b.pos.x > segmentWidth*(i-1) - b.radius and b.pos.x < segmentWidth*i + b.radius:
+    #         locations.append(i)
+    #         break
+
+    # return locations
 
 
 def getScoreMultiplier(remainingOrangePegs, pegsHit=0) -> int:
     # first multiplier based on remaining orange pegs
     multiplier = 1
-    if remainingOrangePegs >= 30:
-        multiplier = 1
-    elif remainingOrangePegs >= 25 and remainingOrangePegs < 30:
-        multiplier = 2
-    elif remainingOrangePegs >= 15 and remainingOrangePegs < 25:
+    if remainingOrangePegs <= 3:
+        multiplier = 10
+    elif remainingOrangePegs <= 6:
         multiplier = 5
-    elif remainingOrangePegs >= 5 and remainingOrangePegs < 15:
-        multiplier = 100
-    elif remainingOrangePegs >= 2 and remainingOrangePegs < 5:
-        multiplier = 500
-    elif remainingOrangePegs >= 1 and remainingOrangePegs < 2:
-        multiplier = 2000
+    elif remainingOrangePegs <= 10:
+        multiplier = 3
+    elif remainingOrangePegs <= 15:
+        multiplier = 2
 
     # second multiplier based on number of pegs hit by the current ball
     if pegsHit >= 10 and pegsHit < 15:
@@ -62,50 +64,59 @@ def getScoreMultiplier(remainingOrangePegs, pegsHit=0) -> int:
         multiplier *= 100
     return multiplier
 
-
-def createPegColors(pegs: list[Peg]) -> list[Peg]:
-    orangeCount = 25
-
-    if len(pegs) < 25:
-        if debug:
-            print("WARN: Level has less than 25 pegs, continuing anyway...")
-        orangeCount = len(pegs) - 1
-    elif len(pegs) > 120:
-        if debug:
-            print(
-                "WARN: Level has excessive number of pegs, expect performance issues...")
-
-    # create orange pegs
-    numOfOrangePegs = 0
-    while (numOfOrangePegs < orangeCount):
-        i = randint(0, len(pegs)-1)
-        p = pegs[i]
-        p.color = "orange"
-        p.isOrang = True
-        p.update_color()
-
-        # must have exactly 25 orange pegs
-        numOfOrangePegs = 0
-        for peg in pegs:
+def createPegColors(pegs: list[Peg], color_map: list = None) -> list[Peg]:
+    if color_map:
+        # update peg colors with a fixed map
+        for i in range(0, len(pegs)):
+            peg = pegs[i]
+            peg.color = color_map[i]
             if peg.color == "orange":
-                numOfOrangePegs += 1
+                peg.isOrange = True
+            elif peg.color == "green":
+                peg.isPowerUp = True
+            peg.update_color()
+    else:
+        target_oranges = 25
+        target_greens = 2
 
-        # invalid level, but we'll allow it with a warning
+        if len(pegs) < 25:
+            if debug:
+                print("WARN: Level has less than 25 pegs, continuing anyway...")
+            target_oranges = 1 if len(pegs) <= 3 else len(pegs) - 2
+            if len(pegs) <= 2:
+                target_greens = len(pegs) - target_oranges
+        elif len(pegs) > 120:
+            if debug:
+                print(
+                    "WARN: Level has excessive number of pegs, expect performance issues...")
 
-    # create green pegs
-    for _ in range(2):
-        i = randint(0, len(pegs)-1)
-        p = pegs[i]
-        p.color = "green"
-        p.isPowerUp = True
-        p.update_color()
+        peg_pool = pegs.copy()
+
+        # create orange pegs
+        orange_count = 0
+        while orange_count < target_oranges:
+            i = randint(0, len(peg_pool) - 1)
+            p = peg_pool.pop(i)
+            p.color = "orange"
+            p.isOrange = True
+            p.update_color()
+
+            orange_count += 1
+
+        # create green pegs
+        for _ in range(target_greens):
+            i = randint(0, len(peg_pool) - 1)
+            p = peg_pool.pop(i)
+            p.color = "green"
+            p.isPowerUp = True
+            p.update_color()
 
     return pegs
 
 
-def loadLevel() -> tuple[list[Peg], list[Peg], int]:
+def loadLevel(filePath = None) -> tuple[list[Peg], list[Peg], int]:
     # load the pegs from a level file (pickle)
-    pegs, levelFileName = loadData()
+    pegs, levelFileName = loadData(filePath)
     originPegs = pegs.copy()
 
     pegs = createPegColors(pegs)
@@ -192,14 +203,12 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
 # quite horrendous, will be fixed in the future... hopefully :)
 def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
     # reset everything
-    shouldClear = False
     balls.clear()  # clear all the balls
     balls.append(Ball(WIDTH/2, HEIGHT/25))  # recreate the original ball
     ball = balls[0]
     ball.reset()
     pitch = 1.0
     pitchRaiseCount = 0
-    done = False
     powerUpActive = False
     powerUpCount = 0
     ball = balls[0]
@@ -217,7 +226,6 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     ballsRemaining = 10
     pegsHit = 0
     bucket.reset()
-    lastHitPeg = None
     gameOver = False
     alreadyPlayedOdeToJoy = False
     frameRate = 144

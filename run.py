@@ -12,7 +12,7 @@ try:
 
     # refer to the vectors.py module for information on these functions
     from local.vectors import Vector, subVectors
-    from local.collision import isBallTouchingPeg, resolveCollision, isBallTouchingPeg_old, resolveCollision_old
+    from local.collision import isBallTouchingPeg, resolveCollision
 
     from local.ball import Ball
     from local.peg import Peg
@@ -132,6 +132,7 @@ if selection != "quit":
     if editorSelection != "play":
         pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
         #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
+        #pegs, originPegs, orangeCount, levelFileName = loadLevel("levels/Level 1.lvl")
 
         delayTimer = TimedEvent(0.5)
     else:
@@ -234,8 +235,6 @@ while gameRunning:
                 speedHack = not speedHack
             if event.key == pygame.K_9:
                 debugAutoRemovePegsTimer = not debugAutoRemovePegsTimer
-            if event.key == pygame.K_r:
-                useCPhysics = not useCPhysics
             # toggle zoom
             if event.key == pygame.K_x:
                 zoomInOnBall = not zoomInOnBall
@@ -575,17 +574,17 @@ while gameRunning:
         for b in balls:
             if b.isAlive:
                 ballScreenPosList = getBallScreenLocation(b, segmentCount)
+                ball_pos_1 = ballScreenPosList[0]
+                if len(ballScreenPosList) > 1:
+                    ball_pos_2 = ballScreenPosList[1]
+                else: ball_pos_2 = False
                 #### collision ####
                 for p in pegs:
 
                     # if the current peg is the last remaining orange peg then apply special effects
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
-                        if useCPhysics:
-                            ballTouchingPeg = isBallTouchingPeg(
-                                p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
-                        else:
-                            ballTouchingPeg = isBallTouchingPeg_old(
-                                p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
+                        ballTouchingPeg = isBallTouchingPeg(
+                            p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
                         if ballTouchingPeg:
                             if frameRate != 27 and len(balls) < 2:
                                 if soundEnabled:
@@ -600,27 +599,12 @@ while gameRunning:
                             frameRate = 144
 
                     # ball physics and game logic
-                    shouldCheckCollision = False
-                    for ballScreenPos in ballScreenPosList:
-                        for pegScreenLocation in p.pegScreenLocations:
-                            if ballScreenPos == pegScreenLocation:
-                                shouldCheckCollision = True
-
-                    if shouldCheckCollision:
-                        if useCPhysics:
-                            ballTouchingPeg = isBallTouchingPeg(
-                                p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
-                        else:
-                            ballTouchingPeg = isBallTouchingPeg_old(
-                                p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
+                    if ball_pos_1 in p.pegScreenLocations or (ball_pos_2 and ball_pos_2 in p.pegScreenLocations):
+                        ballTouchingPeg = isBallTouchingPeg(
+                            p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
                         if ballTouchingPeg:
                             # resolve the collision between the ball and peg
-                            if useCPhysics:
-                                # use the c implementation of the collision check
-                                b = resolveCollision(b, p)
-                            else:
-                                # use the python implementation of the collision check
-                                b = resolveCollision_old(b, p)
+                            b = resolveCollision(b, p)
 
                             # save the peg that was last hit, used for when the ball is stuck and for bonus points
                             b.lastPegHit = p
@@ -762,15 +746,9 @@ while gameRunning:
                 b.update()
 
                 # check if ball has hit the sides of the bucket
-                isBallCollidedBucket, collidedPeg = bucket.isBallCollidingWithBucketEdge(
-                    b)
-                if isBallCollidedBucket:
-                    if useCPhysics:
-                        # use the c implementation of the collision check
-                        b = resolveCollision(b, collidedPeg)
-                    else:
-                        # use the python implementation of the collision check
-                        b = resolveCollision_old(b, collidedPeg)
+                collidedPeg = bucket.isBallCollidingWithBucketEdge(b)
+                if collidedPeg:
+                    b = resolveCollision(b, collidedPeg)
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
@@ -1217,11 +1195,6 @@ while gameRunning:
         ballVelText = debugFont.render(
             "Velocity: " + str(ball.vel.getMag()), False, (255, 255, 255))
         screen.blit(ballVelText, (100, 20))
-        # print which collision method is being used
-        if useCPhysics:
-            collisionMethodText = debugFont.render(
-                "Using Ctypes: True", False, (255, 255, 255))
-            screen.blit(collisionMethodText, (245, 50))
         # draw zenball trajectory (can cause a noticable performance hit due to the number of circles being drawn)
         if not done and powerUpType == "zenball" and bestTrajectory:
             if debugStaticImage == None:
