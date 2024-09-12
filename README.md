@@ -1,7 +1,7 @@
 # PegglePy
 A clone of peggle written in python using pygame
 
-I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the codebase is quite terryfying to look at. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
+I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the resulting code is something I am less proud of. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
 
 
 # Screenshots
@@ -48,6 +48,11 @@ These should be installed automatically when you run the game, but if they are n
 pip3 install -r requirements.txt
 ```
 Tkinter may need to be installed separately on linux
+
+To skip the automated installation of the dependencies, you can pass the arguement '--skip-auto-install' when running the game
+```
+python3 run.py --skip-auto-install
+```
 
 <br/>
 
@@ -99,13 +104,7 @@ Tkinter may need to be installed separately on linux
 - To enable a perfomance hack (speedHack), press 8
 - to show the timer values on all the pegs, press 9 (must have debug enabled)
 - To enable slow motion (cap framerate to 30), press 0
-- To enable and disable the C implementation of the physics, press R (this will have no effect if the flag '--no-cphysics' is used when starting the game)
 - To test the zoom feature, press X (Will zoom in on the ball, unless there is one last orange peg, then it will zoom in on the peg)
-
-### Additional notes
-- There is some C code in the c_src folder, I am working on some C implementations of the physics calculations to improve performance
-- In the config.py there is a useCPhysics variable, this can be set to True to use the C code or False to use the python code. By default it is set to True.
-- The C code is using ctypes and currently does seem to have an increased overhead, so it can actually be slower than the python code. But in most cases it makes almost no difference. (Hopefully this will lead to some performance improvements in the future)
 
 ### Command line arguements
 -  You may pass the arguement '-h' or '--help' to see a list of all the command line arguements
@@ -120,7 +119,11 @@ python3 run.py -f
 ```
 python3 run.py -d
 ```
--  You may pass the arguement '--no-cphysics' to start the game without using the C implementation of the physics calculations
+- You may pass the arguement '--run-auto-install' to automatically install the dependencies
 ```
-python3 run.py --no-cphysics
+python3 run.py --run-auto-install
+```
+- You may pass the arguement '--skip-auto-install' to skip the automatic installation of the dependencies
+```
+python3 run.py --skip-auto-install
 ```
