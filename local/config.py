@@ -37,23 +37,36 @@ def installDependencies():
                     print("ERROR: Failed to install dependencies. Please make sure that pip is installed and try again.")
                     print("Details: " + str(e))
                     sys.exit(1)
+    
+    return True
 
 
-installDependencies()
+import sys
+
+# run the function to install the dependencies if the --run-auto-install flag is passed
+if "--run-auto-install" in sys.argv:
+    if installDependencies():
+        print("\nDependencies installed successfully.")
+    exit()
+    
+# skip installing dependencies if the --skip-auto-install flag is passed
+if "--skip-auto-install" not in sys.argv:
+    installDependencies()
+    
 
 import pygame
-import sys
 
 # check if the script has been passed '-h' or '--help' as an argument
 if "-h" in sys.argv or "--help" in sys.argv:
     print("Usage: python3 run.py [OPTIONS]")
     print("Options:")
-    print(" -h, --help       \t Display this help message")
-    print(" -f, --fullscreen \t Launch the game in fullscreen mode")
-    print(" -d, --debug      \t Show debugging information")
-    print(" --no-cphysics    \t Disable the C implementation of the collision physics")
-    print(" --no-max-velocity\t Disable the maximum velocity of the ball")
-    print(" --no-gravity     \t Disable gravity")
+    print(" -h, --help         \t Display this help message")
+    print(" -f, --fullscreen   \t Launch the game in fullscreen mode")
+    print(" -d, --debug        \t Show debugging information")
+    print(" --no-max-velocity  \t Disable the maximum velocity of the ball")
+    print(" --no-gravity       \t Disable gravity")
+    print(" --run-auto-install \t Automatically install dependencies")
+    print(" --skip-auto-install\t Skip automatically installing dependencies")
     sys.exit(0)
 
 # hard coded window size, the game is not designed to be resized, even though it technically can be
@@ -98,13 +111,6 @@ soundVolume = 0.4 # 0.0 - 1.0
 # enable or disable music
 musicEnabled = True
 musicVolume = 0.4 # 0.0 - 1.0
-
-# use c implementation of the collision physics (should be faster, but I have found in testing that it can actually be slower. Probably because of increased overhead)
-# check if the script has been passed '--no-cphysics' as an argument
-if "--no-cphysics" in sys.argv:
-    useCPhysics = False
-else:
-    useCPhysics = True
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 5.0
