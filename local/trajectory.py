@@ -3,8 +3,8 @@ import time
 from local.vectors import Vector, subVectors
 from local.ball import Ball
 from local.peg import Peg
-from local.config import LAUNCH_FORCE, trajectoryDepth, WIDTH, HEIGHT, segmentCount, useCPhysics
-from local.collision import isBallTouchingPeg, resolveCollision, isBallTouchingPeg_old, resolveCollision_old
+from local.config import LAUNCH_FORCE, trajectoryDepth, WIDTH, HEIGHT, segmentCount
+from local.collision import isBallTouchingPeg, resolveCollision
 from local.misc import getBallScreenLocation
 
 def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
@@ -41,10 +41,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                             shouldCheckCollision = True 
     
                 if shouldCheckCollision:
-                    if useCPhysics:
-                        ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
                         return fakeBalls
         elif collisionGuideBall and not hit: # if guideBall powerup is being used
@@ -56,15 +53,9 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                             shouldCheckCollision = True 
                             
                 if shouldCheckCollision:
-                    if useCPhysics:
-                        ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
-                        if useCPhysics:
-                            fakeBall = resolveCollision(fakeBall, p)
-                        else:
-                            fakeBall = resolveCollision_old(fakeBall, p)
+                        fakeBall = resolveCollision(fakeBall, p)
                         hit = True
         elif not collisionGuideBall: # ##normal## if ball has collided then stop calculating and return
             for p in pegs:
@@ -75,18 +66,12 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                             shouldCheckCollision = True 
 
                 if shouldCheckCollision:
-                    if useCPhysics:
-                        ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
                         if not debug:
                             return fakeBalls
                         else:
-                            if useCPhysics:
-                                fakeBall = resolveCollision(fakeBall, p)
-                            else:
-                                fakeBall = resolveCollision_old(fakeBall, p)
+                            fakeBall = resolveCollision(fakeBall, p)
 
             
         fakeBall.update()
@@ -147,15 +132,9 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
                             shouldCheckCollision = True 
                             
                 if shouldCheckCollision:
-                    if useCPhysics:
-                            ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    else:
-                        ballTouchingPeg = isBallTouchingPeg_old(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
-                        if useCPhysics:
-                            fakeBall = resolveCollision(fakeBall, p)
-                        else:
-                            fakeBall = resolveCollision_old(fakeBall, p)
+                        fakeBall = resolveCollision(fakeBall, p)
                         # add points
                         if not p.isHit: 
                             p.isHit = True
