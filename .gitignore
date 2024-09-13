@@ -7,6 +7,8 @@ PegglePy_Demo.mkv
 __pycache__
 .vscode/c_cpp_properties.json
 
+user.cfg
+
 # ignore all level files except for 'official' levels
 ```
 *.lvl
