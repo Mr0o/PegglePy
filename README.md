@@ -11,6 +11,9 @@ I started this project after thinking that recreating Peggle would be simple and
 _Art/Resources borrowed from [FergusGriggs](https://github.com/FergusGriggs/PeggleTutorial)_
 
 _PopCap and Peggle are trademarks of Electronic Arts Inc. This project is not affiliated with or endorsed by Electronic Arts Inc._
+_Art/Resources borrowed from [FergusGriggs](https://github.com/FergusGriggs/PeggleTutorial)_
+
+_PopCap and Peggle are trademarks of Electronic Arts Inc. This project is not affiliated with or endorsed by Electronic Arts Inc._
 
 
 
