@@ -22,7 +22,7 @@ from loadLevelMenu import loadLevelMenu
 
 
 ## the level editor function (called from run.py via the user menu selection) ##
-def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = configs["DEBUG_MODE"], standalone: bool = False, pegs: list[Peg] = []) -> str:
+def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bool = False, pegs: list[Peg] = []) -> str:
     # warning timer for displaying warning messages
     warningTimer = TimedEvent()
     savedTimer = TimedEvent()

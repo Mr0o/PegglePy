@@ -966,7 +966,7 @@ while gameRunning:
             powerUpTextColor = (50, 170, 20)
         powerUpText = infoFont.render(
             powerUpType + ": " + str(powerUpCount), False, powerUpTextColor)
-        screen.blit(powerUpText, (int(configs["RESOLUTION"][0]/2 - powerUpText.get_width()/2), 50))
+        screen.blit(powerUpText, (int(configs["RESOLUTION"][0]/2 - powerUpText.get_width()/2), 5))
 
     # show if paused
     if gamePaused and not gameOver:
@@ -1051,18 +1051,18 @@ while gameRunning:
         elif pauseSelection == "editor":
             gamePaused = False
             time.sleep(0.5)  # prevent accidental click on launch
-            levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, configs["DEBUG_MODE"], False, originPegs.copy())
+            levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, False, originPegs.copy())
             if levelEditorPauseSelection == "quit":
                 gameRunning = False
             elif levelEditorPauseSelection == "mainMenu":
                 selection = "mainMenu"
                 while selection == "mainMenu":
-                    selection = mainMenu(screen, configs["DEBUG_MODE"])
+                    selection = mainMenu(screen)
                     if selection == "quit":
                         gameRunning = False
                     elif selection == "editor":
                         time.sleep(0.5)
-                        levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, configs["DEBUG_MODE"])
+                        levelEditorPauseSelection, editorPegs = levelEditor(screen, clock)
                         if levelEditorPauseSelection == "quit":
                             gameRunning = False
                         elif levelEditorPauseSelection == "mainMenu":
@@ -1086,7 +1086,7 @@ while gameRunning:
                         
                         
                     elif selection == "settings":
-                        if settingsMenu(screen, configs["DEBUG_MODE"]) == "mainMenu":
+                        if settingsMenu(screen) == "mainMenu":
                             selection = "mainMenu"
                     
                 # reset the game
@@ -1122,7 +1122,7 @@ while gameRunning:
     # show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
-        screen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/2 - pauseText.get_height()/2))
+        screen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/4))
         if ballsRemaining >= 0 and orangeCount < 1:
             # add commas to the score (e.g. 1000000 -> 1,000,000)
             formattedScore = ""
@@ -1132,10 +1132,10 @@ while gameRunning:
                     formattedScore += ","
 
             scoreText = menuFont.render(formattedScore, False, (20, 60, 255))
-            screen.blit(scoreText, (configs["RESOLUTION"][0]/2 - scoreText.get_width()/2, configs["RESOLUTION"][1]/2 - scoreText.get_height()/2 + 50))
+            screen.blit(scoreText, (configs["RESOLUTION"][0]/2 - scoreText.get_width()/2, configs["RESOLUTION"][1]/3 + 50))
         else:
             tryAgainText = menuFont.render("Try Again", False, (255, 60, 20))
-            screen.blit(tryAgainText, (configs["RESOLUTION"][0]/2 - tryAgainText.get_width()/2, configs["RESOLUTION"][1]/2 - tryAgainText.get_height()/2 + 50))
+            screen.blit(tryAgainText, (configs["RESOLUTION"][0]/2 - tryAgainText.get_width()/2, configs["RESOLUTION"][1]/2.2))
 
     # show the long shot score text only for a few seconds
     longShotTextTimer.update()
