@@ -54,8 +54,6 @@ if "--skip-auto-install" not in sys.argv:
     installDependencies()
     
 
-import pygame
-
 # check if the script has been passed '-h' or '--help' as an argument
 if "-h" in sys.argv or "--help" in sys.argv:
     print("Usage: python3 run.py [OPTIONS]")
@@ -69,22 +67,25 @@ if "-h" in sys.argv or "--help" in sys.argv:
     print(" --skip-auto-install\t Skip automatically installing dependencies")
     sys.exit(0)
 
-# hard coded window size, the game is not designed to be resized, even though it technically can be
-WIDTH = 1200
-HEIGHT = 900 
+
+### load user settings ###
+from local.userConfig import configs, loadSettings
+loadSettings()
+
+import pygame
 
 # check if the script has been passed '-f' or '--fullscreen' as an argument
 if "-f" in sys.argv or "--fullscreen" in sys.argv:
-    FULLSCREEN = True
-else:
-    FULLSCREEN = False
+    configs["FULLSCREEN"] = True
 
-if FULLSCREEN:
+if configs["FULLSCREEN"]:
     # get the resolution of the display monitor
     pygame.init()
     infoObject = pygame.display.Info()
-    WIDTH = infoObject.current_w
-    HEIGHT = infoObject.current_h
+    configs["RESOLUTION"] = (infoObject.current_w, infoObject.current_h)
+else:
+    # set the resolution to the default value
+    configs["RESOLUTION"] = (1200, 900)
 
 #power up (spooky, multiball, zenball, guideball, spooky-multiball)
 powerUpType = "spooky"
@@ -95,22 +96,12 @@ cheats = False
 # debugging (displays debugging information to the screen)
 # check if the script has been passed '-d' or '--debug' as an argument
 if "-d" in sys.argv or "--debug" in sys.argv:
-    debug = True
-else:
-    debug = False
+    configs["DEBUG_MODE"] = True
 
 # when there are lots of pegs on the screen (perhaps more than a few hundred, lol), you might see performance hiccups
 # this can be set to true to improve performance at the cost of visual weirdness 
 # (when a peg gets hit, normally the entire frame of pegs is redrawn, but with this enabled, only the peg that was hit is redrawn, which means the pegs that are hit will be drawn out of order)
 speedHack = False
-
-# enable or diasble sound effects
-soundEnabled = True
-soundVolume = 0.4 # 0.0 - 1.0
-
-# enable or disable music
-musicEnabled = True
-musicVolume = 0.4 # 0.0 - 1.0
 
 # a bunch of variables (defaults)
 LAUNCH_FORCE = 5.0
@@ -141,8 +132,9 @@ segmentCount = 20
 autoRemovePegs = True
 autoRemovePegsTimerValue = 0.8 # how much time in seconds to wait before removing a peg that a ball is stuck on
 debugAutoRemovePegsTimer = False # if true, each pegs autoRemovePegsTimer will be displayed on the screen
-longShotDistance = WIDTH/3
+longShotDistance = configs["RESOLUTION"][0] / 3     # WIDTH / 3
 frameRate = 144 # the game speed is currently tied to the framerate, unfortunately, which means that you should NOT change this value
+# TODO: Decouple the game logic from the framerate
 ballRad = 12
 pegRad = 25
 
