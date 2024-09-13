@@ -3,12 +3,14 @@ A clone of peggle written in python using pygame
 
 I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the resulting code is something I am less proud of. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
 
-
 # Screenshots
 <img src="screenshots/Screenshot from 2023-06-14 21-07-23.png" width="700"/>
 <img src="screenshots/Screenshot from 2023-06-14 21-07-53.png" width="700"/>
 <img src="screenshots/Screenshot from 2023-06-14 21-15-21.png" width="700"/>
 
+_Art/Resources borrowed from [FergusGriggs](https://github.com/FergusGriggs/PeggleTutorial)_
+
+_PopCap and Peggle are trademarks of Electronic Arts Inc. This project is not affiliated with or endorsed by Electronic Arts Inc._
 
 
 
