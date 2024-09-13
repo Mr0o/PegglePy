@@ -110,8 +110,8 @@ LAUNCH_FORCE = 5.0
 if "--no-max-velocity" in sys.argv:
     maxBallVelocity = 9999
 else:
-    maxBallVelocity = 8 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
-defaultBallMass = 6
+    maxBallVelocity = 7 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
+defaultBallMass = 4
 defaultPegMass = 32 # the pegs mass doesnt really matter, but they need to have a mass in order for the physics to be calculated when a ball hits the pegs (in this case I have determined that 32 is a good number, magic)
 # check if the script has been passed '--no-gravity' as an argument
 if "--no-gravity" in sys.argv:
@@ -131,7 +131,7 @@ previousAim = Vector(0,1)
 shouldClear = False
 segmentCount = 20
 autoRemovePegs = True
-autoRemovePegsTimerValue = 0.8 # how much time in seconds to wait before removing a peg that a ball is stuck on
+autoRemovePegsTimerValue = 0.2 # how much time in seconds to wait before removing a peg that a ball is stuck on
 debugAutoRemovePegsTimer = False # if true, each pegs autoRemovePegsTimer will be displayed on the screen
 longShotDistance = configs["RESOLUTION"][0] / 3     # WIDTH / 3
 frameRate = 144 # the game speed is currently tied to the framerate, unfortunately, which means that you should NOT change this value
