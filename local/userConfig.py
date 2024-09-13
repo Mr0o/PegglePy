@@ -12,6 +12,8 @@ configs = {
     "MUSIC_VOLUME": 0.4
 }
 
+defaultConfigs = configs.copy()
+
 # read the user.cfg file and set the variables
 def loadSettings() -> None:
     # the user.cfg contains settings such as resolution, sound volume, music volume, etc.
