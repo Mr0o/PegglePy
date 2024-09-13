@@ -1,7 +1,6 @@
 from math import sqrt
 from local.ball import Ball
 from local.peg import Peg
-from local.config import debug
 
 def isBallTouchingPeg(b1x, b1y, b1r, b2x, b2y, b2r) -> bool:
     return ((b1x-b2x)*(b1x-b2x) + (b1y-b2y)*(b1y-b2y)) < (b1r+b2r)*(b1r+b2r)

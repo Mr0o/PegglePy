@@ -9,7 +9,7 @@ except ImportError:
 
 import pickle # sort of abusing pickle to save the level data (it works, but I dont really think pickle is meant for this)
 
-from local.config import debug, WIDTH, HEIGHT
+from local.userConfig import configs
 
 from local.peg import Peg
 
@@ -20,7 +20,7 @@ if tkinterInstalled:
         main_win.withdraw()
 
         main_win.overrideredirect(True)
-        main_win.geometry('0x0+0'+str(round(WIDTH/2))+'+'+str(round(HEIGHT/2)))
+        main_win.geometry('0x0+0'+str(round(configs["RESOLUTION"][0]/2))+'+'+str(round(configs["RESOLUTION"][1]/2)))
 
         main_win.deiconify()
         main_win.lift()
@@ -38,7 +38,7 @@ if tkinterInstalled:
         if str(selected_file) == '()' or str(selected_file) == '':
             selected_file = None
 
-        if debug:
+        if configs["DEBUG_MODE"]:
             print("File selected: '" + str(selected_file) +"'")
 
         # returns the path to the selected file
@@ -51,7 +51,7 @@ if tkinterInstalled:
         main_win.withdraw()
 
         main_win.overrideredirect(True)
-        main_win.geometry('0x0+0'+str(round(WIDTH/2))+'+'+str(round(HEIGHT/2)))
+        main_win.geometry('0x0+0'+str(round(configs["RESOLUTION"][0]/2))+'+'+str(round(configs["RESOLUTION"][1]/2)))
 
         main_win.deiconify()
         main_win.lift()
@@ -68,11 +68,11 @@ if tkinterInstalled:
         main_win.destroy()
 
         if selected_file == None:
-            if debug:
+            if configs["DEBUG_MODE"]:
                 print("WARN: File was not saved")
             return None
 
-        if debug:
+        if configs["DEBUG_MODE"]:
             print("File saved: '" + str(selected_file.name) +"'")
 
         # returns the path to the selected file
@@ -104,13 +104,13 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
                 posList = pickle.load(f)
 
         except Exception: # if the file selected is invalid generate the default level and use it instead
-            if debug:
+            if configs["DEBUG_MODE"]:
                 print("WARN: Unable to open file: \"" + str(filePath) + "\". using default level (No file created or loaded)")
 
             posList = createDefaultPegsPos()
 
     # if no file was selected
-    elif filePath == None and debug:
+    elif filePath == None and configs["DEBUG_MODE"]:
         print("WARN: No file selected, using default level (No file created or loaded)")
         
 
@@ -121,7 +121,7 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
         pegs.append(Peg(x, y))
     
     if centerPegs:
-        # adjust the positions of every peg to be centered on the screen based on WIDTH and HEIGHT
+        # adjust the positions of every peg to be centered on the screen based on configs["RESOLUTION"][0] and configs["RESOLUTION"][1]
         # get the position of the left most peg
         leftMostPeg = pegs[0]
         for peg in pegs:
@@ -135,7 +135,7 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
         # find the center of the left most and right most pegs
         centerOfLeftAndRightPegs = (leftMostPeg.pos.x + rightMostPeg.pos.x)/2
         # find the center of the screen
-        screenCenter = WIDTH/2
+        screenCenter = configs["RESOLUTION"][0]/2
         # find the difference between the center of the screen and the center of the left and right most pegs
         difference = screenCenter - centerOfLeftAndRightPegs
 
@@ -158,7 +158,7 @@ def saveData(pegs: list[Peg], filePath: str | None = None):
         with open(filePath, 'wb') as f:
             pickle.dump(posList, f)
     except Exception as e:
-        if debug:
+        if configs["DEBUG_MODE"]:
             print("ERROR: Unable to save file: \"" + str(filePath) + "\". Exception: " + str(e))
             print("Check that the file path is valid and that you have write permissions")
         return str(Exception)

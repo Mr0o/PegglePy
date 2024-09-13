@@ -2,10 +2,10 @@ import pygame
 import time
 import os
 
-from local.config import WIDTH, HEIGHT, debug, soundVolume
+from local.config import configs
 from local.resources import *
 from local.vectors import Vector
-from local.audio import playSoundPitch
+from local.audio import playSoundPitch, newSong
 from local.load_level import loadData
 from local.misc import createPegColors, loadDefaultLevel
 
@@ -67,16 +67,14 @@ def loadLevel(levelFilePath) -> tuple[list[Peg], list[Peg], int]:
 
 
 # this menu will be used to load levels
-def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg], list[Peg], int]:
+def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -> tuple[list[Peg], list[Peg], int]:
     # play menu music
-    pygame.mixer.music.load(menuMusicPath)
-    pygame.mixer.music.play(-1)
-    pygame.mixer.music.set_volume(soundVolume)
+    newSong()
 
     # button positions
     buttonScale = 2.5
     editorButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    backButtonPos = Vector(WIDTH - 50*buttonScale-20, HEIGHT - 50*buttonScale-20)
+    backButtonPos = Vector(configs["RESOLUTION"][0] - 50*buttonScale-20, configs["RESOLUTION"][1] - 50*buttonScale-20)
     backButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
      # scale the button images
@@ -106,11 +104,11 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
         return loadDefaultLevel()
 
     # create a list of pygame.Surface objects and load the level preview images
-    levelPreviewImgSizeW = WIDTH*0.3
-    levelPreviewImgSizeH = HEIGHT*0.3
+    levelPreviewImgSizeW = configs["RESOLUTION"][0]*0.3
+    levelPreviewImgSizeH = configs["RESOLUTION"][1]*0.3
     # find the value that should be used to scale the peg img and positions
-    levelPreviewImgScaleW = levelPreviewImgSizeW / WIDTH
-    levelPreviewImgScaleH = levelPreviewImgSizeH / HEIGHT
+    levelPreviewImgScaleW = levelPreviewImgSizeW / configs["RESOLUTION"][0]
+    levelPreviewImgScaleH = levelPreviewImgSizeH / configs["RESOLUTION"][1]
     levelPreviewImgs: list[pygame.Surface] = []
     for i in range(len(levelsList)):
         levelFilePath = levelsList[i]
@@ -143,7 +141,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             # quit if the user clicks the close button
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit()
+                exit()
             # check if the mouse button is pressed (mouse button down)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -160,7 +158,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             # check if 1 is pressed (debug)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    debug = not debug
+                    configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
 
             # check for gamepad dpad buttons
             if event.type == pygame.JOYHATMOTION:
@@ -180,7 +178,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                         backButtonPressed = True
                     if event.button == 8:  # the 'share' button on a ps4 controller
                         # enable or disable debug
-                        debug = not debug
+                        configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
 
                 else:  # xbox controller (default)
                     if event.button == 0:  # the 'A' button on an xbox controller
@@ -188,7 +186,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                     if event.button == 1:  # the 'B' button on an xbox controller
                         backButtonPressed = True
                     if event.button == 6:  # the 'start' button on an xbox controller
-                        debug = not debug
+                        configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
         
 
         # check for joystick input
@@ -280,7 +278,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
 
             # draw the level selection rectangle
             # position it at WIDHT/3 at the same length across all levels
-            rect = pygame.Rect(WIDTH/5, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, WIDTH/5*3, levelNameText.get_height() -1)
+            rect = pygame.Rect(configs["RESOLUTION"][0]/5, configs["RESOLUTION"][1]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, configs["RESOLUTION"][0]/5*3, levelNameText.get_height() -1)
 
             # maximum scroll value (scale the value by the height of the level name text)
             # get the position of the last level rect
@@ -292,8 +290,8 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             if i == len(levelsList)-1:
                 lastRectPos = rect.y
 
-            # how many levelNameText.get_height() will fit into HEIGHT
-            maxNumOfLevels = int(HEIGHT/levelNameText.get_height()) - 1
+            # how many levelNameText.get_height() will fit into configs["RESOLUTION"][1]
+            maxNumOfLevels = int(configs["RESOLUTION"][1]/levelNameText.get_height()) - 1
             # subtract maxNumOfLevels from maxNumOfLevels/5
             maxNumOfLevels -= int(maxNumOfLevels/5)
             
@@ -302,14 +300,14 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                 scrollValue = -lastRectPos/levelNameText.get_height() + maxNumOfLevels
 
             # move the rect over to the left
-            rect.x -= WIDTH/6
+            rect.x -= configs["RESOLUTION"][0]/6
 
             # check if the mouse is over the level selection rectangle (apply scroll value)
             if not controllerConnected:
                 if pygame.Rect(mousePos.x, mousePos.y - scrollValue*levelNameText.get_height(), 1, 1).colliderect(rect):
                     if mouseDown:
                         selection = levelFilePath
-                        if debug:
+                        if configs["DEBUG_MODE"]:
                             print ("Level selected: " + str(levelFilePath))
                     # mouse is hovering over the level selection rectangle
                     else:
@@ -317,7 +315,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                         levelNameText = menuButtonFont.render(levelName, True, color)
 
                         # blit the preview image at the top right corner of the screen
-                        screen.blit(levelPreviewImgs[i], (WIDTH - levelPreviewImgSizeW - 20, 20))
+                        screen.blit(levelPreviewImgs[i], (configs["RESOLUTION"][0] - levelPreviewImgSizeW - 20, 20))
             
             # controller cursor
             if controllerConnected:
@@ -326,7 +324,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
                     levelNameText = menuButtonFont.render(levelName, True, color)
 
                     # blit the preview image at the top right corner of the screen
-                    screen.blit(levelPreviewImgs[i], (WIDTH - levelPreviewImgSizeW - 20, 20))
+                    screen.blit(levelPreviewImgs[i], (configs["RESOLUTION"][0] - levelPreviewImgSizeW - 20, 20))
 
                     controllerIndexRectPos = rect.y
 
@@ -335,28 +333,28 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             rect.y += scrollValue*levelNameText.get_height()
 
             # only draw if the rect isn't off screen
-            if rect.y > -levelNameText.get_height() and rect.y < HEIGHT:
+            if rect.y > -levelNameText.get_height() and rect.y < configs["RESOLUTION"][1]:
                 pygame.draw.rect(screen, color, rect, 2)
 
             
             # apply scroll value
-            screen.blit(levelNameText, (WIDTH/5 +5 -WIDTH/6, HEIGHT/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + scrollValue*levelNameText.get_height()))
+            screen.blit(levelNameText, (configs["RESOLUTION"][0]/5 +5 -configs["RESOLUTION"][0]/6, configs["RESOLUTION"][1]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + scrollValue*levelNameText.get_height()))
 
 
         # if the controller select button is pressed
         if selectButtonPressed:
             selection = levelsList[controllerCursorIndex]
-            if debug:
+            if configs["DEBUG_MODE"]:
                 print ("Level selected: " + str(levelsList[controllerCursorIndex]))
             
 
         # draw the title (applying the scroll value)
         menuTitle = menuFont.render("Select a level", True, (255, 255, 255))
-        # position at HEIGHT/5 and apply the scroll value
-        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2 -WIDTH/6, HEIGHT/7 + (scrollValue*menuButtonFont.render("", True, (255, 255, 255)).get_height())))
+        # position at configs["RESOLUTION"][1]/5 and apply the scroll value
+        screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2 -configs["RESOLUTION"][0]/6, configs["RESOLUTION"][1]/7 + (scrollValue*menuButtonFont.render("", True, (255, 255, 255)).get_height())))
 
         # debug
-        if debug:
+        if configs["DEBUG_MODE"]:
             if (clock.get_rawtime() < 16):  # decide whether green text or red text
                 frameColor = (0, 255, 50)  # green
             else:
@@ -385,13 +383,14 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = debug) -> tuple[list[Peg
             if selection == "mainMenu":
                 return loadDefaultLevel()
                 #return [], [], 0, selection
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
             # draw a loading screen
             # draw the background
             screen.blit(altBackgroundImg, (0, 0))
             # draw the title
             menuTitle = menuFont.render("Loading...", True, (255, 255, 255))
-            screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/2 - menuTitle.get_height()/2))
+            screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2, configs["RESOLUTION"][1]/2 - menuTitle.get_height()/2))
 
             pegs, originPegs, orangeCount, levelFileName = loadLevel(selection)
             if len(pegs) > 400:
@@ -406,7 +405,7 @@ if __name__ == "__main__":
     # initiate pygame
     pygame.init()
     # create the screen
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
 
     # run the menu
     print(loadLevelMenu(screen)[3])

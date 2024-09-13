@@ -2,27 +2,28 @@ import pygame
 import time
 import webbrowser # for opening github page
 
-from local.config import WIDTH, HEIGHT, debug, soundVolume, musicVolume
+from local.config import configs
 from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch
 
 # this menu will serve as the point where the game and the editor can both be accessed
-def mainMenu(screen: pygame.Surface, debug: bool = debug):
+def mainMenu(screen: pygame.Surface):
     # play menu music
     pygame.mixer.music.load(menuMusicPath)
-    pygame.mixer.music.play(-1)
-    pygame.mixer.music.set_volume(musicVolume)
+    if configs["MUSIC_ENABLED"]:
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(configs["MUSIC_VOLUME"])
 
     # button positions
     buttonScale = 2.5
-    startButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 - 30*buttonScale)
+    startButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 - 30*buttonScale)
     startButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    editorButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 30*buttonScale)
+    editorButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 30*buttonScale)
     editorButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale)
+    quitButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 90*buttonScale)
     quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    settingsButtonPos = Vector(WIDTH - 50*buttonScale-20, HEIGHT - 50*buttonScale-20)
+    settingsButtonPos = Vector(configs["RESOLUTION"][0] - 50*buttonScale-20, configs["RESOLUTION"][1] - 50*buttonScale-20)
     settingsButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
      # scale the button images
@@ -65,7 +66,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
             # check if 1 is pressed (debug)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    debug = not debug
+                    configs["DEBUG"] = not configs["DEBUG"]
 
                     # check for gamepad dpad buttons
             if event.type == pygame.JOYHATMOTION:
@@ -83,7 +84,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
                         backButtonPressed = True
                     if event.button == 8:  # the 'share' button on a ps4 controller
                         # enable or disable debug
-                        debug = not debug
+                        configs["DEBUG"] = not configs["DEBUG"]
 
                 else:  # xbox controller (default)
                     if event.button == 0:  # the 'A' button on an xbox controller
@@ -91,7 +92,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
                     if event.button == 1:  # the 'B' button on an xbox controller
                         backButtonPressed = True
                     if event.button == 6:  # the 'start' button on an xbox controller
-                        debug = not debug
+                        configs["DEBUG"] = not configs["DEBUG"]
 
         # check for joystick input
         previousControllerSelector = moveControllerSelector
@@ -189,7 +190,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
 
         # draw the title
         menuTitle = menuFont.render("Peggle Py", True, (255, 255, 255))
-        screen.blit(menuTitle, (WIDTH/2 - menuTitle.get_width()/2, HEIGHT/4 - menuTitle.get_height()/2))
+        screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2, configs["RESOLUTION"][1]/4 - menuTitle.get_height()/2))
 
         # draw the buttons
         # start button
@@ -231,7 +232,7 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
         # github link (top right corner)
         # if the mouse is over the github link, change the color
         githubText = infoFont.render("Github: Mr0o", True, (255, 255, 255))
-        if mousePos.x > WIDTH - githubText.get_width() - 10 and mousePos.x < WIDTH - 10 and mousePos.y > 10 and mousePos.y < 10 + githubText.get_height():
+        if mousePos.x > configs["RESOLUTION"][0] - githubText.get_width() - 10 and mousePos.x < configs["RESOLUTION"][0] - 10 and mousePos.y > 10 and mousePos.y < 10 + githubText.get_height():
             # if clicked, open the github page
             if mouseDown:
                 try:
@@ -241,16 +242,16 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
                     print("Error: ", Exception)
             githubText = infoFont.render("Github: Mr0o", True, (0, 255, 255))
             # draw a blue line under the text
-            pygame.draw.line(screen, (0, 255, 255), (WIDTH - githubText.get_width() - 10, 10 + githubText.get_height()), (WIDTH - 10, 10 + githubText.get_height()), 2)
+            pygame.draw.line(screen, (0, 255, 255), (configs["RESOLUTION"][0] - githubText.get_width() - 10, 10 + githubText.get_height()), (configs["RESOLUTION"][0] - 10, 10 + githubText.get_height()), 2)
         else:
             githubText = infoFont.render("Github: Mr0o", True, (255, 255, 255))
             # draw a white line under the text
-            pygame.draw.line(screen, (255, 255, 255), (WIDTH - githubText.get_width() - 10, 10 + githubText.get_height()), (WIDTH - 10, 10 + githubText.get_height()), 2)
-        screen.blit(githubText, (WIDTH - githubText.get_width() - 10, 10))
+            pygame.draw.line(screen, (255, 255, 255), (configs["RESOLUTION"][0] - githubText.get_width() - 10, 10 + githubText.get_height()), (configs["RESOLUTION"][0] - 10, 10 + githubText.get_height()), 2)
+        screen.blit(githubText, (configs["RESOLUTION"][0] - githubText.get_width() - 10, 10))
 
 
         # debug
-        if debug:
+        if configs["DEBUG_MODE"]:
             if (clock.get_rawtime() < 16):  # decide whether green text or red text
                 frameColor = (0, 255, 50)  # green
             else:
@@ -273,7 +274,8 @@ def mainMenu(screen: pygame.Surface, debug: bool = debug):
 
         # check if the user has made a selection
         if selection != "none":
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
             return selection
 
 
@@ -282,9 +284,9 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     selection = "none"
 
     buttonScale = 2.5
-    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale+40)
+    quitButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 90*buttonScale+40)
     quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    resumeButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 - 30*buttonScale)
+    resumeButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 - 30*buttonScale)
     resumeButtonSize = Vector(50*buttonScale, 50*buttonScale)
     restartButtonPos = Vector(resumeButtonPos.x + resumeButtonSize.x, resumeButtonPos.y+5)
     restartButtonSize = Vector(50*buttonScale-10, 50*buttonScale-15)
@@ -292,10 +294,10 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     loadLevelButtonPos = Vector(quitButtonPos.x, quitButtonPos.y - 50*buttonScale)
     loadLevelButtonSize = Vector(100*buttonScale, 50*buttonScale)
     # main menu button (positioned bottom left corner)
-    mainMenuButtonPos = Vector(10, HEIGHT - 25*buttonScale-10)
+    mainMenuButtonPos = Vector(10, configs["RESOLUTION"][1] - 25*buttonScale-10)
     mainMenuButtonSize = Vector(50*buttonScale, 25*buttonScale)
     # editor button (positioned bottom right corner)
-    editorButtonPos = Vector(WIDTH - 50*buttonScale-10, HEIGHT - 50*buttonScale-10)
+    editorButtonPos = Vector(configs["RESOLUTION"][0] - 50*buttonScale-10, configs["RESOLUTION"][1] - 50*buttonScale-10)
     editorButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
 
@@ -315,51 +317,57 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
         # mouse button is down
         if mouseClick:
             selection = "resume"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
     
     # check if the mouse is over the restart button
     if mx > restartButtonPos.x and mx < restartButtonPos.x + restartButtonSize.x and my > restartButtonPos.y and my < restartButtonPos.y + restartButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "restart"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
     
     # check if the mouse is over the load level button
     if mx > loadLevelButtonPos.x and mx < loadLevelButtonPos.x + loadLevelButtonSize.x and my > loadLevelButtonPos.y and my < loadLevelButtonPos.y + loadLevelButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "load"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
 
     # check if the mouse is over the quit button
     if mx > quitButtonPos.x and mx < quitButtonPos.x + quitButtonSize.x and my > quitButtonPos.y and my < quitButtonPos.y + quitButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "quit"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
         
     # check if the mouse is over the main menu button
     if mx > mainMenuButtonPos.x and mx < mainMenuButtonPos.x + mainMenuButtonSize.x and my > mainMenuButtonPos.y and my < mainMenuButtonPos.y + mainMenuButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "mainMenu"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
     
     # check if the mouse is over the editor button
     if mx > editorButtonPos.x and mx < editorButtonPos.x + editorButtonSize.x and my > editorButtonPos.y and my < editorButtonPos.y + editorButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "editor"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
 
     # create a surface for the pause screen
-    pauseScreen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    pauseScreen = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]), pygame.SRCALPHA)
     # fill the surface with a black transparent color
     pauseScreen.fill((0, 0, 0, 100))
 
     # draw the text
     pauseText = menuFont.render("PAUSED", False, (255, 255, 255))
-    pauseScreen.blit(pauseText, (WIDTH/2 - pauseText.get_width()/2, HEIGHT/4 - pauseText.get_height()/2))
+    pauseScreen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/4 - pauseText.get_height()/2))
 
     # draw the resume button
     if selection != "resume":
@@ -414,11 +422,11 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
     selection = "none"
 
     buttonScale = 2.5
-    resumeButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 - 30*buttonScale)
+    resumeButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 - 30*buttonScale)
     resumeButtonSize = Vector(50*buttonScale, 50*buttonScale)
     restartButtonPos = Vector(resumeButtonPos.x + resumeButtonSize.x, resumeButtonPos.y+5)
     restartButtonSize = Vector(50*buttonScale-10, 50*buttonScale-15)
-    quitButtonPos = Vector(WIDTH/2 - 50*buttonScale, HEIGHT/2 + 90*buttonScale+40)
+    quitButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 90*buttonScale+40)
     quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
     # position above the quit button and to the left
     loadLevelButtonPos = Vector(quitButtonPos.x - 100*buttonScale, quitButtonPos.y - 50*buttonScale)
@@ -430,7 +438,7 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
     playLevelButtonPos = Vector(saveButtonPos.x + saveButtonSize.x, saveButtonPos.y)
     playLevelButtonSize = Vector(100*buttonScale, 50*buttonScale)
     # main menu button (positioned bottom left corner)
-    mainMenuButtonPos = Vector(10, HEIGHT - 25*buttonScale-10)
+    mainMenuButtonPos = Vector(10, configs["RESOLUTION"][1] - 25*buttonScale-10)
     mainMenuButtonSize = Vector(50*buttonScale, 25*buttonScale)
 
 
@@ -450,58 +458,65 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
         # mouse button is down
         if mouseClick:
             selection = "resume"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
     
     # check if the mouse is over the restart button
     if mx > restartButtonPos.x and mx < restartButtonPos.x + restartButtonSize.x and my > restartButtonPos.y and my < restartButtonPos.y + restartButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "restart"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
     
     # check if the mouse is over the load level button
     if mx > loadLevelButtonPos.x and mx < loadLevelButtonPos.x + loadLevelButtonSize.x and my > loadLevelButtonPos.y and my < loadLevelButtonPos.y + loadLevelButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "load"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
 
     # check if the mouse is over the save button
     if mx > saveButtonPos.x and mx < saveButtonPos.x + saveButtonSize.x and my > saveButtonPos.y and my < saveButtonPos.y + saveButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "save"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
 
     # check if the mouse is over the play level button
     if mx > playLevelButtonPos.x and mx < playLevelButtonPos.x + playLevelButtonSize.x and my > playLevelButtonPos.y and my < playLevelButtonPos.y + playLevelButtonSize.y and not standalone:
         # mouse button is down
         if mouseClick:
             selection = "play"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
 
     # check if the mouse is over the quit button
     if mx > quitButtonPos.x and mx < quitButtonPos.x + quitButtonSize.x and my > quitButtonPos.y and my < quitButtonPos.y + quitButtonSize.y:
         # mouse button is down
         if mouseClick:
             selection = "quit"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
         
     # check if the mouse is over the main menu button
     if mx > mainMenuButtonPos.x and mx < mainMenuButtonPos.x + mainMenuButtonSize.x and my > mainMenuButtonPos.y and my < mainMenuButtonPos.y + mainMenuButtonSize.y and not standalone:
         # mouse button is down
         if mouseClick:
             selection = "mainMenu"
-            playSoundPitch(buttonClickSound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(buttonClickSound)
 
     # create a surface for the pause screen
-    pauseScreen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    pauseScreen = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]), pygame.SRCALPHA)
     # fill the surface with a black transparent color
     pauseScreen.fill((0, 0, 0, 100))
 
     # draw the text
     pauseText = menuFont.render("PAUSED", False, (255, 255, 255))
-    pauseScreen.blit(pauseText, (WIDTH/2 - pauseText.get_width()/2, HEIGHT/4 - pauseText.get_height()/2))
+    pauseScreen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/4 - pauseText.get_height()/2))
 
     # draw the resume button
     if selection != "resume":

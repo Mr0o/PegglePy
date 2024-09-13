@@ -4,8 +4,9 @@ import time
 ##### local imports #####
 try:
     from local.config import *
+    from local.userConfig import configs, saveSettings
     from local.trajectory import calcTrajectory, findBestTrajectory
-    from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, pauseMusic, unpauseMusic, setMusicVolume
+    from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, autoPauseMusic, newSong, setMusicVolume
     from local.resources import *  # pygame audio, fonts and images
     from local.misc import *
     from local.trigger_events import TimedEvent
@@ -33,10 +34,10 @@ import pygame
 ##### pygame stuff #####
 pygame.init()
 # set fullscreen
-if FULLSCREEN:
-    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)  # display surface
+if configs["FULLSCREEN"]:
+    screen = pygame.display.set_mode((configs["RESOLUTION"]), pygame.FULLSCREEN)  # display surface
 else:
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))  # display surface
+    screen = pygame.display.set_mode((configs["RESOLUTION"]))  # display surface
 
 clock = pygame.time.Clock()  # game clock
 
@@ -58,7 +59,8 @@ def drawLine(x1, y1, x2, y2):
 ### testing stuff ###
 balls: list[Ball]
 balls = []
-balls.append(Ball(WIDTH/2, HEIGHT/25))
+#balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
+balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
 ball = balls[0]
 
 # some extra global variable initialization stuff
@@ -89,7 +91,8 @@ bestTrajectory = []
 hasPegBeenHit = False
 hasPegBeenRemoved = False
 controllerInput = False
-inputAim = Vector(WIDTH/2, (HEIGHT/25)+50)
+#inputAim = Vector(configs["RESOLUTION"][0]/2, (configs["RESOLUTION"][1]/25)+50)
+inputAim = Vector(configs["RESOLUTION"][0]/2, (configs["RESOLUTION"][1]/25)+50)
 gamePadFineTuneAmount = 0
 
 longShotTextTimer = TimedEvent()
@@ -113,7 +116,7 @@ while selection != "start" and selection != "quit":
         gameRunning = False
     elif selection == "editor":
         time.sleep(0.5)  # prevent accidental click on launch
-        editorSelection, pegs = levelEditor(screen, clock, debug)
+        editorSelection, pegs = levelEditor(screen, clock)
         if editorSelection == "quit":
             gameRunning = False
             selection = "quit"
@@ -122,7 +125,7 @@ while selection != "start" and selection != "quit":
 
     elif selection == "settings":
         time.sleep(0.15)
-        if settingsMenu(screen, debug) == "mainMenu":
+        if settingsMenu(screen) == "mainMenu":
             selection = "none"
 
 # prevent accidental click on launch
@@ -130,7 +133,7 @@ delayTimer = TimedEvent(0.5)
 
 if selection != "quit":
     if editorSelection != "play":
-        pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
+        pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, configs["DEBUG_MODE"])
         #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
         #pegs, originPegs, orangeCount, levelFileName = loadLevel("levels/Level 1.lvl")
 
@@ -155,9 +158,11 @@ if selection != "quit":
     staticImage = createStaticImage(pegs)
 
     loadRandMusic()
-    setMusicVolume(musicVolume)
-    if musicEnabled:
+    setMusicVolume(configs["MUSIC_VOLUME"])
+    if configs["MUSIC_ENABLED"]:
         playMusic()
+    else:
+        stopMusic()
 
 else:
     gameRunning = False
@@ -174,10 +179,10 @@ while gameRunning:
                 # horrifying function that resets the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
-                if not musicEnabled:
-                    pygame.mixer.music.stop()
-            if event.key == pygame.K_1:  # enable or disable debug features
-                debug = not debug
+                if not configs["MUSIC_ENABLED"]:
+                    stopMusic()
+            if event.key == pygame.K_1:  # enable or disable configs["DEBUG_MODE"] features
+                configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
             if event.key == pygame.K_2:  # enable or disable cheats
                 cheats = not cheats
             if event.key == pygame.K_3:  # cycle through all power up types
@@ -191,29 +196,29 @@ while gameRunning:
                     powerUpType = "spooky-multiball"
                 elif powerUpType == "spooky-multiball":
                     powerUpType = "spooky"
-            if event.key == pygame.K_4:  # enable or disable debug view of collision segments
+            if event.key == pygame.K_4:  # enable or disable configs["DEBUG_MODE"] view of collision segments
                 debugCollision = not debugCollision
-            if event.key == pygame.K_5:  # debug - decrease collision segment count
+            if event.key == pygame.K_5:  # configs["DEBUG_MODE"] - decrease collision segment count
                 segmentCount -= 1
                 # reassign each pegs segment location
                 assignPegScreenLocation(pegs, segmentCount)
-            if event.key == pygame.K_6:  # debug - increase collision segment count
+            if event.key == pygame.K_6:  # configs["DEBUG_MODE"] - increase collision segment count
                 segmentCount += 1
                 # reassign each pegs segment location
                 assignPegScreenLocation(pegs, segmentCount)
-            if event.key == pygame.K_7:  # debug - enable or disable full trajectory drawing
+            if event.key == pygame.K_7:  # configs["DEBUG_MODE"] - enable or disable full trajectory drawing
                 debugTrajectory = not debugTrajectory
             if event.key == pygame.K_l:  # load a new level
-                pygame.mixer.music.stop()
-                pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
+                stopMusic()
+                pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, configs["DEBUG_MODE"])
                 # set the caption to include the level name
                 pygame.display.set_caption(
                     "PegglePy   -   " + levelFileName)
                 # horrifying function that resets the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
-                if not musicEnabled:
-                    pygame.mixer.music.stop()
+                if not configs["MUSIC_ENABLED"]:
+                    stopMusic()
                 delayTimer = TimedEvent(0.50)
             if event.key == pygame.K_ESCAPE:  # enable or disable cheats
                 gamePaused = not gamePaused
@@ -223,14 +228,10 @@ while gameRunning:
                 else:
                     frameRate = 144
             if event.key == pygame.K_m:
-                soundEnabled = not soundEnabled
+                configs["SOUND_ENABLED"] = not configs["SOUND_ENABLED"]
             if event.key == pygame.K_n:
-                if musicEnabled == False:
-                    musicEnabled = True
-                    pygame.mixer.music.play(-1)
-                else:
-                    musicEnabled = False
-                    pygame.mixer.music.stop()
+                configs["MUSIC_ENABLED"] = not configs["MUSIC_ENABLED"]
+                autoPauseMusic()
             if event.key == pygame.K_8:
                 speedHack = not speedHack
             if event.key == pygame.K_9:
@@ -240,13 +241,13 @@ while gameRunning:
                 zoomInOnBall = not zoomInOnBall
             # open the main menu
             if event.key == pygame.K_z:
-                selection = mainMenu(screen, debug)
+                selection = mainMenu(screen)
 
                 if selection == "quit":
                     gameRunning = False
                 elif selection == "editor":
                     time.sleep(0.5)  # prevent accidental click on launch
-                    levelEditor(screen, clock, debug)
+                    levelEditor(screen, clock)
 
                 # reset the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
@@ -255,11 +256,9 @@ while gameRunning:
                 # prevent accidental click on launch
                 delayTimer = TimedEvent(0.5)
 
-                if not musicEnabled:
+                if not configs["MUSIC_ENABLED"]:
                     # change the song
-                    pygame.mixer.music.stop()
-                    loadRandMusic()
-                    pygame.mixer.music.play(-1)  # looping forever
+                    newSong()
 
                 # set the caption to include the level name
                 pygame.display.set_caption(
@@ -310,12 +309,12 @@ while gameRunning:
                     # reset the game
                     ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                         balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)  # horrifying function that resets the game
-                    if not musicEnabled:
-                        pygame.mixer.music.stop()
+                    if not configs["MUSIC_ENABLED"]:
+                        stopMusic()
                 if event.button == 4:  # the 'L1' button on a ps4 controller
                     # rumble test
                     if pygame.joystick.get_count() > 0:
-                        if debug:
+                        if configs["DEBUG_MODE"]:
                             print("rumble test - 100 ms")
                         joystick = pygame.joystick.Joystick(0)
                         joystick.init()
@@ -324,21 +323,19 @@ while gameRunning:
                     # cheats
                     cheats = not cheats
                 if event.button == 8:  # the 'share' button on a ps4 controller
-                    # enable or disable debug
-                    debug = not debug
+                    # enable or disable configs["DEBUG_MODE"]
+                    configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
                 if event.button == 9:  # the 'options' button on a ps4 controller
                     # pause the game
                     gamePaused = not gamePaused
                 if event.button == 11 or event.button == 12:  # the 'L3' or 'R3' joystick buttons on a ps4 controller
                     # enable or disable sound and music
-                    if musicEnabled == False:
-                        musicEnabled = True
-                        pygame.mixer.music.play(-1)
+                    if configs["MUSIC_ENABLED"]:
+                        autoPauseMusic()
                     else:
-                        musicEnabled = False
-                        pygame.mixer.music.stop()
+                        stopMusic() 
 
-                    soundEnabled = not soundEnabled
+                    configs["SOUND_ENABLED"] = not configs["SOUND_ENABLED"]
 
             else:  # xbox controller (default)
                 if event.button == 0:  # the 'A' button on an xbox controller
@@ -360,28 +357,24 @@ while gameRunning:
                     # reset the game
                     ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                         balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
-                    if not musicEnabled:
-                        pygame.mixer.music.stop()
+                    if not configs["MUSIC_ENABLED"]:
+                        stopMusic()
                 if event.button == 6:  # the 'start' button on an xbox controller
-                    debug = not debug
+                    configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
                 if event.button == 7:  # the 'back' button on an xbox controller
                     gamePaused = not gamePaused
                 # the 'left stick' or 'right stick' buttons on an xbox controller
                 if event.button == 9 or event.button == 10:
-                    if musicEnabled == False:
-                        musicEnabled = True
-                        pygame.mixer.music.play(-1)
+                    if configs["MUSIC_ENABLED"]:
+                        autoPauseMusic()
                     else:
-                        musicEnabled = False
-                        pygame.mixer.music.stop()
-                    if soundEnabled == False:
-                        soundEnabled = True
-                    else:
-                        soundEnabled = False
+                        stopMusic()
+                        
+                    configs["SOUDN_ENABLED"] = not configs["SOUND_ENABLED"]
                 if event.button == 4:  # the 'left bumper' button on an xbox controller
                     # rumble test
                     if pygame.joystick.get_count() > 0:
-                        if debug:
+                        if configs["DEBUG_MODE"]:
                             print("rumble test - 100 ms")
                         joystick = pygame.joystick.Joystick(0)
                         joystick.init()
@@ -462,8 +455,8 @@ while gameRunning:
         # horrifying function that resets the game
         ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
             balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
-        if not musicEnabled:
-            pygame.mixer.music.stop()
+        if not configs["MUSIC_ENABLED"]:
+            stopMusic()
 
     # do not update any game physics or game logic if the game is paused or over
     if not gamePaused and not gameOver:
@@ -503,8 +496,8 @@ while gameRunning:
                 launchForce = subVectors(launchAim, ball.pos)
                 launchForce.setMag(LAUNCH_FORCE)
                 ball.applyForce(launchForce)
-                if soundEnabled:
-                    playSoundPitch(launch_sound, volume=soundVolume)
+                if configs["SOUND_ENABLED"]:
+                    playSoundPitch(launch_sound)
                 ball.isLaunch = False
                 shouldClear = True
             # if powerup type is zenball and it is not active then normal launch
@@ -512,8 +505,8 @@ while gameRunning:
                 launchForce = subVectors(launchAim, ball.pos)
                 launchForce.setMag(LAUNCH_FORCE)
                 ball.applyForce(launchForce)
-                if soundEnabled:
-                    playSoundPitch(launch_sound, volume=soundVolume)
+                if configs["SOUND_ENABLED"]:
+                    playSoundPitch(launch_sound)
                 ball.isLaunch = False
                 shouldClear = True
                 drawTrajectory = False
@@ -525,15 +518,15 @@ while gameRunning:
         # if active zenball powerup - launch
         if ball.isLaunch and ball.isAlive and powerUpType == "zenball" and powerUpActive:
             # find the best shot
-            if soundEnabled:
-                playSoundPitch(powerUpZenBall, 0.93, soundVolume)
-            if debug:
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(powerUpZenBall, 0.93)
+            if configs["DEBUG_MODE"]:
                 print("Debug: Zenball launched")
                 startTime = time.time()
             bestAim, bestScore, bestTrajectory = findBestTrajectory(Vector(
                 launchAim.x, launchAim.y), Vector(ball.pos.x, ball.pos.y), pegs.copy())
 
-            if debug:
+            if configs["DEBUG_MODE"]:
                 print("Debug: Zenball best aim found in " +
                       str(time.time() - startTime) + " seconds")
 
@@ -541,17 +534,17 @@ while gameRunning:
                 p.isHit = False
 
             if bestScore >= 10:
-                if soundEnabled:
-                    playSoundPitch(powerUpZenBall, 0.99, soundVolume)
+                if configs["SOUND_ENABLED"]:
+                    playSoundPitch(powerUpZenBall, 0.99)
                 ball.applyForce(bestAim)
             elif bestScore < 10:  # if there is no possible shot with the zen ball to earn points then it has failed
-                if soundEnabled:
-                    playSoundPitch(failSound, volume=soundVolume)
+                if configs["SOUND_ENABLED"]:
+                    playSoundPitch(failSound)
                 # apply original launch aim
                 ball.applyForce(subVectors(launchAim, ball.pos))
 
-            if soundEnabled:
-                playSoundPitch(launch_sound, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(launch_sound)
             ball.isLaunch = False
             shouldClear = True
             powerUpCount -= 1
@@ -587,15 +580,15 @@ while gameRunning:
                             p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
                         if ballTouchingPeg:
                             if frameRate != 27 and len(balls) < 2:
-                                if soundEnabled:
-                                    # only play sound once
-                                    playSoundPitch(drumRoll, volume=soundVolume)
+                                # only play sound once
+                                if configs["SOUND_ENABLED"]:
+                                    playSoundPitch(drumRoll)
                             frameRate = 27  # gives the "slow motion" effect
                             closeBall = b
                         elif frameRate != 144:
-                            if soundEnabled:
-                                # only play sound once
-                                playSoundPitch(sighSound, volume=soundVolume)
+                            # only play sound once
+                            if configs["SOUND_ENABLED"]:
+                                playSoundPitch(sighSound)
                             frameRate = 144
 
                     # ball physics and game logic
@@ -632,8 +625,8 @@ while gameRunning:
                             if b.lastPegHitPos != p.pos and b.lastPegHitPos != None and p.color == "orange" and not p.isHit:
                                 if distBetweenTwoPoints(b.lastPegHitPos.x, b.lastPegHitPos.y, p.pos.x, p.pos.y) > longShotDistance:
                                     if not longShotBonus:
-                                        if soundEnabled:
-                                            playSoundPitch(longShotSound, volume=soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(longShotSound)
                                         score += 25000
                                         b.lastPegHitPos = None
                                         longShotBonus = True
@@ -643,7 +636,7 @@ while gameRunning:
                                             p.pos.x, p.pos.y)
 
                                         if pygame.joystick.get_count() > 0 and controllerInput:
-                                            if debug:
+                                            if configs["DEBUG_MODE"]:
                                                 print("Debug: Rumble")
                                             joystick = pygame.joystick.Joystick(
                                                 0)
@@ -665,29 +658,27 @@ while gameRunning:
                                 if p.isPowerUp:
                                     if powerUpType == "spooky":
                                         if powerUpCount < 1:
-                                            if soundEnabled:
-                                                playSoundPitch(powerUpSpooky1, volume=soundVolume)
+                                            if configs["SOUND_ENABLED"]:
+                                                playSoundPitch(powerUpSpooky1)
                                             firstSpookyHit = True
                                         elif powerUpCount == 1:
-                                            if soundEnabled:
-                                                playSoundPitch(powerUpSpooky2, volume=soundVolume)
+                                            if configs["SOUND_ENABLED"]:
+                                                playSoundPitch(powerUpSpooky2)
                                             firstSpookyHit = False
                                     if powerUpType == "multiball":
-                                        if soundEnabled:
-                                            if soundEnabled:
-                                                playSoundPitch(
-                                                    powerUpMultiBall)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
                                     if powerUpType == "zenball":
-                                        if soundEnabled:
-                                            playSoundPitch(powerUpZenBallHit, volume=soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(powerUpZenBallHit)
                                     if powerUpType == "guideball":
-                                        if soundEnabled:
-                                            playSoundPitch(powerUpGuideBall, volume=soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(powerUpGuideBall)
                                         powerUpCount += 2
                                     if powerUpType == "spooky-multiball":
-                                        if soundEnabled:
-                                            playSoundPitch(powerUpMultiBall, volume=soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
                                         powerUpCount += 1
                                     powerUpCount += 1
@@ -696,40 +687,39 @@ while gameRunning:
                                 # peg hit sounds
                                 if pitchRaiseCount <= 7:
                                     if not p.isPowerUp:
-                                        if soundEnabled:
-                                            playSoundPitch(
-                                                low_hit_sound, pitch, volume=soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(low_hit_sound, pitch)
                                     pitch -= 0.05  # magic number
                                 if pitchRaiseCount == 7:
                                     pitch = 1.32  # magic number
                                 elif pitchRaiseCount > 7 and pitchRaiseCount < 26:
                                     if not p.isPowerUp:
-                                        if soundEnabled:
-                                            playSoundPitch(
-                                                normal_hit_sound, pitch, soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(normal_hit_sound, pitch)
                                     pitch -= 0.045  # magic number
                                 elif pitchRaiseCount >= 26:
                                     if not p.isPowerUp:
-                                        if soundEnabled:
-                                            playSoundPitch(
-                                                normal_hit_sound, pitch, soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(normal_hit_sound, pitch)
 
                                 # cheats
                                 if cheats:
                                     if powerUpType == "spooky":
-                                        # if soundEnabled: playSoundPitch(powerUpSpooky1)
+                                        # if configs["SOUND_ENABLED"]:
+                                        #   playSoundPitch(powerUpSpooky1)
                                         powerUpCount += 1
                                     if powerUpType == "multiball":
-                                        if soundEnabled:
-                                            playSoundPitch(powerUpMultiBall, volume=soundVolume)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
                                         powerUpCount += 1
                                     if powerUpType == "guideball":
                                         powerUpCount += 2
                                     if powerUpType == "spooky-multiball":
-                                        if soundEnabled:
-                                            playSoundPitch(powerUpMultiBall, volume=soundVolume)
-                                        # if soundEnabled: playSoundPitch(powerUpSpooky1)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(powerUpMultiBall)
+                                        # if configs["SOUND_ENABLED"]:
+                                        #   playSoundPitch(powerUpSpooky1)
                                         addNewBall = True
                                         powerUpCount += 2
 
@@ -752,21 +742,21 @@ while gameRunning:
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
-                    if b.pos.y + b.radius > HEIGHT:
+                    if b.pos.y + b.radius > configs["RESOLUTION"][1]:
                         b.pos.y = 0 + b.radius
                         b.inBucket = False
                         if powerUpCount == 1 and firstSpookyHit:
-                            if soundEnabled:
-                                playSoundPitch(powerUpSpooky2, volume=soundVolume)
+                            if configs["SOUND_ENABLED"]:
+                                playSoundPitch(powerUpSpooky2)
                         elif powerUpCount == 1 and not firstSpookyHit:
-                            if soundEnabled:
-                                playSoundPitch(powerUpSpooky4, volume=soundVolume)
+                            if configs["SOUND_ENABLED"]:
+                                playSoundPitch(powerUpSpooky4)
                         elif powerUpCount == 2 and not firstSpookyHit:
-                            if soundEnabled:
-                                playSoundPitch(powerUpSpooky3, volume=soundVolume)
+                            if configs["SOUND_ENABLED"]:
+                                playSoundPitch(powerUpSpooky3)
                         elif cheats:
-                            if soundEnabled:
-                                playSoundPitch(powerUpSpooky2, volume=soundVolume)
+                            if configs["SOUND_ENABLED"]:
+                                playSoundPitch(powerUpSpooky2)
                         powerUpCount -= 1
                         if powerUpCount < 1:
                             powerUpActive = False
@@ -783,8 +773,8 @@ while gameRunning:
                 # if ball went in the bucket
                 if not b.inBucket and bucket.isInBucket(b.pos.x, b.pos.y):
                     b.inBucket = True  # prevent the ball from triggering it multiple times
-                    if soundEnabled:
-                        playSoundPitch(freeBallSound, volume=soundVolume)
+                    if configs["SOUND_ENABLED"]:
+                        playSoundPitch(freeBallSound)
                     ballsRemaining += 1
 
             # remove any 'dead' balls
@@ -813,16 +803,16 @@ while gameRunning:
         if done and (orangeCount == 0 or ballsRemaining < 1) and gameOver == False:
             gameOver = True
             if ballsRemaining < 1 and orangeCount > 0:
-                if soundEnabled:
-                    playSoundPitch(failSound, volume=soundVolume)
+                if configs["SOUND_ENABLED"]:
+                    playSoundPitch(failSound)
 
         # check if the last orange peg has been hit, play ode to joy and change the buckets
         if orangeCount < 1 and not ballsRemaining < 1 and not alreadyPlayedOdeToJoy:
             pygame.mixer.music.load("resources/audio/music/ode_to_joy.wav")
-            if musicEnabled:
+            if configs["MUSIC_ENABLED"]:
                 pygame.mixer.music.play(-1)
-            if soundEnabled:
-                playSoundPitch(cymbal, volume=soundVolume)
+            if configs["SOUND_ENABLED"]:
+                playSoundPitch(cymbal)
             alreadyPlayedOdeToJoy = True
             frameRate = 60  # still kinda slow motion, but a little bit faster
 
@@ -831,7 +821,8 @@ while gameRunning:
             shouldClear = False
             balls.clear()  # clear all the balls
             # recreate the original ball
-            balls.append(Ball(WIDTH/2, HEIGHT/25))
+            #balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
+            balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
             ball = balls[0]
             ball.reset()
             pitch = 1.0
@@ -888,7 +879,7 @@ while gameRunning:
         if zoom > 1.8:
             zoom = 1.8
 
-        zoomedScreen = pygame.transform.smoothscale(screen, (int(WIDTH*zoom), int(HEIGHT*zoom)))
+        zoomedScreen = pygame.transform.smoothscale(screen, (int(configs["RESOLUTION"][0]*zoom), int(configs["RESOLUTION"][1]*zoom)))
 
         # calculate the position of the zoomedScreen
         # if there is only one orange peg left, then zoom in on the orange peg
@@ -905,14 +896,14 @@ while gameRunning:
         # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
         if zoomedScreenPos[0] > 0:
             zoomedScreenPos = (0, zoomedScreenPos[1])
-        elif zoomedScreenPos[0] < WIDTH - zoomedScreen.get_width():
-            zoomedScreenPos = (WIDTH - zoomedScreen.get_width(), zoomedScreenPos[1])
+        elif zoomedScreenPos[0] < configs["RESOLUTION"][0] - zoomedScreen.get_width():
+            zoomedScreenPos = (configs["RESOLUTION"][0] - zoomedScreen.get_width(), zoomedScreenPos[1])
         
         # if the zoomedScreen moves too far up or down, then set the y position to the edge of the screen
         if zoomedScreenPos[1] > 0:
             zoomedScreenPos = (zoomedScreenPos[0], 0)
-        elif zoomedScreenPos[1] < HEIGHT - zoomedScreen.get_height():
-            zoomedScreenPos = (zoomedScreenPos[0], HEIGHT - zoomedScreen.get_height())
+        elif zoomedScreenPos[1] < configs["RESOLUTION"][1] - zoomedScreen.get_height():
+            zoomedScreenPos = (zoomedScreenPos[0], configs["RESOLUTION"][1] - zoomedScreen.get_height())
 
         screen.blit(zoomedScreen, zoomedScreenPos)
     else:
@@ -923,7 +914,7 @@ while gameRunning:
             else:
                 zoom -= 0.005
             
-            zoomedScreen = pygame.transform.smoothscale(screen, (int(WIDTH*zoom), int(HEIGHT*zoom)))
+            zoomedScreen = pygame.transform.smoothscale(screen, (int(configs["RESOLUTION"][0]*zoom), int(configs["RESOLUTION"][1]*zoom)))
 
             # calculate the position of the zoomedScreen
             # if there is only one orange peg left, then zoom in on the orange peg
@@ -940,14 +931,14 @@ while gameRunning:
             # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
             if zoomedScreenPos[0] > 0:
                 zoomedScreenPos = (0, zoomedScreenPos[1])
-            elif zoomedScreenPos[0] < WIDTH - zoomedScreen.get_width():
-                zoomedScreenPos = (WIDTH - zoomedScreen.get_width(), zoomedScreenPos[1])
+            elif zoomedScreenPos[0] < configs["RESOLUTION"][0] - zoomedScreen.get_width():
+                zoomedScreenPos = (configs["RESOLUTION"][0] - zoomedScreen.get_width(), zoomedScreenPos[1])
             
             # if the zoomedScreen moves too far up or down, then set the y position to the edge of the screen
             if zoomedScreenPos[1] > 0:
                 zoomedScreenPos = (zoomedScreenPos[0], 0)
-            elif zoomedScreenPos[1] < HEIGHT - zoomedScreen.get_height():
-                zoomedScreenPos = (zoomedScreenPos[0], HEIGHT - zoomedScreen.get_height())
+            elif zoomedScreenPos[1] < configs["RESOLUTION"][1] - zoomedScreen.get_height():
+                zoomedScreenPos = (zoomedScreenPos[0], configs["RESOLUTION"][1] - zoomedScreen.get_height())
 
             screen.blit(zoomedScreen, zoomedScreenPos)
         else:
@@ -975,7 +966,7 @@ while gameRunning:
             powerUpTextColor = (50, 170, 20)
         powerUpText = infoFont.render(
             powerUpType + ": " + str(powerUpCount), False, powerUpTextColor)
-        screen.blit(powerUpText, (int(WIDTH/2 - powerUpText.get_width()/2), 5))
+        screen.blit(powerUpText, (int(configs["RESOLUTION"][0]/2 - powerUpText.get_width()/2), 50))
 
     # show if paused
     if gamePaused and not gameOver:
@@ -988,21 +979,21 @@ while gameRunning:
             # reset the game
             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                 balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
-            if not musicEnabled:
-                pygame.mixer.music.stop()
+            if not configs["MUSIC_ENABLED"]:
+                stopMusic()
             gamePaused = False
             delayTimer = TimedEvent(0.50)
         elif pauseSelection == "load":
             pygame.mixer.music.stop()
-            pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, debug)
+            pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen)
             # set the caption to include the level name
             pygame.display.set_caption(
                 "PegglePy   -   " + levelFileName)
             # horrifying function that resets the game
             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
                 balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
-            if not musicEnabled:
-                pygame.mixer.music.stop()
+            if not configs["MUSIC_ENABLED"]:
+                stopMusic()
             gamePaused = False
             delayTimer = TimedEvent(0.50)
         elif pauseSelection == "quit":
@@ -1013,12 +1004,12 @@ while gameRunning:
             # run the main menu until either the editor or start button is selected
             selection = "mainMenu"
             while selection == "mainMenu":
-                selection = mainMenu(screen, debug)
+                selection = mainMenu(screen)
                 if selection == "quit":
                     gameRunning = False
                 elif selection == "editor":
                     time.sleep(0.5)  # prevent accidental click on launch
-                    levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug)
+                    levelEditorPauseSelection, editorPegs = levelEditor(screen, clock)
                     if levelEditorPauseSelection == "quit":
                         gameRunning = False
                     elif levelEditorPauseSelection == "mainMenu":
@@ -1039,7 +1030,7 @@ while gameRunning:
                             balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
 
                 elif selection == "settings":
-                    if settingsMenu(screen, debug) == "mainMenu":
+                    if settingsMenu(screen) == "mainMenu":
                         selection = "mainMenu"
 
             # reset the game
@@ -1049,11 +1040,9 @@ while gameRunning:
             # prevent accidental click on launch
             delayTimer = TimedEvent(0.5)
 
-            if not musicEnabled:
-                # change the song
-                pygame.mixer.music.stop()
-                loadRandMusic()
-                pygame.mixer.music.play(-1)  # looping forever
+            #change the song
+            if configs["MUSIC_ENABLED"]:
+                newSong()
 
             # set the caption to include the level name
             pygame.display.set_caption(
@@ -1062,18 +1051,18 @@ while gameRunning:
         elif pauseSelection == "editor":
             gamePaused = False
             time.sleep(0.5)  # prevent accidental click on launch
-            levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug, False, originPegs.copy())
+            levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, configs["DEBUG_MODE"], False, originPegs.copy())
             if levelEditorPauseSelection == "quit":
                 gameRunning = False
             elif levelEditorPauseSelection == "mainMenu":
                 selection = "mainMenu"
                 while selection == "mainMenu":
-                    selection = mainMenu(screen, debug)
+                    selection = mainMenu(screen, configs["DEBUG_MODE"])
                     if selection == "quit":
                         gameRunning = False
                     elif selection == "editor":
                         time.sleep(0.5)
-                        levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, debug)
+                        levelEditorPauseSelection, editorPegs = levelEditor(screen, clock, configs["DEBUG_MODE"])
                         if levelEditorPauseSelection == "quit":
                             gameRunning = False
                         elif levelEditorPauseSelection == "mainMenu":
@@ -1097,7 +1086,7 @@ while gameRunning:
                         
                         
                     elif selection == "settings":
-                        if settingsMenu(screen, debug) == "mainMenu":
+                        if settingsMenu(screen, configs["DEBUG_MODE"]) == "mainMenu":
                             selection = "mainMenu"
                     
                 # reset the game
@@ -1107,11 +1096,9 @@ while gameRunning:
                 # prevent accidental click on launch
                 delayTimer = TimedEvent(0.5)
 
-                if not musicEnabled:
-                    # change the song
-                    pygame.mixer.music.stop()
-                    loadRandMusic()
-                    pygame.mixer.music.play(-1)
+                if configs["MUSIC_ENABLED"]:
+                    newSong()
+                    
 
             elif levelEditorPauseSelection == "play":
                 levelFileName = "Unsaved Editor Level"
@@ -1135,7 +1122,7 @@ while gameRunning:
     # show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
-        screen.blit(pauseText, (WIDTH/2 - pauseText.get_width()/2, HEIGHT/4))
+        screen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/2 - pauseText.get_height()/2))
         if ballsRemaining >= 0 and orangeCount < 1:
             # add commas to the score (e.g. 1000000 -> 1,000,000)
             formattedScore = ""
@@ -1145,10 +1132,10 @@ while gameRunning:
                     formattedScore += ","
 
             scoreText = menuFont.render(formattedScore, False, (20, 60, 255))
-            screen.blit(scoreText, (WIDTH/2 - scoreText.get_width()/2, HEIGHT/3 + 50))
+            screen.blit(scoreText, (configs["RESOLUTION"][0]/2 - scoreText.get_width()/2, configs["RESOLUTION"][1]/2 - scoreText.get_height()/2 + 50))
         else:
             tryAgainText = menuFont.render("Try Again", False, (255, 60, 20))
-            screen.blit(tryAgainText, (WIDTH/2 - tryAgainText.get_width()/2, HEIGHT/2.2))
+            screen.blit(tryAgainText, (configs["RESOLUTION"][0]/2 - tryAgainText.get_width()/2, configs["RESOLUTION"][1]/2 - tryAgainText.get_height()/2 + 50))
 
     # show the long shot score text only for a few seconds
     longShotTextTimer.update()
@@ -1168,7 +1155,7 @@ while gameRunning:
         screen.blit(longShotText, (longShotPos.x-35, longShotPos.y-20))
 
     # debugging stuff
-    if debug:
+    if configs["DEBUG_MODE"]:
         if (clock.get_rawtime() < 10):  # decide whether green text or red text
             frameColor = (0, 255, 50)  # green
         else:
@@ -1215,7 +1202,7 @@ while gameRunning:
         if controllerInput:
             joystickText = debugFont.render(
                 joystick.get_name(), False, (255, 255, 255))
-            screen.blit(joystickText, (WIDTH-300, 10))
+            screen.blit(joystickText, (configs["RESOLUTION"][0]-300, 10))
 
         # draw bucket fake pegs
         for fakePeg in bucket.fakePegs.copy():
@@ -1232,9 +1219,9 @@ while gameRunning:
                 "Collision Segments: " + str(segmentCount), False, (0, 255, 255))
             screen.blit(collSegmentDisp, (230, 7))
             # draw collision sections
-            segmentWidth = WIDTH/segmentCount
+            segmentWidth = configs["RESOLUTION"][0] / segmentCount
             for i in range(segmentCount):
-                drawLine(segmentWidth*i, 0, segmentWidth*i, HEIGHT)
+                drawLine(segmentWidth*i, 0, segmentWidth*i, configs["RESOLUTION"][1])
 
         # draw each pegs ballStuckTimer value
         if autoRemovePegs and debugAutoRemovePegsTimer:

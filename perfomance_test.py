@@ -4,7 +4,7 @@ import time
 from local.misc import createPegColors, loadLevel
 from local.trajectory import findBestTrajectory
 from local.vectors import Vector
-from local.config import WIDTH, HEIGHT
+from local.userConfig import configs
 
 testMaxRange = 40
 testDepth = 1200
@@ -31,8 +31,8 @@ if __name__ == "__main__":
     pegs, originPegs, orangeCount, levelFileName = loadLevel()
     print(f"Level: {levelFileName}")
     print(f"Number of pegs: {len(pegs)}")
-    startPos = Vector(WIDTH/2, 20)
-    aim = Vector(WIDTH/2, HEIGHT/2)
+    startPos = Vector(configs["RESOLUTION"][0]/2, 20)
+    aim = Vector(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/2)
 
     # run a performance test on the zenball findBestTrajectory function
     if runTest:

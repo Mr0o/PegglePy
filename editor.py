@@ -8,12 +8,13 @@ from random import randint
 
 ##### local imports #####
 from local.config import *
+from local.userConfig import configs
 from local.load_level import loadData, saveData
 from local.collision import isBallTouchingPeg
 from local.peg import Peg
 from local.misc import createStaticImage, updateStaticImage
 from local.trigger_events import TimedEvent
-from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, setMusicVolume
+from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, setMusicVolume, newSong
 from local.resources import editorIconImg, backgroundImg, infoFont, warnFont, helpFont, transparentPegImg, invalidPegImg, newPegSound, invalidPegSound, debugFont
 
 from menu import getEditorPauseScreen
@@ -21,7 +22,7 @@ from loadLevelMenu import loadLevelMenu
 
 
 ## the level editor function (called from run.py via the user menu selection) ##
-def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = debug, standalone: bool = False, pegs: list[Peg] = []) -> str:
+def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = configs["DEBUG_MODE"], standalone: bool = False, pegs: list[Peg] = []) -> str:
     # warning timer for displaying warning messages
     warningTimer = TimedEvent()
     savedTimer = TimedEvent()
@@ -48,10 +49,11 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
     #unhide the mouse
     pygame.mouse.set_visible(True)
 
-    # play random music
-    loadRandMusic()
-    playMusic()
-    setMusicVolume(musicVolume)
+    if configs["MUSIC_ENABLED"]:
+        # play random music
+        loadRandMusic()
+        playMusic()
+        setMusicVolume(configs["MUSIC_VOLUME"])
 
     ##### main loop #####
     while isRunning:
@@ -75,18 +77,16 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                         savedTimer.setTimer(4)
                 # load level
                 if event.key == pygame.K_l:
-                    pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, debug)
+                    pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, configs["DEBUG_MODE"])
                     # reset the pegs
                     for peg in pegs:
                         peg.reset()
                     staticImg = createStaticImage(pegs)
                     # play random music
-                    loadRandMusic()
-                    playMusic()
-                    setMusicVolume(musicVolume)
+                    
 
                 if event.key == pygame.K_1:
-                    debug = not debug
+                    configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
                 if event.key == pygame.K_2:
                     skipValidPegCheck = not skipValidPegCheck
                 # print all the peg positions (x,y) to the terminal
@@ -103,7 +103,8 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
             if event.type == pygame.MOUSEBUTTONDOWN and mouseOutofBounds:
                 if event.button == 1 and not editorPaused:
                     # play sound
-                    playSoundPitch(invalidPegSound, 0.35, soundVolume)
+                    if configs["SOUND_ENABLED"]:
+                        playSoundPitch(invalidPegSound, 0.35)
 
 
          # get current mouse state
@@ -116,7 +117,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
         if not editorPaused:
             # check if mouse is out of bounds
             mouseOutofBounds = False
-            if mousePos.y > HEIGHT - heightBound or mousePos.y < heightBound or mousePos.x > WIDTH - widthBound or mousePos.x < widthBound:
+            if mousePos.y > configs["RESOLUTION"][1] - heightBound or mousePos.y < heightBound or mousePos.x > configs["RESOLUTION"][0] - widthBound or mousePos.x < widthBound:
                 mouseOutofBounds = True
 
             # if mouse clicked, create a new ball at the mouse position
@@ -146,7 +147,8 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                     pegs.append(newPeg)
                     staticImg = updateStaticImage(staticImg, newPeg)
                     # play sound
-                    playSoundPitch(newPegSound, 0.35, soundVolume)
+                    if configs["SOUND_ENABLED"]:
+                        playSoundPitch(newPegSound, 0.35)
 
             # if right clicked, remove peg
             elif mouseClicked[2]:
@@ -162,7 +164,8 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                 if len(selectedPegs) > 0:
                     staticImg = createStaticImage(pegs)
                     # play sound
-                    playSoundPitch(newPegSound, 0.55, soundVolume)
+                    if configs["SOUND_ENABLED"]:
+                        playSoundPitch(newPegSound, 0.55)
 
         ##### draw #####
         screen.blit(staticImg, (0, 0))
@@ -173,7 +176,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
             # don't draw any of this while the game is paused (its distracting)
             if mouseOutofBounds:
                 pygame.draw.rect(screen, (255, 0, 0), (widthBound, heightBound,
-                                WIDTH - widthBound*2, HEIGHT - heightBound*2), 2)
+                                configs["RESOLUTION"][0] - widthBound*2, configs["RESOLUTION"][1] - heightBound*2), 2)
 
                 # draw invalid transparent peg img (red peg)
                 screen.blit(invalidPegImg, (mousePos.x -
@@ -190,19 +193,19 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
             pegCountColor = (120, 30, 60)
         pegCount = infoFont.render(
             "Pegs : " + str(len(pegs)), False, pegCountColor)
-        screen.blit(pegCount, (int(WIDTH/2 - 45), 50))
+        screen.blit(pegCount, (int(configs["RESOLUTION"][0]/2 - 45), 50))
 
         # draw help text
         helpText = helpFont.render(
             "Left click to add peg, right click to remove peg", False, (255, 255, 255))
-        screen.blit(helpText, (int(WIDTH-350), 10))
+        screen.blit(helpText, (int(configs["RESOLUTION"][0]-350), 10))
         helpText2 = helpFont.render("S = Save", False, (255, 255, 255))
-        screen.blit(helpText2, (int(WIDTH-150), 25))
+        screen.blit(helpText2, (int(configs["RESOLUTION"][0]-150), 25))
         helpText3 = helpFont.render("L = Load", False, (255, 255, 255))
-        screen.blit(helpText3, (int(WIDTH-150), 40))
+        screen.blit(helpText3, (int(configs["RESOLUTION"][0]-150), 40))
 
         # draw a circle where the ball would be
-        pygame.draw.circle(screen, (255, 255, 255), [WIDTH/2, HEIGHT/25], 5)
+        pygame.draw.circle(screen, (255, 255, 255), [configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25], 5)
 
         if editorPaused:
             pausedScreen, pauseSelection = getEditorPauseScreen(mx, my, mouseClicked[0], standalone)
@@ -229,17 +232,16 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
                     editorPaused = False
                     savedTimer.setTimer(4)
             elif pauseSelection == "load":
-                pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, debug)
+                pegs, originPegs, orangeCount, filePath = loadLevelMenu(screen, configs["DEBUG_MODE"])
                 # reset the pegs
                 for peg in pegs:
                     peg.reset()
                 staticImg = createStaticImage(pegs)
                 editorPaused = False
 
-                # play random music
-                loadRandMusic()
-                playMusic()
-                setMusicVolume(musicVolume)
+                if configs["MUSIC_ENABLED"]:
+                    # play random music
+                    newSong()
 
                 time.sleep(0.15)
             elif pauseSelection == "play":
@@ -261,21 +263,21 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
         if warningTimer.isActive and len(pegs) == 0:
             warningText = warnFont.render(
                 "Level cannot be empty...", False, (200, 20, 25))
-            screen.blit(warningText, (int(WIDTH/2 - 150), HEIGHT/2 +55))
+            screen.blit(warningText, (int(configs["RESOLUTION"][0]/2 - 150), configs["RESOLUTION"][1]/2 +55))
         elif warningTimer.isActive and len(pegs) > 0 and len(pegs) < 30:
             warningText = warnFont.render(
                 "Level must have at least 30 pegs...", False, (200, 20, 25))
-            screen.blit(warningText, (int(WIDTH/2 - 200), HEIGHT/2 +55))
+            screen.blit(warningText, (int(configs["RESOLUTION"][0]/2 - 200), configs["RESOLUTION"][1]/2 +55))
 
         # draw saved text
         savedTimer.update()
         if savedTimer.isActive:
             savedText = warnFont.render(
                 "Level saved!", False, (20, 200, 25))
-            screen.blit(savedText, (int(WIDTH/2 - 100), HEIGHT/2))
+            screen.blit(savedText, (int(configs["RESOLUTION"][0]/2 - 100), configs["RESOLUTION"][1]/2))
 
         # draw debug text
-        if debug:
+        if configs["DEBUG_MODE"]:
             if (clock.get_rawtime() < 16):  # decide whether green text or red text
                 frameColor = (0, 255, 50)  # green
             else:
@@ -299,7 +301,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, debug: bool = 
 
 if __name__ == "__main__":
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
     clock = pygame.time.Clock()
 
     pygame.display.set_icon(editorIconImg)

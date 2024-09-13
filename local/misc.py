@@ -4,17 +4,18 @@ from random import randint
 
 ### local imports ###
 from local.load_level import loadData, createDefaultPegsPos
-from local.config import WIDTH, HEIGHT, debug, segmentCount
+from local.config import segmentCount
+from local.userConfig import configs
 from local.resources import backgroundImg
 from local.peg import Peg
 from local.ball import Ball
-from local.audio import loadRandMusic, playMusic, stopMusic
+from local.audio import newSong
 
 # iterate through each peg x,y position to determine its location on the screen
 
 
 def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
-    segmentWidth = WIDTH/segmentCount
+    segmentWidth = configs["RESOLUTION"][0]/segmentCount
     for p in pegs:
         for i in range(segmentCount+1):
             if p.pos.x >= segmentWidth*(i-1) - p.radius and p.pos.x <= segmentWidth*i + p.radius:
@@ -22,7 +23,7 @@ def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
 
 
 def getBallScreenLocation(b: Ball, segmentCount) -> list[int]:
-    segmentWidth = WIDTH/segmentCount
+    segmentWidth = configs["RESOLUTION"][0]/segmentCount
     pos1 = ceil((b.pos.x - b.radius)/segmentWidth)
     pos2 = ceil((b.pos.x + b.radius)/segmentWidth)
 
@@ -80,13 +81,13 @@ def createPegColors(pegs: list[Peg], color_map: list = None) -> list[Peg]:
         target_greens = 2
 
         if len(pegs) < 25:
-            if debug:
+            if configs["DEBUG_MODE"]:
                 print("WARN: Level has less than 25 pegs, continuing anyway...")
             target_oranges = 1 if len(pegs) <= 3 else len(pegs) - 2
             if len(pegs) <= 2:
                 target_greens = len(pegs) - target_oranges
         elif len(pegs) > 120:
-            if debug:
+            if configs["DEBUG_MODE"]:
                 print(
                     "WARN: Level has excessive number of pegs, expect performance issues...")
 
@@ -163,7 +164,7 @@ def loadDefaultLevel() -> tuple[list[Peg], list[Peg], int]:
 # create a static image of the background and pegs, this avoids redrawing the background and pegs every frame
 # -- dramatic performance improvement especially in levels with lots of pegs
 def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
-    staticImg = pygame.Surface((WIDTH, HEIGHT))
+    staticImg = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
 
     # draw background
     staticImg.blit(bgImg, (0, 0))
@@ -174,7 +175,7 @@ def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
             p.pegImg, (p.pos.x - p.posAdjust, p.pos.y - p.posAdjust))
 
     # anti-aliasing
-    # staticImg = pygame.transform.smoothscale(staticImg, (WIDTH, HEIGHT))
+    # staticImg = pygame.transform.smoothscale(staticImg, (configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
 
     return staticImg
 
@@ -189,7 +190,7 @@ def updateStaticImage(staticImg: pygame.Surface, peg: Peg):
 
 # create a static image of cicles used when debugging (zenball trajectory, to be specific)
 def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
-    staticCircles = pygame.Surface((WIDTH, HEIGHT))
+    staticCircles = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
 
     # surface is transparent
     staticCircles.set_colorkey((0, 0, 0))
@@ -204,7 +205,7 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
 def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
     # reset everything
     balls.clear()  # clear all the balls
-    balls.append(Ball(WIDTH/2, HEIGHT/25))  # recreate the original ball
+    balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))  # recreate the original ball
     ball = balls[0]
     ball.reset()
     pitch = 1.0
@@ -231,9 +232,7 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     frameRate = 144
     LongShotBonus = False
     # change the song
-    stopMusic()
-    loadRandMusic()
-    playMusic()
+    newSong()
     staticImage = createStaticImage(pegs)
     return ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, LongShotBonus, staticImage
 

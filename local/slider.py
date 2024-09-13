@@ -24,11 +24,6 @@ class Slider:
 
         # draw the sliderRect
         pygame.draw.rect(sliderSurface, (0, 0, 0), (0, 0, self.sliderRect.width, self.sliderRect.height), 2)
-
-        # draw the value
-        font = pygame.font.SysFont("Arial", 20)
-        text = font.render(str(self.value), True, (0, 0, 0))
-        sliderSurface.blit(text, (self.sliderRect.width/ 2 - text.get_width() / 2, self.sliderRect.height / 2 - text.get_height() / 2))
         
         # draw the knob
         pygame.draw.rect(sliderSurface, self.knobColor, (self.knobPos.x - self.pos.x, self.sliderRect.height / 2 - self.knobHeight / 2, self.knobWidth, self.knobHeight))

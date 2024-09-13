@@ -3,11 +3,12 @@ import time
 from local.vectors import Vector, subVectors
 from local.ball import Ball
 from local.peg import Peg
-from local.config import LAUNCH_FORCE, trajectoryDepth, WIDTH, HEIGHT, segmentCount
+from local.config import LAUNCH_FORCE, trajectoryDepth, segmentCount
+from local.config import configs
 from local.collision import isBallTouchingPeg, resolveCollision
 from local.misc import getBallScreenLocation
 
-def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debug = False):
+def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debugTrajectory = False):
     hit = False
     previousFakeBall = Ball(startPos.x, startPos.y)
 
@@ -68,7 +69,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                 if shouldCheckCollision:
                     ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                     if ballTouchingPeg:
-                        if not debug:
+                        if not debugTrajectory:
                             return fakeBalls
                         else:
                             fakeBall = resolveCollision(fakeBall, p)
@@ -76,7 +77,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
             
         fakeBall.update()
         
-        if fakeBall.pos.y > HEIGHT:
+        if fakeBall.pos.y > configs["RESOLUTION"][1]:
             break # if the ball has gone off the screen, then we can stop
         
         fakeBalls.append(fakeBall)
@@ -145,7 +146,7 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
 
             fakeBall.update()
 
-            if fakeBall.pos.y > HEIGHT:
+            if fakeBall.pos.y > configs["RESOLUTION"][1]:
                 fakeBall.vel.x = 0
                 fakeBall.vel.y = 0
             

@@ -1,7 +1,8 @@
 # refer to the vectors.py module for information on these functions
 from local.vectors import Vector
 
-from local.config import WIDTH, HEIGHT, gravity, maxBallVelocity, ballRad, defaultBallMass
+from local.config import gravity, maxBallVelocity, ballRad, defaultBallMass
+from local.config import configs
 
 class Ball:
     def __init__(self, x : int, y : int, mass = defaultBallMass):
@@ -42,14 +43,14 @@ class Ball:
         self.vel.limitMag(maxBallVelocity) #stop the ball from going crazy, this resolves the occasional physics glitches
 
         # if ball collided with wall or has fallen through the floor
-        if self.pos.x > (WIDTH - self.radius) or self.pos.x < self.radius:
-            if self.pos.x > (WIDTH - self.radius): self.pos.x = WIDTH - self.radius
+        if self.pos.x > (configs["RESOLUTION"][0] - self.radius) or self.pos.x < self.radius:
+            if self.pos.x > (configs["RESOLUTION"][0] - self.radius): self.pos.x = configs["RESOLUTION"][0] - self.radius
             elif self.pos.x < self.radius: self.pos.x = self.radius
             self.vel.x *= -1
         if self.pos.y < self.radius:
             self.pos.y = self.radius
             self.vel.y *= -1
-        if self.pos.y > (HEIGHT + self.radius):
+        if self.pos.y > (configs["RESOLUTION"][1] + self.radius):
             self.isAlive = False
 
     def reset(self):
