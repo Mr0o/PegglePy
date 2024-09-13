@@ -7,9 +7,9 @@ configs = {
     "FULLSCREEN": False,
     "DEBUG_MODE": False,
     "SOUND_ENABLED": True,
-    "SOUND_VOLUME": 0.4,
+    "SOUND_VOLUME": 0.25,
     "MUSIC_ENABLED": True,
-    "MUSIC_VOLUME": 0.4
+    "MUSIC_VOLUME": 0.25
 }
 
 defaultConfigs = configs.copy()
