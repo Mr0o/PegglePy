@@ -1,7 +1,7 @@
 import pygame
 import time
 
-from local.userConfig import configs, saveSettings
+from local.userConfig import configs, saveSettings, defaultConfigs
 from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch, setMusicVolume, newSong
@@ -69,6 +69,39 @@ def settingsMenu(screen: pygame.Surface):
             # mouse button is down
             if mouseDown:
                 selection = "mainMenu"
+                
+        # check if mouse is over set defaults button
+        if mousePos.x > configs["RESOLUTION"][0]/2 - editorButtonSize.x/2 and mousePos.x < configs["RESOLUTION"][0]/2 - editorButtonSize.x/2 + editorButtonSize.x and mousePos.y > configs["RESOLUTION"][1] - editorButtonSize.y - 20 and mousePos.y < configs["RESOLUTION"][1] - 20:
+            # mouse button is down
+            if mouseDown:
+                # set the settings to the default values
+                for key, value in defaultConfigs.items():
+                    configs[key] = value
+                    
+                # update the sliders
+                musicSlider.setValue(configs["MUSIC_VOLUME"]*100)
+                soundSlider.setValue(configs["SOUND_VOLUME"]*100)
+                
+                saveSettings()
+                playSoundPitch(buttonClickSound)
+                
+        # check if mouse is over music checkbox
+        if mousePos.x > 50 and mousePos.x < 100 and mousePos.y > 250 and mousePos.y < 300:
+            # mouse button is down
+            if mouseDown:
+                configs["MUSIC_ENABLED"] = not configs["MUSIC_ENABLED"]
+                playSoundPitch(buttonClickSound)
+                if configs["MUSIC_ENABLED"]:
+                    setMusicVolume(configs["MUSIC_VOLUME"])
+                else:
+                    setMusicVolume(0)
+                    
+        # check if mouse is over sound checkbox
+        if mousePos.x > 50 and mousePos.x < 100 and mousePos.y > 350 and mousePos.y < 400:
+            # mouse button is down
+            if mouseDown:
+                configs["SOUND_ENABLED"] = not configs["SOUND_ENABLED"]
+                playSoundPitch(buttonClickSound)
 
 
         # draw the background
@@ -76,23 +109,27 @@ def settingsMenu(screen: pygame.Surface):
 
         # draw the title
         menuTitle = menuFont.render("Settings", True, (255, 255, 255))
-        screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2, configs["RESOLUTION"][1]/4 - menuTitle.get_height()/2))
+        screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2, configs["RESOLUTION"][1]/10 - menuTitle.get_height()/2))
 
-        # stub
-        # draw a message text
-        messageText = menuButtonFont.render("This menu is a stub", True, (255, 255, 255))
-        screen.blit(messageText, (configs["RESOLUTION"][0]/2 - messageText.get_width()/2, configs["RESOLUTION"][1]/2 - messageText.get_height()/2))
+        # # stub
+        # # draw a message text
+        # messageText = menuButtonFont.render("This menu is a stub", True, (255, 255, 255))
+        # screen.blit(messageText, (configs["RESOLUTION"][0]/2 - messageText.get_width()/2, configs["RESOLUTION"][1]/2 - messageText.get_height()/2))
 
-        messageText = menuButtonFont.render("Settings have not been implemented yet", True, (255, 255, 255))
-        screen.blit(messageText, (configs["RESOLUTION"][0]/2 - messageText.get_width()/2, configs["RESOLUTION"][1]/2 - messageText.get_height()/2 + 30))
+        # messageText = menuButtonFont.render("Settings have not been implemented yet", True, (255, 255, 255))
+        # screen.blit(messageText, (configs["RESOLUTION"][0]/2 - messageText.get_width()/2, configs["RESOLUTION"][1]/2 - messageText.get_height()/2 + 30))
 
         # update the volume sliders
         musicSlider.update(mousePos, pygame.mouse.get_pressed()[0])
         soundSlider.update(mousePos, pygame.mouse.get_pressed()[0])
 
         # update the volume
-        setMusicVolume(musicSlider.value/100)
-        sovolume = soundSlider.value/100
+        configs["MUSIC_VOLUME"] = musicSlider.value/100
+        configs["SOUND_VOLUME"] = soundSlider.value/100
+        
+        # update the music volume live
+        if configs["MUSIC_ENABLED"]:
+            setMusicVolume(configs["MUSIC_VOLUME"])
 
         # draw the volume sliders
         screen.blit(musicSlider.getSliderSurface(), (musicSlider.pos.x, musicSlider.pos.y))
@@ -104,8 +141,43 @@ def settingsMenu(screen: pygame.Surface):
 
         soundLabel = menuButtonFont.render("Sound Volume: " + str(round(soundSlider.value)) + "%", True, (255, 255, 255))
         screen.blit(soundLabel, (soundSlider.pos.x + soundSlider.sliderRect.width/2 - soundLabel.get_width()/2, soundSlider.pos.y - soundLabel.get_height() - 5))
+        
+        # draw the sound and music checkboxes (square with x or no x)
+        # music
+        # draw the checkbox label
+        musicLabel = menuButtonFont.render("Music", True, (255, 255, 255))
+        screen.blit(musicLabel, (110, 250))
+        # sound
+        soundLabel = menuButtonFont.render("Sound", True, (255, 255, 255))
+        screen.blit(soundLabel, (110, 350))
+        if configs["MUSIC_ENABLED"]:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 250, 50, 50), 2)
+            # draw the x
+            pygame.draw.line(screen, (255, 0, 0), (50, 250), (100, 300), 2)
+            pygame.draw.line(screen, (255, 0, 0), (100, 250), (50, 300), 2)
+        else:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 250, 50, 50), 2)
+        # sound
+        if configs["SOUND_ENABLED"]:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 350, 50, 50), 2)
+            # draw the x
+            pygame.draw.line(screen, (255, 0, 0), (50, 350), (100, 400), 2)
+            pygame.draw.line(screen, (255, 0, 0), (100, 350), (50, 400), 2)
+        else:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 350, 50, 50), 2)
+            
 
         # draw the buttons
+        
+        # set defaults button (located at the bottom center of the screen)
+        screen.blit(menuButtonUnpressedImg, (configs["RESOLUTION"][0]/2 - editorButtonSize.x/2, configs["RESOLUTION"][1] - editorButtonSize.y - 20))
+        # draw the text
+        setDefaultsText = menuButtonFont.render("Set Defaults", True, (255, 255, 255))
+        screen.blit(setDefaultsText, (configs["RESOLUTION"][0]/2 - setDefaultsText.get_width()/2, configs["RESOLUTION"][1] - editorButtonSize.y - 20 + editorButtonSize.y/2 - setDefaultsText.get_height()/2))
 
         # settings button (bottom right corner)
         screen.blit(buttonUnpressedImgScaled, (backButtonPos.x, backButtonPos.y))
