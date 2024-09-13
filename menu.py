@@ -66,7 +66,7 @@ def mainMenu(screen: pygame.Surface):
             # check if 1 is pressed (debug)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    configs["DEBUG"] = not configs["DEBUG"]
+                    configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
 
                     # check for gamepad dpad buttons
             if event.type == pygame.JOYHATMOTION:
@@ -84,7 +84,7 @@ def mainMenu(screen: pygame.Surface):
                         backButtonPressed = True
                     if event.button == 8:  # the 'share' button on a ps4 controller
                         # enable or disable debug
-                        configs["DEBUG"] = not configs["DEBUG"]
+                        configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
 
                 else:  # xbox controller (default)
                     if event.button == 0:  # the 'A' button on an xbox controller
@@ -92,7 +92,7 @@ def mainMenu(screen: pygame.Surface):
                     if event.button == 1:  # the 'B' button on an xbox controller
                         backButtonPressed = True
                     if event.button == 6:  # the 'start' button on an xbox controller
-                        configs["DEBUG"] = not configs["DEBUG"]
+                        configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
 
         # check for joystick input
         previousControllerSelector = moveControllerSelector
