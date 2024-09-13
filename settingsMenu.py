@@ -57,7 +57,7 @@ def settingsMenu(screen: pygame.Surface):
             # check if 1 is pressed (debug)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    configs["DEBUG"] = not configs["DEBUG"]
+                    configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
         # update mouse posistion
         mx, my = pygame.mouse.get_pos()
         mousePos = Vector(mx, my)
