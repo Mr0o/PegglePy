@@ -78,14 +78,15 @@ import pygame
 if "-f" in sys.argv or "--fullscreen" in sys.argv:
     configs["FULLSCREEN"] = True
 
+userResolution = configs["RESOLUTION"]
 if configs["FULLSCREEN"]:
     # get the resolution of the display monitor
     pygame.init()
     infoObject = pygame.display.Info()
     configs["RESOLUTION"] = (infoObject.current_w, infoObject.current_h)
 else:
-    # set the resolution to the default value
-    configs["RESOLUTION"] = (1200, 900)
+    # set the resolution to userResolution
+    configs["RESOLUTION"] = userResolution
 
 #power up (spooky, multiball, zenball, guideball, spooky-multiball)
 powerUpType = "spooky"
