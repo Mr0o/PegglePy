@@ -110,14 +110,14 @@ LAUNCH_FORCE = 5.0
 if "--no-max-velocity" in sys.argv:
     maxBallVelocity = 9999
 else:
-    maxBallVelocity = 7 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
+    maxBallVelocity = 10 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
 defaultBallMass = 4
-defaultPegMass = 32 # the pegs mass doesnt really matter, but they need to have a mass in order for the physics to be calculated when a ball hits the pegs (in this case I have determined that 32 is a good number, magic)
+defaultPegMass = 60 # the pegs mass doesnt really matter, but they need to have a mass in order for the physics to be calculated when a ball hits the pegs (in this case I have determined that 60 is a good number, magic)
 # check if the script has been passed '--no-gravity' as an argument
 if "--no-gravity" in sys.argv:
     gravity = Vector(0,0)
 else:
-    gravity = Vector(0, 0.035)
+    gravity = Vector(0, 0.045)
 trajectoryDepth = 75 # how many steps to take in the normal (non-powerup) launch trajectory calculation
 bucketVelocity = 2.8 # max set velocity of the bucket
 ballsRemaining = 10
@@ -138,6 +138,7 @@ frameRate = 144 # the game speed is currently tied to the framerate, unfortunate
 # TODO: Decouple the game logic from the framerate
 ballRad = 12
 pegRad = 25
+noGravityTimeLength = 10 # how many seconds the no-gravity power up lasts
 
 #images
 ballImg = pygame.image.load("resources/images/balls/200x200/ball.png")
