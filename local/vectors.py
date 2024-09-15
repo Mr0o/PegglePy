@@ -64,6 +64,14 @@ class Vector:
     def div(self, d: float) -> None:
         self.x /= d
         self.y /= d
+        
+    # return the dot product of two vectors
+    def dot(self, vec: 'Vector') -> float:
+        return (self.x * vec.x) + (self.y * vec.y)
+    
+    # return the cross product of two vectors
+    def cross(self, vec: 'Vector') -> float:
+        return (self.x * vec.y) - (self.y * vec.x)
 
     # __add__ is a special method that allows us to use the + operator to add two vectors together
     def __add__(self, vec: 'Vector') -> 'Vector':
