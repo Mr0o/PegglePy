@@ -25,7 +25,7 @@ class TimedEvent:
         self.triggerTime = self.currentTime + timer
 
 
-    def cancleTimer(self):
+    def cancelTimer(self):
         self.isActive = False
         self.isTriggered = False
 
