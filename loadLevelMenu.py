@@ -69,7 +69,12 @@ def loadLevel(levelFilePath) -> tuple[list[Peg], list[Peg], int]:
 # this menu will be used to load levels
 def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -> tuple[list[Peg], list[Peg], int]:
     # play menu music
-    newSong()
+    pygame.mixer.music.stop()
+    # load the menu music
+    pygame.mixer.music.load(menuMusicPath)
+    # play the music
+    if configs["MUSIC_ENABLED"]:
+        pygame.mixer.music.play(-1)
 
     # button positions
     buttonScale = 2.5
