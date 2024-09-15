@@ -17,6 +17,7 @@ powerUpMultiBall = pygame.mixer.Sound("resources/audio/sounds/powerup_multiball.
 powerUpZenBall = pygame.mixer.Sound("resources/audio/sounds/gong.ogg")
 powerUpZenBallHit = pygame.mixer.Sound("resources/audio/sounds/powerup_zen3.ogg")
 powerUpGuideBall = pygame.mixer.Sound("resources/audio/sounds/powerup_guide.ogg")
+powerUpNoGravity = pygame.mixer.Sound("resources/audio/sounds/aah.ogg")
 freeBallSound = pygame.mixer.Sound("resources/audio/sounds/freeball2.ogg")
 failSound = pygame.mixer.Sound("resources/audio/sounds/fail.ogg")
 drumRoll = pygame.mixer.Sound("resources/audio/sounds/drum_roll.ogg")

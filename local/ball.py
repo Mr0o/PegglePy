@@ -32,8 +32,9 @@ class Ball:
         #fcopy.div(self.mass)
         self.vel.add(fcopy)
 
-    def update(self):
-        self.applyForce(gravity)
+    def update(self, zeroGravity = False):
+        if not zeroGravity:
+            self.applyForce(gravity)
 
         self.vel.x *= 0.9993 #drag
         self.vel.add(self.acc)

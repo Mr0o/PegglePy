@@ -78,6 +78,7 @@ python3 run.py --skip-auto-install
 - "zenball"   : When you launch the ball on your next turn, the computer will calculate the best possible move and adjust your aim
 - "guideball" : For the next 3 turns, you will get a better aim trajectory visual
 - "spooky-multiball" : A combination of the spooky and multiball powerups
+- "no-gravity" : The ball will experience zero gravity for the next 10 seconds
 
 ### Create Levels
 -  To start the editor, click on the 'Editor' button on the main menu

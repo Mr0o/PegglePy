@@ -104,6 +104,9 @@ gameRunning = True
 zoomInOnBall = False
 zoom = 1
 
+noGravityPowerUpTimer = TimedEvent()
+noGravityPowerUpTimer.setTimer(0.1)
+
 pegs: list[Peg]
 
 ### main menu ###
@@ -195,6 +198,8 @@ while gameRunning:
                 elif powerUpType == "guideball":
                     powerUpType = "spooky-multiball"
                 elif powerUpType == "spooky-multiball":
+                    powerUpType = "no-gravity"
+                elif powerUpType == "no-gravity":
                     powerUpType = "spooky"
             if event.key == pygame.K_4:  # enable or disable configs["DEBUG_MODE"] view of collision segments
                 debugCollision = not debugCollision
@@ -304,6 +309,8 @@ while gameRunning:
                     elif powerUpType == "guideball":
                         powerUpType = "spooky-multiball"
                     elif powerUpType == "spooky-multiball":
+                        powerUpType = "no-gravity"
+                    elif powerUpType == "no-gravity":
                         powerUpType = "spooky"
                 if event.button == 2:  # the '△'/triangle button on a ps4 controller
                     # reset the game
@@ -352,6 +359,8 @@ while gameRunning:
                     elif powerUpType == "guideball":
                         powerUpType = "spooky-multiball"
                     elif powerUpType == "spooky-multiball":
+                        powerUpType = "no-gravity"
+                    elif powerUpType == "no-gravity":
                         powerUpType = "spooky"
                 if event.button == 3:  # the 'Y' button on an xbox controller
                     # reset the game
@@ -370,7 +379,7 @@ while gameRunning:
                     else:
                         stopMusic()
                         
-                    configs["SOUDN_ENABLED"] = not configs["SOUND_ENABLED"]
+                    configs["SOUND_ENABLED"] = not configs["SOUND_ENABLED"]
                 if event.button == 4:  # the 'left bumper' button on an xbox controller
                     # rumble test
                     if pygame.joystick.get_count() > 0:
@@ -562,6 +571,19 @@ while gameRunning:
                 newCheatBall.isAlive = True
                 balls.append(newCheatBall)
                 ball = newCheatBall
+                
+        # if no-gravity powerup is active
+        noGravityPowerUpActive = False
+        if powerUpActive and powerUpType == "no-gravity":
+            noGravityPowerUpTimer.update()
+            noGravityPowerUpActive = True
+            if noGravityPowerUpTimer.isTriggered:
+                noGravityPowerUpActive = False
+                noGravityPowerUpTimer.cancelTimer()
+                powerUpCount -= 1
+                powerUpActive = False
+        else:
+            noGravityPowerUpActive = False
 
         # update ball physics and pegs, additional game logic
         for b in balls:
@@ -611,14 +633,14 @@ while gameRunning:
                                     pegs.remove(b.lastPegHit)  # remove the peg
                                     b.lastPegHit = None
                                     hasPegBeenRemoved = True
-                                    p.ballStuckTimer.cancleTimer()
+                                    p.ballStuckTimer.cancelTimer()
 
                                 # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
                                 if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
                                     p.ballStuckTimer.setTimer(
                                         autoRemovePegsTimerValue)
                                 elif b.vel.getMag() > 0.5:
-                                    p.ballStuckTimer.cancleTimer()
+                                    p.ballStuckTimer.cancelTimer()
                                     b.lastPegHit = None
 
                             # check for long shot bonus
@@ -681,6 +703,16 @@ while gameRunning:
                                             playSoundPitch(powerUpMultiBall)
                                         addNewBall = True
                                         powerUpCount += 1
+                                    if powerUpType == "no-gravity":
+                                        if powerUpCount < 1:
+                                            # start the no gravity powerup timer
+                                            noGravityPowerUpTimer.setTimer(
+                                                noGravityTimeLength)
+                                        if configs["SOUND_ENABLED"]:
+                                            playSoundPitch(powerUpNoGravity, 1.9)
+                                            playSoundPitch(powerUpNoGravity, 0.8)
+                                        
+                                        
                                     powerUpCount += 1
                                     powerUpActive = True
 
@@ -722,6 +754,10 @@ while gameRunning:
                                         #   playSoundPitch(powerUpSpooky1)
                                         addNewBall = True
                                         powerUpCount += 2
+                                    if powerUpType == "zenball":
+                                        powerUpCount += 1
+                                    if powerUpType == "no-gravity":
+                                        noGravityPowerUpActive = True
 
                                 # keep track of points earned
                                 # pointsEarned.append(p.points)
@@ -733,7 +769,15 @@ while gameRunning:
                                     staticImage = updateStaticImage(
                                         staticImage, p)
 
-                b.update()
+                #if no-gravity powerup is active
+                if noGravityPowerUpActive:
+                    # keep a minimum velocity
+                    if b.vel.getMag() < 1.5:
+                        b.vel.setMag(1.5)
+                    if b.vel.getMag() < 0.2:
+                        b.vel.add(Vector(0, 1))
+                
+                b.update(noGravityPowerUpActive)
 
                 # check if ball has hit the sides of the bucket
                 collidedPeg = bucket.isBallCollidingWithBucketEdge(b)
@@ -964,8 +1008,12 @@ while gameRunning:
             powerUpTextColor = (50, 255, 20)
         else:
             powerUpTextColor = (50, 170, 20)
-        powerUpText = infoFont.render(
-            powerUpType + ": " + str(powerUpCount), False, powerUpTextColor)
+        if noGravityPowerUpActive:
+            powerUpText = infoFont.render(
+                powerUpType + ": " + str(round(noGravityPowerUpTimer.timeRemaining, 1)), False, powerUpTextColor)
+        else:
+            powerUpText = infoFont.render(
+                powerUpType + ": " + str(powerUpCount), False, powerUpTextColor)
         screen.blit(powerUpText, (int(configs["RESOLUTION"][0]/2 - powerUpText.get_width()/2), 5))
 
     # show if paused
@@ -1141,7 +1189,7 @@ while gameRunning:
     longShotTextTimer.update()
     if longShotTextTimer.isTriggered:
         longShotBonus = False
-        longShotTextTimer.cancleTimer()
+        longShotTextTimer.cancelTimer()
 
     if longShotBonus and not longShotTextTimer.isActive:
         longShotTextTimer.setTimer(1.25)
