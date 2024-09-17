@@ -13,8 +13,8 @@ from local.vectors import Vector
 
 pygame.init()
 
-WIDTH = configs["RESOLUTION"][0]
-HEIGHT = configs["RESOLUTION"][1]
+WIDTH = configs["WIDTH"]
+HEIGHT = configs["HEIGHT"]
 
 # set up the window
 window = pygame.display.set_mode((WIDTH, HEIGHT))

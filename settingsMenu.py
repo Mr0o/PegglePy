@@ -15,7 +15,7 @@ def settingsMenu(screen: pygame.Surface):
     # button positions
     buttonScale = 2.5
     editorButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    backButtonPos = Vector(configs["RESOLUTION"][0] - 50*buttonScale-20, configs["RESOLUTION"][1] - 50*buttonScale-20)
+    backButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-20, configs["HEIGHT"] - 50*buttonScale-20)
     backButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
      # scale the button images
@@ -71,7 +71,7 @@ def settingsMenu(screen: pygame.Surface):
                 selection = "mainMenu"
                 
         # check if mouse is over set defaults button
-        if mousePos.x > configs["RESOLUTION"][0]/2 - editorButtonSize.x/2 and mousePos.x < configs["RESOLUTION"][0]/2 - editorButtonSize.x/2 + editorButtonSize.x and mousePos.y > configs["RESOLUTION"][1] - editorButtonSize.y - 20 and mousePos.y < configs["RESOLUTION"][1] - 20:
+        if mousePos.x > configs["WIDTH"]/2 - editorButtonSize.x/2 and mousePos.x < configs["WIDTH"]/2 - editorButtonSize.x/2 + editorButtonSize.x and mousePos.y > configs["HEIGHT"] - editorButtonSize.y - 20 and mousePos.y < configs["HEIGHT"] - 20:
             # mouse button is down
             if mouseDown:
                 # set the settings to the default values
@@ -109,15 +109,15 @@ def settingsMenu(screen: pygame.Surface):
 
         # draw the title
         menuTitle = menuFont.render("Settings", True, (255, 255, 255))
-        screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2, configs["RESOLUTION"][1]/10 - menuTitle.get_height()/2))
+        screen.blit(menuTitle, (configs["WIDTH"]/2 - menuTitle.get_width()/2, configs["HEIGHT"]/10 - menuTitle.get_height()/2))
 
         # # stub
         # # draw a message text
         # messageText = menuButtonFont.render("This menu is a stub", True, (255, 255, 255))
-        # screen.blit(messageText, (configs["RESOLUTION"][0]/2 - messageText.get_width()/2, configs["RESOLUTION"][1]/2 - messageText.get_height()/2))
+        # screen.blit(messageText, (configs["WIDTH"]/2 - messageText.get_width()/2, configs["HEIGHT"]/2 - messageText.get_height()/2))
 
         # messageText = menuButtonFont.render("Settings have not been implemented yet", True, (255, 255, 255))
-        # screen.blit(messageText, (configs["RESOLUTION"][0]/2 - messageText.get_width()/2, configs["RESOLUTION"][1]/2 - messageText.get_height()/2 + 30))
+        # screen.blit(messageText, (configs["WIDTH"]/2 - messageText.get_width()/2, configs["HEIGHT"]/2 - messageText.get_height()/2 + 30))
 
         # update the volume sliders
         musicSlider.update(mousePos, pygame.mouse.get_pressed()[0])
@@ -174,10 +174,10 @@ def settingsMenu(screen: pygame.Surface):
         # draw the buttons
         
         # set defaults button (located at the bottom center of the screen)
-        screen.blit(menuButtonUnpressedImg, (configs["RESOLUTION"][0]/2 - editorButtonSize.x/2, configs["RESOLUTION"][1] - editorButtonSize.y - 20))
+        screen.blit(menuButtonUnpressedImg, (configs["WIDTH"]/2 - editorButtonSize.x/2, configs["HEIGHT"] - editorButtonSize.y - 20))
         # draw the text
         setDefaultsText = menuButtonFont.render("Set Defaults", True, (255, 255, 255))
-        screen.blit(setDefaultsText, (configs["RESOLUTION"][0]/2 - setDefaultsText.get_width()/2, configs["RESOLUTION"][1] - editorButtonSize.y - 20 + editorButtonSize.y/2 - setDefaultsText.get_height()/2))
+        screen.blit(setDefaultsText, (configs["WIDTH"]/2 - setDefaultsText.get_width()/2, configs["HEIGHT"] - editorButtonSize.y - 20 + editorButtonSize.y/2 - setDefaultsText.get_height()/2))
 
         # settings button (bottom right corner)
         screen.blit(buttonUnpressedImgScaled, (backButtonPos.x, backButtonPos.y))
@@ -223,7 +223,7 @@ def settingsMenu(screen: pygame.Surface):
 if __name__ == "__main__":
     # basic pygame setup
     pygame.init()
-    screen = pygame.display.set_mode((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+    screen = pygame.display.set_mode((configs["WIDTH"], configs["HEIGHT"]))
     clock = pygame.time.Clock()
 
     # run the menu

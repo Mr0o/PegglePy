@@ -35,9 +35,9 @@ import pygame
 pygame.init()
 # set fullscreen
 if configs["FULLSCREEN"]:
-    screen = pygame.display.set_mode((configs["RESOLUTION"]), pygame.FULLSCREEN)  # display surface
+    screen = pygame.display.set_mode(((configs["WIDTH"], configs["HEIGHT"])), pygame.FULLSCREEN)  # display surface
 else:
-    screen = pygame.display.set_mode((configs["RESOLUTION"]))  # display surface
+    screen = pygame.display.set_mode(((configs["WIDTH"], configs["HEIGHT"])))  # display surface
 
 clock = pygame.time.Clock()  # game clock
 
@@ -59,8 +59,8 @@ def drawLine(x1, y1, x2, y2):
 ### testing stuff ###
 balls: list[Ball]
 balls = []
-#balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
-balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
+#balls.append(Ball(configs["WIDTH"]/2, configs["HEIGHT"]/25))
+balls.append(Ball(configs["WIDTH"]/2, configs["HEIGHT"]/25))
 ball = balls[0]
 
 # some extra global variable initialization stuff
@@ -91,8 +91,8 @@ bestTrajectory = []
 hasPegBeenHit = False
 hasPegBeenRemoved = False
 controllerInput = False
-#inputAim = Vector(configs["RESOLUTION"][0]/2, (configs["RESOLUTION"][1]/25)+50)
-inputAim = Vector(configs["RESOLUTION"][0]/2, (configs["RESOLUTION"][1]/25)+50)
+#inputAim = Vector(configs["WIDTH"]/2, (configs["HEIGHT"]/25)+50)
+inputAim = Vector(configs["WIDTH"]/2, (configs["HEIGHT"]/25)+50)
 gamePadFineTuneAmount = 0
 
 longShotTextTimer = TimedEvent()
@@ -786,7 +786,7 @@ while gameRunning:
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
-                    if b.pos.y + b.radius > configs["RESOLUTION"][1]:
+                    if b.pos.y + b.radius > configs["HEIGHT"]:
                         b.pos.y = 0 + b.radius
                         b.inBucket = False
                         if powerUpCount == 1 and firstSpookyHit:
@@ -865,8 +865,8 @@ while gameRunning:
             shouldClear = False
             balls.clear()  # clear all the balls
             # recreate the original ball
-            #balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
-            balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))
+            #balls.append(Ball(configs["WIDTH"]/2, configs["HEIGHT"]/25))
+            balls.append(Ball(configs["WIDTH"]/2, configs["HEIGHT"]/25))
             ball = balls[0]
             ball.reset()
             pitch = 1.0
@@ -923,7 +923,7 @@ while gameRunning:
         if zoom > 1.8:
             zoom = 1.8
 
-        zoomedScreen = pygame.transform.smoothscale(screen, (int(configs["RESOLUTION"][0]*zoom), int(configs["RESOLUTION"][1]*zoom)))
+        zoomedScreen = pygame.transform.smoothscale(screen, (int(configs["WIDTH"]*zoom), int(configs["HEIGHT"]*zoom)))
 
         # calculate the position of the zoomedScreen
         # if there is only one orange peg left, then zoom in on the orange peg
@@ -940,14 +940,14 @@ while gameRunning:
         # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
         if zoomedScreenPos[0] > 0:
             zoomedScreenPos = (0, zoomedScreenPos[1])
-        elif zoomedScreenPos[0] < configs["RESOLUTION"][0] - zoomedScreen.get_width():
-            zoomedScreenPos = (configs["RESOLUTION"][0] - zoomedScreen.get_width(), zoomedScreenPos[1])
+        elif zoomedScreenPos[0] < configs["WIDTH"] - zoomedScreen.get_width():
+            zoomedScreenPos = (configs["WIDTH"] - zoomedScreen.get_width(), zoomedScreenPos[1])
         
         # if the zoomedScreen moves too far up or down, then set the y position to the edge of the screen
         if zoomedScreenPos[1] > 0:
             zoomedScreenPos = (zoomedScreenPos[0], 0)
-        elif zoomedScreenPos[1] < configs["RESOLUTION"][1] - zoomedScreen.get_height():
-            zoomedScreenPos = (zoomedScreenPos[0], configs["RESOLUTION"][1] - zoomedScreen.get_height())
+        elif zoomedScreenPos[1] < configs["HEIGHT"] - zoomedScreen.get_height():
+            zoomedScreenPos = (zoomedScreenPos[0], configs["HEIGHT"] - zoomedScreen.get_height())
 
         screen.blit(zoomedScreen, zoomedScreenPos)
     else:
@@ -958,7 +958,7 @@ while gameRunning:
             else:
                 zoom -= 0.005
             
-            zoomedScreen = pygame.transform.smoothscale(screen, (int(configs["RESOLUTION"][0]*zoom), int(configs["RESOLUTION"][1]*zoom)))
+            zoomedScreen = pygame.transform.smoothscale(screen, (int(configs["WIDTH"]*zoom), int(configs["HEIGHT"]*zoom)))
 
             # calculate the position of the zoomedScreen
             # if there is only one orange peg left, then zoom in on the orange peg
@@ -975,14 +975,14 @@ while gameRunning:
             # if the zoomedScreen moves too far to the left or right, then set the x position to the edge of the screen
             if zoomedScreenPos[0] > 0:
                 zoomedScreenPos = (0, zoomedScreenPos[1])
-            elif zoomedScreenPos[0] < configs["RESOLUTION"][0] - zoomedScreen.get_width():
-                zoomedScreenPos = (configs["RESOLUTION"][0] - zoomedScreen.get_width(), zoomedScreenPos[1])
+            elif zoomedScreenPos[0] < configs["WIDTH"] - zoomedScreen.get_width():
+                zoomedScreenPos = (configs["WIDTH"] - zoomedScreen.get_width(), zoomedScreenPos[1])
             
             # if the zoomedScreen moves too far up or down, then set the y position to the edge of the screen
             if zoomedScreenPos[1] > 0:
                 zoomedScreenPos = (zoomedScreenPos[0], 0)
-            elif zoomedScreenPos[1] < configs["RESOLUTION"][1] - zoomedScreen.get_height():
-                zoomedScreenPos = (zoomedScreenPos[0], configs["RESOLUTION"][1] - zoomedScreen.get_height())
+            elif zoomedScreenPos[1] < configs["HEIGHT"] - zoomedScreen.get_height():
+                zoomedScreenPos = (zoomedScreenPos[0], configs["HEIGHT"] - zoomedScreen.get_height())
 
             screen.blit(zoomedScreen, zoomedScreenPos)
         else:
@@ -1014,7 +1014,7 @@ while gameRunning:
         else:
             powerUpText = infoFont.render(
                 powerUpType + ": " + str(powerUpCount), False, powerUpTextColor)
-        screen.blit(powerUpText, (int(configs["RESOLUTION"][0]/2 - powerUpText.get_width()/2), 5))
+        screen.blit(powerUpText, (int(configs["WIDTH"]/2 - powerUpText.get_width()/2), 5))
 
     # show if paused
     if gamePaused and not gameOver:
@@ -1170,7 +1170,7 @@ while gameRunning:
     # show if gameOver
     if gameOver:
         pauseText = menuFont.render("Game Over", False, (255, 255, 255))
-        screen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/4))
+        screen.blit(pauseText, (configs["WIDTH"]/2 - pauseText.get_width()/2, configs["HEIGHT"]/4))
         if ballsRemaining >= 0 and orangeCount < 1:
             # add commas to the score (e.g. 1000000 -> 1,000,000)
             formattedScore = ""
@@ -1180,10 +1180,10 @@ while gameRunning:
                     formattedScore += ","
 
             scoreText = menuFont.render(formattedScore, False, (20, 60, 255))
-            screen.blit(scoreText, (configs["RESOLUTION"][0]/2 - scoreText.get_width()/2, configs["RESOLUTION"][1]/3 + 50))
+            screen.blit(scoreText, (configs["WIDTH"]/2 - scoreText.get_width()/2, configs["HEIGHT"]/3 + 50))
         else:
             tryAgainText = menuFont.render("Try Again", False, (255, 60, 20))
-            screen.blit(tryAgainText, (configs["RESOLUTION"][0]/2 - tryAgainText.get_width()/2, configs["RESOLUTION"][1]/2.2))
+            screen.blit(tryAgainText, (configs["WIDTH"]/2 - tryAgainText.get_width()/2, configs["HEIGHT"]/2.2))
 
     # show the long shot score text only for a few seconds
     longShotTextTimer.update()
@@ -1250,7 +1250,7 @@ while gameRunning:
         if controllerInput:
             joystickText = debugFont.render(
                 joystick.get_name(), False, (255, 255, 255))
-            screen.blit(joystickText, (configs["RESOLUTION"][0]-300, 10))
+            screen.blit(joystickText, (configs["WIDTH"]-300, 10))
 
         # draw bucket fake pegs
         for fakePeg in bucket.fakePegs.copy():
@@ -1267,9 +1267,9 @@ while gameRunning:
                 "Collision Segments: " + str(segmentCount), False, (0, 255, 255))
             screen.blit(collSegmentDisp, (230, 7))
             # draw collision sections
-            segmentWidth = configs["RESOLUTION"][0] / segmentCount
+            segmentWidth = configs["WIDTH"] / segmentCount
             for i in range(segmentCount):
-                drawLine(segmentWidth*i, 0, segmentWidth*i, configs["RESOLUTION"][1])
+                drawLine(segmentWidth*i, 0, segmentWidth*i, configs["HEIGHT"])
 
         # draw each pegs ballStuckTimer value
         if autoRemovePegs and debugAutoRemovePegsTimer:
@@ -1289,11 +1289,8 @@ while gameRunning:
         screen.blit(cheatsIcon, (100, 6))
 
     pygame.display.update()
-    # lock game framerate to a specified tickrate (default is 144)
-    if gamePaused:
-        clock.tick(30)  # no need for high tickrate when paused
-    else:
-        clock.tick(frameRate)
+    
+    clock.tick(1000)
     
 
 print("Goodbye")

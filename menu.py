@@ -17,13 +17,13 @@ def mainMenu(screen: pygame.Surface):
 
     # button positions
     buttonScale = 2.5
-    startButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 - 30*buttonScale)
+    startButtonPos = Vector(configs["WIDTH"]/2 - 50*buttonScale, configs["HEIGHT"]/2 - 30*buttonScale)
     startButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    editorButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 30*buttonScale)
+    editorButtonPos = Vector(configs["WIDTH"]/2 - 50*buttonScale, configs["HEIGHT"]/2 + 30*buttonScale)
     editorButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    quitButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 90*buttonScale)
+    quitButtonPos = Vector(configs["WIDTH"]/2 - 50*buttonScale, configs["HEIGHT"]/2 + 90*buttonScale)
     quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    settingsButtonPos = Vector(configs["RESOLUTION"][0] - 50*buttonScale-20, configs["RESOLUTION"][1] - 50*buttonScale-20)
+    settingsButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-20, configs["HEIGHT"] - 50*buttonScale-20)
     settingsButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
      # scale the button images
@@ -190,7 +190,7 @@ def mainMenu(screen: pygame.Surface):
 
         # draw the title
         menuTitle = menuFont.render("Peggle Py", True, (255, 255, 255))
-        screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2, configs["RESOLUTION"][1]/4 - menuTitle.get_height()/2))
+        screen.blit(menuTitle, (configs["WIDTH"]/2 - menuTitle.get_width()/2, configs["HEIGHT"]/4 - menuTitle.get_height()/2))
 
         # draw the buttons
         # start button
@@ -232,7 +232,7 @@ def mainMenu(screen: pygame.Surface):
         # github link (top right corner)
         # if the mouse is over the github link, change the color
         githubText = infoFont.render("Github: Mr0o", True, (255, 255, 255))
-        if mousePos.x > configs["RESOLUTION"][0] - githubText.get_width() - 10 and mousePos.x < configs["RESOLUTION"][0] - 10 and mousePos.y > 10 and mousePos.y < 10 + githubText.get_height():
+        if mousePos.x > configs["WIDTH"] - githubText.get_width() - 10 and mousePos.x < configs["WIDTH"] - 10 and mousePos.y > 10 and mousePos.y < 10 + githubText.get_height():
             # if clicked, open the github page
             if mouseDown:
                 try:
@@ -242,12 +242,12 @@ def mainMenu(screen: pygame.Surface):
                     print("Error: ", Exception)
             githubText = infoFont.render("Github: Mr0o", True, (0, 255, 255))
             # draw a blue line under the text
-            pygame.draw.line(screen, (0, 255, 255), (configs["RESOLUTION"][0] - githubText.get_width() - 10, 10 + githubText.get_height()), (configs["RESOLUTION"][0] - 10, 10 + githubText.get_height()), 2)
+            pygame.draw.line(screen, (0, 255, 255), (configs["WIDTH"] - githubText.get_width() - 10, 10 + githubText.get_height()), (configs["WIDTH"] - 10, 10 + githubText.get_height()), 2)
         else:
             githubText = infoFont.render("Github: Mr0o", True, (255, 255, 255))
             # draw a white line under the text
-            pygame.draw.line(screen, (255, 255, 255), (configs["RESOLUTION"][0] - githubText.get_width() - 10, 10 + githubText.get_height()), (configs["RESOLUTION"][0] - 10, 10 + githubText.get_height()), 2)
-        screen.blit(githubText, (configs["RESOLUTION"][0] - githubText.get_width() - 10, 10))
+            pygame.draw.line(screen, (255, 255, 255), (configs["WIDTH"] - githubText.get_width() - 10, 10 + githubText.get_height()), (configs["WIDTH"] - 10, 10 + githubText.get_height()), 2)
+        screen.blit(githubText, (configs["WIDTH"] - githubText.get_width() - 10, 10))
 
 
         # debug
@@ -284,9 +284,9 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     selection = "none"
 
     buttonScale = 2.5
-    quitButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 90*buttonScale+40)
+    quitButtonPos = Vector(configs["WIDTH"]/2 - 50*buttonScale, configs["HEIGHT"]/2 + 90*buttonScale+40)
     quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    resumeButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 - 30*buttonScale)
+    resumeButtonPos = Vector(configs["WIDTH"]/2 - 50*buttonScale, configs["HEIGHT"]/2 - 30*buttonScale)
     resumeButtonSize = Vector(50*buttonScale, 50*buttonScale)
     restartButtonPos = Vector(resumeButtonPos.x + resumeButtonSize.x, resumeButtonPos.y+5)
     restartButtonSize = Vector(50*buttonScale-10, 50*buttonScale-15)
@@ -294,10 +294,10 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     loadLevelButtonPos = Vector(quitButtonPos.x, quitButtonPos.y - 50*buttonScale)
     loadLevelButtonSize = Vector(100*buttonScale, 50*buttonScale)
     # main menu button (positioned bottom left corner)
-    mainMenuButtonPos = Vector(10, configs["RESOLUTION"][1] - 25*buttonScale-10)
+    mainMenuButtonPos = Vector(10, configs["HEIGHT"] - 25*buttonScale-10)
     mainMenuButtonSize = Vector(50*buttonScale, 25*buttonScale)
     # editor button (positioned bottom right corner)
-    editorButtonPos = Vector(configs["RESOLUTION"][0] - 50*buttonScale-10, configs["RESOLUTION"][1] - 50*buttonScale-10)
+    editorButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-10, configs["HEIGHT"] - 50*buttonScale-10)
     editorButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
 
@@ -361,13 +361,13 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
                 playSoundPitch(buttonClickSound)
 
     # create a surface for the pause screen
-    pauseScreen = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]), pygame.SRCALPHA)
+    pauseScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
     # fill the surface with a black transparent color
     pauseScreen.fill((0, 0, 0, 100))
 
     # draw the text
     pauseText = menuFont.render("PAUSED", False, (255, 255, 255))
-    pauseScreen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/4 - pauseText.get_height()/2))
+    pauseScreen.blit(pauseText, (configs["WIDTH"]/2 - pauseText.get_width()/2, configs["HEIGHT"]/4 - pauseText.get_height()/2))
 
     # draw the resume button
     if selection != "resume":
@@ -422,11 +422,11 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
     selection = "none"
 
     buttonScale = 2.5
-    resumeButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 - 30*buttonScale)
+    resumeButtonPos = Vector(configs["WIDTH"]/2 - 50*buttonScale, configs["HEIGHT"]/2 - 30*buttonScale)
     resumeButtonSize = Vector(50*buttonScale, 50*buttonScale)
     restartButtonPos = Vector(resumeButtonPos.x + resumeButtonSize.x, resumeButtonPos.y+5)
     restartButtonSize = Vector(50*buttonScale-10, 50*buttonScale-15)
-    quitButtonPos = Vector(configs["RESOLUTION"][0]/2 - 50*buttonScale, configs["RESOLUTION"][1]/2 + 90*buttonScale+40)
+    quitButtonPos = Vector(configs["WIDTH"]/2 - 50*buttonScale, configs["HEIGHT"]/2 + 90*buttonScale+40)
     quitButtonSize = Vector(100*buttonScale, 50*buttonScale)
     # position above the quit button and to the left
     loadLevelButtonPos = Vector(quitButtonPos.x - 100*buttonScale, quitButtonPos.y - 50*buttonScale)
@@ -438,7 +438,7 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
     playLevelButtonPos = Vector(saveButtonPos.x + saveButtonSize.x, saveButtonPos.y)
     playLevelButtonSize = Vector(100*buttonScale, 50*buttonScale)
     # main menu button (positioned bottom left corner)
-    mainMenuButtonPos = Vector(10, configs["RESOLUTION"][1] - 25*buttonScale-10)
+    mainMenuButtonPos = Vector(10, configs["HEIGHT"] - 25*buttonScale-10)
     mainMenuButtonSize = Vector(50*buttonScale, 25*buttonScale)
 
 
@@ -510,13 +510,13 @@ def getEditorPauseScreen(mx, my, mouseClick, standalone: bool = False) -> tuple[
                 playSoundPitch(buttonClickSound)
 
     # create a surface for the pause screen
-    pauseScreen = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]), pygame.SRCALPHA)
+    pauseScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
     # fill the surface with a black transparent color
     pauseScreen.fill((0, 0, 0, 100))
 
     # draw the text
     pauseText = menuFont.render("PAUSED", False, (255, 255, 255))
-    pauseScreen.blit(pauseText, (configs["RESOLUTION"][0]/2 - pauseText.get_width()/2, configs["RESOLUTION"][1]/4 - pauseText.get_height()/2))
+    pauseScreen.blit(pauseText, (configs["WIDTH"]/2 - pauseText.get_width()/2, configs["HEIGHT"]/4 - pauseText.get_height()/2))
 
     # draw the resume button
     if selection != "resume":

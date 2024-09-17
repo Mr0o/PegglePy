@@ -78,15 +78,18 @@ import pygame
 if "-f" in sys.argv or "--fullscreen" in sys.argv:
     configs["FULLSCREEN"] = True
 
-userResolution = configs["RESOLUTION"]
+userResolution = (configs["WIDTH"], configs["HEIGHT"])
 if configs["FULLSCREEN"]:
     # get the resolution of the display monitor
     pygame.init()
     infoObject = pygame.display.Info()
-    configs["RESOLUTION"] = (infoObject.current_w, infoObject.current_h)
+    (configs["WIDTH"], configs["HEIGHT"]) = (infoObject.current_w, infoObject.current_h)
 else:
     # set the resolution to userResolution
-    configs["RESOLUTION"] = userResolution
+    (configs["WIDTH"], configs["HEIGHT"]) = userResolution
+    
+# set the refresh rate if VSYNC is enabled
+
 
 #power up (spooky, multiball, zenball, guideball, spooky-multiball)
 powerUpType = "spooky"
@@ -112,7 +115,7 @@ if "--no-max-velocity" in sys.argv:
 else:
     maxBallVelocity = 10 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
 defaultBallMass = 4
-defaultPegMass = 60 # the pegs mass doesnt really matter, but they need to have a mass in order for the physics to be calculated when a ball hits the pegs (in this case I have determined that 60 is a good number, magic)
+defaultPegMass = 60 # even though the pegs do not move, they still have mass because this has an effect on the collision physics (60 is a magic number, that happens to work well)
 # check if the script has been passed '--no-gravity' as an argument
 if "--no-gravity" in sys.argv:
     gravity = Vector(0,0)
@@ -133,9 +136,7 @@ segmentCount = 20
 autoRemovePegs = True
 autoRemovePegsTimerValue = 0.2 # how much time in seconds to wait before removing a peg that a ball is stuck on
 debugAutoRemovePegsTimer = False # if true, each pegs autoRemovePegsTimer will be displayed on the screen
-longShotDistance = configs["RESOLUTION"][0] / 3     # WIDTH / 3
-frameRate = 144 # the game speed is currently tied to the framerate, unfortunately, which means that you should NOT change this value
-# TODO: Decouple the game logic from the framerate
+longShotDistance = configs["WIDTH"] / 3
 ballRad = 12
 pegRad = 25
 noGravityTimeLength = 10 # how many seconds the no-gravity power up lasts

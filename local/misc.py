@@ -15,7 +15,7 @@ from local.audio import newSong
 
 
 def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
-    segmentWidth = configs["RESOLUTION"][0]/segmentCount
+    segmentWidth = configs["WIDTH"]/segmentCount
     for p in pegs:
         for i in range(segmentCount+1):
             if p.pos.x >= segmentWidth*(i-1) - p.radius and p.pos.x <= segmentWidth*i + p.radius:
@@ -23,7 +23,7 @@ def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
 
 
 def getBallScreenLocation(b: Ball, segmentCount) -> list[int]:
-    segmentWidth = configs["RESOLUTION"][0]/segmentCount
+    segmentWidth = configs["WIDTH"]/segmentCount
     pos1 = ceil((b.pos.x - b.radius)/segmentWidth)
     pos2 = ceil((b.pos.x + b.radius)/segmentWidth)
 
@@ -164,7 +164,7 @@ def loadDefaultLevel() -> tuple[list[Peg], list[Peg], int]:
 # create a static image of the background and pegs, this avoids redrawing the background and pegs every frame
 # -- dramatic performance improvement especially in levels with lots of pegs
 def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
-    staticImg = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+    staticImg = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]))
 
     # draw background
     staticImg.blit(bgImg, (0, 0))
@@ -175,7 +175,7 @@ def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
             p.pegImg, (p.pos.x - p.posAdjust, p.pos.y - p.posAdjust))
 
     # anti-aliasing
-    # staticImg = pygame.transform.smoothscale(staticImg, (configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+    # staticImg = pygame.transform.smoothscale(staticImg, (configs["WIDTH"], configs["HEIGHT"]))
 
     return staticImg
 
@@ -190,7 +190,7 @@ def updateStaticImage(staticImg: pygame.Surface, peg: Peg):
 
 # create a static image of cicles used when debugging (zenball trajectory, to be specific)
 def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
-    staticCircles = pygame.Surface((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+    staticCircles = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]))
 
     # surface is transparent
     staticCircles.set_colorkey((0, 0, 0))
@@ -205,7 +205,7 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
 def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
     # reset everything
     balls.clear()  # clear all the balls
-    balls.append(Ball(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25))  # recreate the original ball
+    balls.append(Ball(configs["WIDTH"]/2, configs["HEIGHT"]/25))  # recreate the original ball
     ball = balls[0]
     ball.reset()
     pitch = 1.0

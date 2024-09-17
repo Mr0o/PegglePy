@@ -79,7 +79,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
     # button positions
     buttonScale = 2.5
     editorButtonSize = Vector(100*buttonScale, 50*buttonScale)
-    backButtonPos = Vector(configs["RESOLUTION"][0] - 50*buttonScale-20, configs["RESOLUTION"][1] - 50*buttonScale-20)
+    backButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-20, configs["HEIGHT"] - 50*buttonScale-20)
     backButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
      # scale the button images
@@ -109,11 +109,11 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
         return loadDefaultLevel()
 
     # create a list of pygame.Surface objects and load the level preview images
-    levelPreviewImgSizeW = configs["RESOLUTION"][0]*0.3
-    levelPreviewImgSizeH = configs["RESOLUTION"][1]*0.3
+    levelPreviewImgSizeW = configs["WIDTH"]*0.3
+    levelPreviewImgSizeH = configs["HEIGHT"]*0.3
     # find the value that should be used to scale the peg img and positions
-    levelPreviewImgScaleW = levelPreviewImgSizeW / configs["RESOLUTION"][0]
-    levelPreviewImgScaleH = levelPreviewImgSizeH / configs["RESOLUTION"][1]
+    levelPreviewImgScaleW = levelPreviewImgSizeW / configs["WIDTH"]
+    levelPreviewImgScaleH = levelPreviewImgSizeH / configs["HEIGHT"]
     levelPreviewImgs: list[pygame.Surface] = []
     for i in range(len(levelsList)):
         levelFilePath = levelsList[i]
@@ -283,7 +283,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
 
             # draw the level selection rectangle
             # position it at WIDHT/3 at the same length across all levels
-            rect = pygame.Rect(configs["RESOLUTION"][0]/5, configs["RESOLUTION"][1]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, configs["RESOLUTION"][0]/5*3, levelNameText.get_height() -1)
+            rect = pygame.Rect(configs["WIDTH"]/5, configs["HEIGHT"]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, configs["WIDTH"]/5*3, levelNameText.get_height() -1)
 
             # maximum scroll value (scale the value by the height of the level name text)
             # get the position of the last level rect
@@ -295,8 +295,8 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
             if i == len(levelsList)-1:
                 lastRectPos = rect.y
 
-            # how many levelNameText.get_height() will fit into configs["RESOLUTION"][1]
-            maxNumOfLevels = int(configs["RESOLUTION"][1]/levelNameText.get_height()) - 1
+            # how many levelNameText.get_height() will fit into configs["HEIGHT"]
+            maxNumOfLevels = int(configs["HEIGHT"]/levelNameText.get_height()) - 1
             # subtract maxNumOfLevels from maxNumOfLevels/5
             maxNumOfLevels -= int(maxNumOfLevels/5)
             
@@ -305,7 +305,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
                 scrollValue = -lastRectPos/levelNameText.get_height() + maxNumOfLevels
 
             # move the rect over to the left
-            rect.x -= configs["RESOLUTION"][0]/6
+            rect.x -= configs["WIDTH"]/6
 
             # check if the mouse is over the level selection rectangle (apply scroll value)
             if not controllerConnected:
@@ -320,7 +320,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
                         levelNameText = menuButtonFont.render(levelName, True, color)
 
                         # blit the preview image at the top right corner of the screen
-                        screen.blit(levelPreviewImgs[i], (configs["RESOLUTION"][0] - levelPreviewImgSizeW - 20, 20))
+                        screen.blit(levelPreviewImgs[i], (configs["WIDTH"] - levelPreviewImgSizeW - 20, 20))
             
             # controller cursor
             if controllerConnected:
@@ -329,7 +329,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
                     levelNameText = menuButtonFont.render(levelName, True, color)
 
                     # blit the preview image at the top right corner of the screen
-                    screen.blit(levelPreviewImgs[i], (configs["RESOLUTION"][0] - levelPreviewImgSizeW - 20, 20))
+                    screen.blit(levelPreviewImgs[i], (configs["WIDTH"] - levelPreviewImgSizeW - 20, 20))
 
                     controllerIndexRectPos = rect.y
 
@@ -338,12 +338,12 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
             rect.y += scrollValue*levelNameText.get_height()
 
             # only draw if the rect isn't off screen
-            if rect.y > -levelNameText.get_height() and rect.y < configs["RESOLUTION"][1]:
+            if rect.y > -levelNameText.get_height() and rect.y < configs["HEIGHT"]:
                 pygame.draw.rect(screen, color, rect, 2)
 
             
             # apply scroll value
-            screen.blit(levelNameText, (configs["RESOLUTION"][0]/5 +5 -configs["RESOLUTION"][0]/6, configs["RESOLUTION"][1]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + scrollValue*levelNameText.get_height()))
+            screen.blit(levelNameText, (configs["WIDTH"]/5 +5 -configs["WIDTH"]/6, configs["HEIGHT"]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + scrollValue*levelNameText.get_height()))
 
 
         # if the controller select button is pressed
@@ -355,8 +355,8 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
 
         # draw the title (applying the scroll value)
         menuTitle = menuFont.render("Select a level", True, (255, 255, 255))
-        # position at configs["RESOLUTION"][1]/5 and apply the scroll value
-        screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2 -configs["RESOLUTION"][0]/6, configs["RESOLUTION"][1]/7 + (scrollValue*menuButtonFont.render("", True, (255, 255, 255)).get_height())))
+        # position at configs["HEIGHT"]/5 and apply the scroll value
+        screen.blit(menuTitle, (configs["WIDTH"]/2 - menuTitle.get_width()/2 -configs["WIDTH"]/6, configs["HEIGHT"]/7 + (scrollValue*menuButtonFont.render("", True, (255, 255, 255)).get_height())))
 
         # debug
         if configs["DEBUG_MODE"]:
@@ -395,7 +395,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
             screen.blit(altBackgroundImg, (0, 0))
             # draw the title
             menuTitle = menuFont.render("Loading...", True, (255, 255, 255))
-            screen.blit(menuTitle, (configs["RESOLUTION"][0]/2 - menuTitle.get_width()/2, configs["RESOLUTION"][1]/2 - menuTitle.get_height()/2))
+            screen.blit(menuTitle, (configs["WIDTH"]/2 - menuTitle.get_width()/2, configs["HEIGHT"]/2 - menuTitle.get_height()/2))
 
             pegs, originPegs, orangeCount, levelFileName = loadLevel(selection)
             if len(pegs) > 400:
@@ -410,7 +410,7 @@ if __name__ == "__main__":
     # initiate pygame
     pygame.init()
     # create the screen
-    screen = pygame.display.set_mode((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+    screen = pygame.display.set_mode((configs["WIDTH"], configs["HEIGHT"]))
 
     # run the menu
     print(loadLevelMenu(screen)[3])

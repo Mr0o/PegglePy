@@ -117,7 +117,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
         if not editorPaused:
             # check if mouse is out of bounds
             mouseOutofBounds = False
-            if mousePos.y > configs["RESOLUTION"][1] - heightBound or mousePos.y < heightBound or mousePos.x > configs["RESOLUTION"][0] - widthBound or mousePos.x < widthBound:
+            if mousePos.y > configs["HEIGHT"] - heightBound or mousePos.y < heightBound or mousePos.x > configs["WIDTH"] - widthBound or mousePos.x < widthBound:
                 mouseOutofBounds = True
 
             # if mouse clicked, create a new ball at the mouse position
@@ -176,7 +176,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
             # don't draw any of this while the game is paused (its distracting)
             if mouseOutofBounds:
                 pygame.draw.rect(screen, (255, 0, 0), (widthBound, heightBound,
-                                configs["RESOLUTION"][0] - widthBound*2, configs["RESOLUTION"][1] - heightBound*2), 2)
+                                configs["WIDTH"] - widthBound*2, configs["HEIGHT"] - heightBound*2), 2)
 
                 # draw invalid transparent peg img (red peg)
                 screen.blit(invalidPegImg, (mousePos.x -
@@ -193,19 +193,19 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
             pegCountColor = (120, 30, 60)
         pegCount = infoFont.render(
             "Pegs : " + str(len(pegs)), False, pegCountColor)
-        screen.blit(pegCount, (int(configs["RESOLUTION"][0]/2 - 45), 50))
+        screen.blit(pegCount, (int(configs["WIDTH"]/2 - 45), 50))
 
         # draw help text
         helpText = helpFont.render(
             "Left click to add peg, right click to remove peg", False, (255, 255, 255))
-        screen.blit(helpText, (int(configs["RESOLUTION"][0]-350), 10))
+        screen.blit(helpText, (int(configs["WIDTH"]-350), 10))
         helpText2 = helpFont.render("S = Save", False, (255, 255, 255))
-        screen.blit(helpText2, (int(configs["RESOLUTION"][0]-150), 25))
+        screen.blit(helpText2, (int(configs["WIDTH"]-150), 25))
         helpText3 = helpFont.render("L = Load", False, (255, 255, 255))
-        screen.blit(helpText3, (int(configs["RESOLUTION"][0]-150), 40))
+        screen.blit(helpText3, (int(configs["WIDTH"]-150), 40))
 
         # draw a circle where the ball would be
-        pygame.draw.circle(screen, (255, 255, 255), [configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/25], 5)
+        pygame.draw.circle(screen, (255, 255, 255), [configs["WIDTH"]/2, configs["HEIGHT"]/25], 5)
 
         if editorPaused:
             pausedScreen, pauseSelection = getEditorPauseScreen(mx, my, mouseClicked[0], standalone)
@@ -263,18 +263,18 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
         if warningTimer.isActive and len(pegs) == 0:
             warningText = warnFont.render(
                 "Level cannot be empty...", False, (200, 20, 25))
-            screen.blit(warningText, (int(configs["RESOLUTION"][0]/2 - 150), configs["RESOLUTION"][1]/2 +55))
+            screen.blit(warningText, (int(configs["WIDTH"]/2 - 150), configs["HEIGHT"]/2 +55))
         elif warningTimer.isActive and len(pegs) > 0 and len(pegs) < 30:
             warningText = warnFont.render(
                 "Level must have at least 30 pegs...", False, (200, 20, 25))
-            screen.blit(warningText, (int(configs["RESOLUTION"][0]/2 - 200), configs["RESOLUTION"][1]/2 +55))
+            screen.blit(warningText, (int(configs["WIDTH"]/2 - 200), configs["HEIGHT"]/2 +55))
 
         # draw saved text
         savedTimer.update()
         if savedTimer.isActive:
             savedText = warnFont.render(
                 "Level saved!", False, (20, 200, 25))
-            screen.blit(savedText, (int(configs["RESOLUTION"][0]/2 - 100), configs["RESOLUTION"][1]/2))
+            screen.blit(savedText, (int(configs["WIDTH"]/2 - 100), configs["HEIGHT"]/2))
 
         # draw debug text
         if configs["DEBUG_MODE"]:
@@ -301,7 +301,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
 
 if __name__ == "__main__":
     pygame.init()
-    screen = pygame.display.set_mode((configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+    screen = pygame.display.set_mode((configs["WIDTH"], configs["HEIGHT"]))
     clock = pygame.time.Clock()
 
     pygame.display.set_icon(editorIconImg)

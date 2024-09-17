@@ -77,7 +77,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
             
         fakeBall.update()
         
-        if fakeBall.pos.y > configs["RESOLUTION"][1]:
+        if fakeBall.pos.y > configs["HEIGHT"]:
             break # if the ball has gone off the screen, then we can stop
         
         fakeBalls.append(fakeBall)
@@ -146,7 +146,7 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
 
             fakeBall.update()
 
-            if fakeBall.pos.y > configs["RESOLUTION"][1]:
+            if fakeBall.pos.y > configs["HEIGHT"]:
                 fakeBall.vel.x = 0
                 fakeBall.vel.y = 0
             

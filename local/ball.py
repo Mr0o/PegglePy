@@ -44,14 +44,14 @@ class Ball:
         self.vel.limitMag(maxBallVelocity) #stop the ball from going crazy, this resolves the occasional physics glitches
 
         # if ball collided with wall or has fallen through the floor
-        if self.pos.x > (configs["RESOLUTION"][0] - self.radius) or self.pos.x < self.radius:
-            if self.pos.x > (configs["RESOLUTION"][0] - self.radius): self.pos.x = configs["RESOLUTION"][0] - self.radius
+        if self.pos.x > (configs["WIDTH"] - self.radius) or self.pos.x < self.radius:
+            if self.pos.x > (configs["WIDTH"] - self.radius): self.pos.x = configs["WIDTH"] - self.radius
             elif self.pos.x < self.radius: self.pos.x = self.radius
             self.vel.x *= -1
         if self.pos.y < self.radius:
             self.pos.y = self.radius
             self.vel.y *= -1
-        if self.pos.y > (configs["RESOLUTION"][1] + self.radius):
+        if self.pos.y > (configs["HEIGHT"] + self.radius):
             self.isAlive = False
 
     def reset(self):

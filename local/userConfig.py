@@ -3,8 +3,10 @@
 # dictionary to store the settings (key, value) pairs
 # the values here are defaults, they will be overwritten by the user.cfg file
 configs = {
-    "RESOLUTION": (1200, 900),
+    "WIDTH": 1200,
+    "HEIGHT": 900,
     "FULLSCREEN": False,
+    "VSYNC": True,
     "DEBUG_MODE": False,
     "SOUND_ENABLED": True,
     "SOUND_VOLUME": 0.25,
@@ -24,13 +26,9 @@ def loadSettings() -> None:
             for line in f:
                 # parse the key and value from the line
                 key, value = line.strip().split("=")
-                # convert the value to the appropriate type
-                if key in ["RESOLUTION"]:
-                    # convert the value to a tuple of integers and remove the parentheses
-                    value = tuple(map(int, value.strip("()").split(",")))
-                elif key in ["FULLSCREEN", "DEBUG_MODE", "SOUND_ENABLED", "MUSIC_ENABLED"]:
+                if key in ["FULLSCREEN", "DEBUG_MODE", "SOUND_ENABLED", "MUSIC_ENABLED"]:
                     value = value == "True"
-                elif key in ["SOUND_VOLUME", "MUSIC_VOLUME"]:
+                elif key in ["SOUND_VOLUME", "MUSIC_VOLUME", "VSYNC"]:
                     value = float(value)
                     
                 # set the value in the configs dictionary

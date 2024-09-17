@@ -27,9 +27,9 @@ sighSound = pygame.mixer.Sound("resources/audio/sounds/sigh.ogg")
 
 #Background image
 backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
-backgroundImg =  pygame.transform.scale(backgroundImg, (configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+backgroundImg =  pygame.transform.scale(backgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
 altBackgroundImg = pygame.image.load("resources/images/alt_background960x720.jpg")
-altBackgroundImg =  pygame.transform.scale(altBackgroundImg, (configs["RESOLUTION"][0], configs["RESOLUTION"][1]))
+altBackgroundImg =  pygame.transform.scale(altBackgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
 
 #Icon
 gameIconImg = pygame.image.load("resources/images/balls/200x200/ball.png")

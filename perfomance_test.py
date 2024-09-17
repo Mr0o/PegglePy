@@ -31,8 +31,8 @@ if __name__ == "__main__":
     pegs, originPegs, orangeCount, levelFileName = loadLevel()
     print(f"Level: {levelFileName}")
     print(f"Number of pegs: {len(pegs)}")
-    startPos = Vector(configs["RESOLUTION"][0]/2, 20)
-    aim = Vector(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1]/2)
+    startPos = Vector(configs["WIDTH"]/2, 20)
+    aim = Vector(configs["WIDTH"]/2, configs["HEIGHT"]/2)
 
     # run a performance test on the zenball findBestTrajectory function
     if runTest:

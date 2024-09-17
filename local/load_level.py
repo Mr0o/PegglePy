@@ -20,7 +20,7 @@ if tkinterInstalled:
         main_win.withdraw()
 
         main_win.overrideredirect(True)
-        main_win.geometry('0x0+0'+str(round(configs["RESOLUTION"][0]/2))+'+'+str(round(configs["RESOLUTION"][1]/2)))
+        main_win.geometry('0x0+0'+str(round(configs["WIDTH"]/2))+'+'+str(round(configs["HEIGHT"]/2)))
 
         main_win.deiconify()
         main_win.lift()
@@ -51,7 +51,7 @@ if tkinterInstalled:
         main_win.withdraw()
 
         main_win.overrideredirect(True)
-        main_win.geometry('0x0+0'+str(round(configs["RESOLUTION"][0]/2))+'+'+str(round(configs["RESOLUTION"][1]/2)))
+        main_win.geometry('0x0+0'+str(round(configs["WIDTH"]/2))+'+'+str(round(configs["HEIGHT"]/2)))
 
         main_win.deiconify()
         main_win.lift()
@@ -121,7 +121,7 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
         pegs.append(Peg(x, y))
     
     if centerPegs:
-        # adjust the positions of every peg to be centered on the screen based on configs["RESOLUTION"][0] and configs["RESOLUTION"][1]
+        # adjust the positions of every peg to be centered on the screen based on configs["WIDTH"] and configs["HEIGHT"]
         # get the position of the left most peg
         leftMostPeg = pegs[0]
         for peg in pegs:
@@ -135,7 +135,7 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
         # find the center of the left most and right most pegs
         centerOfLeftAndRightPegs = (leftMostPeg.pos.x + rightMostPeg.pos.x)/2
         # find the center of the screen
-        screenCenter = configs["RESOLUTION"][0]/2
+        screenCenter = configs["WIDTH"]/2
         # find the difference between the center of the screen and the center of the left and right most pegs
         difference = screenCenter - centerOfLeftAndRightPegs
 

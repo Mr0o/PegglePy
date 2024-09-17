@@ -22,11 +22,11 @@ class Bucket:
         self.bucketClosedImg = pygame.transform.scale(self.bucketClosedImg, (self.bucketClosedImg.get_width()*2, self.bucketClosedImg.get_height()))
 
         # TODO delete this warning message when the lerping is properly implemented
-        if configs["RESOLUTION"][0] != 1200: print("WARN: Bucket cannot be lerped because WIDTH is not 1200, this needs to be fixed...")
+        if configs["WIDTH"] != 1200: print("WARN: Bucket cannot be lerped because WIDTH is not 1200, this needs to be fixed...")
 
         self.bucketCenterX = self.bucketBackImg.get_width() / 2
 
-        self.pos = Vector(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1] - self.bucketBackImg.get_height())  # position
+        self.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - self.bucketBackImg.get_height())  # position
         self.vel = Vector(-bucketVelocity/2, 0)  # velocity
 
         # fake pegs on edges of bucket, allows the ball to bounce off the bucket
@@ -39,18 +39,18 @@ class Bucket:
     def update(self, powerUp = "none", powerActive = False):
         back_img_width = self.bucketBackImg.get_width()
         # TODO properly implemnt lerping (Only works if WIDTH == 1200)
-        if configs["RESOLUTION"][0] == 1200:
+        if configs["WIDTH"] == 1200:
             # remaining distance if velocity is negative
             if self.vel.x < 0:
                 remainingDistToEdge = self.pos.x
             # remaining distance if velocity is positive
             elif self.vel.x > 0:
-                remainingDistToEdge = configs["RESOLUTION"][0] - self.pos.x - back_img_width
+                remainingDistToEdge = configs["WIDTH"] - self.pos.x - back_img_width
             #slow down the bucket as it apporaches the egde of the screen
-            if remainingDistToEdge < configs["RESOLUTION"][0]/5.5:
+            if remainingDistToEdge < configs["WIDTH"]/5.5:
                 self.vel.x *= 0.99
             #speed up the bucket as it moves away from the edge of the screen
-            elif remainingDistToEdge > configs["RESOLUTION"][0]/9:
+            elif remainingDistToEdge > configs["WIDTH"]/9:
                 self.vel.x /= 0.99
             
             if abs(self.vel.x) < 0.1:
@@ -62,14 +62,14 @@ class Bucket:
                 else: self.vel.x = -bucketVelocity
 
         # if bucket collided with wall
-        if self.pos.x > (configs["RESOLUTION"][0] - back_img_width) or self.pos.x < back_img_width - 300:
+        if self.pos.x > (configs["WIDTH"] - back_img_width) or self.pos.x < back_img_width - 300:
             self.vel.x *= -1
 
         # resolve out of bounds edge cases
         if self.pos.x < back_img_width - 300:
             self.pos.x = back_img_width - 300
-        elif self.pos.x > configs["RESOLUTION"][0] - back_img_width:
-            self.pos.x = configs["RESOLUTION"][0] - back_img_width
+        elif self.pos.x > configs["WIDTH"] - back_img_width:
+            self.pos.x = configs["WIDTH"] - back_img_width
         
         # update position
         self.pos.add(self.vel)
@@ -87,7 +87,7 @@ class Bucket:
             self.fakePegs.pop() # remove the last peg
   
     def reset(self):
-        self.pos = Vector(configs["RESOLUTION"][0]/2, configs["RESOLUTION"][1] - self.bucketBackImg.get_height())  # position
+        self.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - self.bucketBackImg.get_height())  # position
         self.vel = Vector(-bucketVelocity/2, 0)  # velocity
 
         peg1 = Peg(self.pos.x+34, self.pos.y+30)
@@ -113,4 +113,4 @@ class Bucket:
         return None
 
     def isInBucket(self, x, y):
-        return (y > configs["RESOLUTION"][1] - self.bucketBackImg.get_height()+12 and (x > self.pos.x - self.bucketBackImg.get_width() + 165*2 and x < self.pos.x + self.bucketBackImg.get_width() - 30))
+        return (y > configs["HEIGHT"] - self.bucketBackImg.get_height()+12 and (x > self.pos.x - self.bucketBackImg.get_width() + 165*2 and x < self.pos.x + self.bucketBackImg.get_width() - 30))
