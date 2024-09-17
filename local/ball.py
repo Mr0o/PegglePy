@@ -32,13 +32,24 @@ class Ball:
         #fcopy.div(self.mass)
         self.vel.add(fcopy)
 
-    def update(self, zeroGravity = False):
-        if not zeroGravity:
-            self.applyForce(gravity)
+    def update(self, dt: float = 1, zeroGravity = False):
+        # if not zeroGravity:
+        #     self.applyForce(gravity)
 
-        self.vel.x *= 0.9993 #drag
-        self.vel.add(self.acc)
-        self.pos.add(self.vel)
+        # self.vel.x *= 0.9993 #drag
+        # self.vel.add(self.acc)
+        # self.pos.add(self.vel)
+        # self.acc.mult(0)
+        
+        # scale all the forces by the time step (dt; delta time)
+        
+        if not zeroGravity:
+            gravityCopy = gravity.copy()
+            gravityCopy.mult(dt)
+            self.applyForce(gravityCopy)
+        
+        self.vel.add(Vector(self.acc.x * dt, self.acc.y * dt))
+        self.pos.add(Vector(self.vel.x * dt, self.vel.y * dt))
         self.acc.mult(0)
 
         self.vel.limitMag(maxBallVelocity) #stop the ball from going crazy, this resolves the occasional physics glitches

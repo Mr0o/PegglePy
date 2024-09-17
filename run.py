@@ -172,6 +172,9 @@ else:
 
 ##### main loop #####
 while gameRunning:
+    clock.tick(999999)
+    dt = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
+    
     launch_button = False
     gamePadFineTuneAmount = 0
     for event in pygame.event.get():  # check events and quit if the program is closed
@@ -777,7 +780,7 @@ while gameRunning:
                     if b.vel.getMag() < 0.2:
                         b.vel.add(Vector(0, 1))
                 
-                b.update(noGravityPowerUpActive)
+                b.update(dt, noGravityPowerUpActive)
 
                 # check if ball has hit the sides of the bucket
                 collidedPeg = bucket.isBallCollidingWithBucketEdge(b)
@@ -891,7 +894,7 @@ while gameRunning:
             staticImage = createStaticImage(pegs)
 
         # bucket, pass the power up info for the bucket to update its collison and image
-        bucket.update(powerUpType, powerUpActive)
+        bucket.update(dt, powerUpType, powerUpActive)
 
     ##### draw #####
     screen.blit(staticImage, (0, 0))
@@ -917,7 +920,7 @@ while gameRunning:
 
     # "zoom in" on the ball by transorming the image
     # scale the image and blit it at the position of the ball
-    if frameRate == 27 or zoomInOnBall:
+    if zoomInOnBall:
         # zoom in
         zoom += 0.005
         if zoom > 1.8:
@@ -1289,8 +1292,6 @@ while gameRunning:
         screen.blit(cheatsIcon, (100, 6))
 
     pygame.display.update()
-    
-    clock.tick(1000)
     
 
 print("Goodbye")
