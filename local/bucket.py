@@ -6,6 +6,7 @@ from local.peg import Peg
 from local.collision import isBallTouchingPeg
 
 import pygame
+import math
 
 class Bucket:
     def __init__(self):
@@ -21,9 +22,6 @@ class Bucket:
         #increase the width by twice its original width
         self.bucketClosedImg = pygame.transform.scale(self.bucketClosedImg, (self.bucketClosedImg.get_width()*2, self.bucketClosedImg.get_height()))
 
-        # TODO delete this warning message when the lerping is properly implemented
-        if configs["WIDTH"] != 1200: print("WARN: Bucket cannot be lerped because WIDTH is not 1200, this needs to be fixed...")
-
         self.bucketCenterX = self.bucketBackImg.get_width() / 2
 
         self.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - self.bucketBackImg.get_height())  # position
@@ -35,56 +33,67 @@ class Bucket:
         peg2 = Peg(self.pos.x + self.bucketBackImg.get_width()-34, self.pos.y+30)
         peg2.radius = 20
         self.fakePegs = [peg1, peg2]
-
-    def update(self, powerUp = "none", powerActive = False):
-        back_img_width = self.bucketBackImg.get_width()
-        # TODO properly implemnt lerping (Only works if WIDTH == 1200)
-        if configs["WIDTH"] == 1200:
-            # remaining distance if velocity is negative
-            if self.vel.x < 0:
-                remainingDistToEdge = self.pos.x
-            # remaining distance if velocity is positive
-            elif self.vel.x > 0:
-                remainingDistToEdge = configs["WIDTH"] - self.pos.x - back_img_width
-            #slow down the bucket as it apporaches the egde of the screen
-            if remainingDistToEdge < configs["WIDTH"]/5.5:
-                self.vel.x *= 0.99
-            #speed up the bucket as it moves away from the edge of the screen
-            elif remainingDistToEdge > configs["WIDTH"]/9:
-                self.vel.x /= 0.99
-            
-            if abs(self.vel.x) < 0.1:
-                if self.vel.x >= 0: self.vel.x = 0.1
-                else: self.vel.x = -0.1
-            
-            if abs(self.vel.x) > bucketVelocity:
-                if self.vel.x >= 0: self.vel.x = bucketVelocity
-                else: self.vel.x = -bucketVelocity
-
-        # if bucket collided with wall
-        if self.pos.x > (configs["WIDTH"] - back_img_width) or self.pos.x < back_img_width - 300:
-            self.vel.x *= -1
-
-        # resolve out of bounds edge cases
-        if self.pos.x < back_img_width - 300:
-            self.pos.x = back_img_width - 300
-        elif self.pos.x > configs["WIDTH"] - back_img_width:
-            self.pos.x = configs["WIDTH"] - back_img_width
         
-        # update position
-        self.pos.add(self.vel)
+        self.t = 0.0  # Time parameter for interpolation
+        self.t_direction = 1  # Direction of t increment (1 or -1)
         
-        for fakePeg in self.fakePegs:
-            fakePeg.pos.add(self.vel)
-            fakePeg.vel = self.vel
+        # Adjusted speed at which 't' increments (controls overall movement speed)
+        self.t_speed = 0.00225  # Units per second (magic number, 0.00225 works well)
+        
+        self.back_img_width = self.bucketBackImg.get_width()
+        
+        # fakePegOffsets are the offsets from the bucket's position to the fake pegs
+        self.fakePegOffsets = [
+            (34, 30),  # Left fake peg
+            (self.bucketBackImg.get_width() - 34, 30)  # Right fake peg
+        ]
 
-        # create a fake peg for the closed bucket, to add collision
-        if powerUp == "spooky" and powerActive and len(self.fakePegs) == 2:
-            closedBucketFakePeg = Peg(self.pos.x+150, self.pos.y+453)
-            closedBucketFakePeg.radius = 450
-            self.fakePegs.append(closedBucketFakePeg)
-        elif (powerUp != "spooky" or not powerActive) and len(self.fakePegs) > 2:
-            self.fakePegs.pop() # remove the last peg
+
+    def update(self, dt, powerUp="none", powerActive=False):
+        # Define the left and right edges based on the bucket's image width
+        left_edge = self.back_img_width - 300
+        right_edge = configs["WIDTH"] - self.back_img_width
+
+        # Update 't' based on 'dt' and direction
+        self.t += self.t_direction * self.t_speed * dt
+
+        # Reverse direction when 't' reaches 0.0 or 1.0
+        if self.t >= 1.0:
+            self.t = 1.0
+            self.t_direction = -1
+        elif self.t <= 0.0:
+            self.t = 0.0
+            self.t_direction = 1
+
+        # Use an easing function to adjust position
+        # This function creates smooth acceleration and deceleration
+        # Easing function: x = left_edge + (right_edge - left_edge) * (0.5 - 0.5 * cos(pi * t))
+        eased_t = 0.5 - 0.5 * math.cos(math.pi * self.t)
+        self.pos.x = left_edge + (right_edge - left_edge) * eased_t
+
+        for i, fakePeg in enumerate(self.fakePegs[:2]):
+            offsetX, offsetY = self.fakePegOffsets[i]
+            fakePeg.pos.x = self.pos.x + offsetX
+            fakePeg.pos.y = self.pos.y + offsetY
+
+        # Handle the "spooky" power-up fake peg
+        if powerUp == "spooky" and powerActive:
+            if len(self.fakePegs) < 3:
+                # Create the fake peg if it doesn't exist
+                closedBucketFakePeg = Peg(self.pos.x + 150, self.pos.y + 453)
+                closedBucketFakePeg.radius = 450
+                self.fakePegs.append(closedBucketFakePeg)
+            else:
+                # Update its position
+                fakePeg = self.fakePegs[2]
+                fakePeg.pos.x = self.pos.x + 150
+                fakePeg.pos.y = self.pos.y + 453
+        else:
+            # Remove the "spooky" fake peg if it exists
+            if len(self.fakePegs) > 2:
+                self.fakePegs.pop()  # Remove the last peg
+
+
   
     def reset(self):
         self.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - self.bucketBackImg.get_height())  # position
