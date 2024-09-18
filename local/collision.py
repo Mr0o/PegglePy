@@ -134,3 +134,86 @@ def isBallTouchingLine(ball: Ball, linex1: float, liney1: float, linex2: float, 
 
     # Check if the distance is less than or equal to the radius
     return distance <= ball.radius
+
+def resolveCollisionLine(ball: Ball, line: tuple) -> Ball:
+    """
+    Resolve elastic collisions between a sphere (ball) and a line segment.
+
+    Parameters:
+        ball (Ball): The ball object with pos and radius.
+        line (tuple): A tuple containing two tuples representing the endpoints of the line segment.
+
+    Returns:
+        Ball: The ball object with updated position and velocity from the collision.
+    """
+    # Unpack the line segment coordinates
+    (linex1, liney1), (linex2, liney2) = line
+
+    # Create Vector instances for the line endpoints
+    line_point1 = Vector(linex1, liney1)
+    line_point2 = Vector(linex2, liney2)
+
+    # Line segment vector
+    line_vec = line_point2 - line_point1
+    line_length_squared = line_vec.getMag() ** 2
+
+    # Vector from line start to ball center
+    ball_to_line_start = ball.pos - line_point1
+
+    # Compute t: the parameterized position on the line segment closest to the ball
+    # prevent division by zero
+    if line_length_squared == 0:
+        line_length_squared = 0.0001  # Small number to avoid division by zero
+    t = line_vec.dot(ball_to_line_start) / line_length_squared
+
+    # Clamp t to [0, 1] to restrict to the segment
+    t_clamped = max(0, min(t, 1))
+
+    # Closest point on the line segment to the ball center
+    closest_point = line_point1 + line_vec * t_clamped
+
+    # Vector from the closest point to the ball center
+    closest_to_ball = ball.pos - closest_point
+
+    # Distance from ball center to closest point
+    distance = closest_to_ball.getMag()
+
+    # Check if the distance is less than or equal to the radius
+    if distance <= ball.radius:
+        # Calculate the collision normal (from the ball to the line)
+        collision_normal = closest_to_ball.copy()
+        collision_normal.normalize()
+
+        # Calculate the overlap
+        overlap = ball.radius - distance
+
+        # Correct the positions to resolve overlap
+        correction = collision_normal.copy()
+        correction.mult(overlap)
+
+        # Adjust the ball position
+        ball.pos.add(correction)
+
+        # Calculate the velocity along the normal
+        vel_along_normal = ball.vel.dot(collision_normal)
+
+        # Proceed only if the ball is moving towards the line
+        if vel_along_normal < 0:
+            # Coefficient of restitution (e = 1 for perfectly elastic collision)
+            e = 1.0
+            # lower the restitution if the ball velocity is low (to debounce the ball as it approaches rest)
+            # and only if the ball is moving down
+            if ball.vel.getMag() < 2.5 and ball.vel.y > 0:
+                e = 0.0
+            
+            # Calculate impulse scalar
+            impulse_scalar = -(1 + e) * vel_along_normal
+            
+            # Calculate impulse vector
+            impulse = collision_normal.copy()
+            impulse.mult(impulse_scalar)
+            
+            # Update the ball velocity
+            ball.vel.add(impulse)
+
+    return ball
