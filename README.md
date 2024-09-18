@@ -3,6 +3,17 @@ A clone of peggle written in python using pygame
 
 I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the resulting code is something I am less proud of. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
 
+### Changes Log September 2024
+- The game now finally runs the physics independently of the frame rate (uses delta time)
+- Massively improved the collisions for ball vs peg, much less buggy and chaotic now
+- Tweaked the ball and peg elastics and mass values to make the ball bounciness feel right
+- Added a new powerup called "no-gravity" (kinda suck ngl, probably won't keep it)
+- Added circle vs line collision detection and response (not used yet but plans for future)
+- Settings menu now has working sound and music volume sliders and mute buttons
+- Settings are saved locally and persist between game sessions
+- Removed all ctypes and 'CPhysics' from the project (it was not helping performance)
+- Finally got the bucket x axis sliding movement working as intended (no longer janky looking)
+
 # Screenshots
 <img src="screenshots/Screenshot from 2023-06-14 21-07-23.png" width="700"/>
 <img src="screenshots/Screenshot from 2023-06-14 21-07-53.png" width="700"/>
@@ -104,7 +115,7 @@ python3 run.py --skip-auto-install
 - To show full calculated trajectory, press 7 (must have debug enabled) (this can also be useful for cheating, lol)
 - To enable a perfomance hack (speedHack), press 8
 - to show the timer values on all the pegs, press 9 (must have debug enabled)
-- To enable slow motion (cap framerate to 30), press 0
+- To enable slow motion, press 0
 - To test the zoom feature, press X (Will zoom in on the ball, unless there is one last orange peg, then it will zoom in on the peg)
 
 ### Command line arguements
