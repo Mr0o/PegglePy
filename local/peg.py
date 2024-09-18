@@ -34,7 +34,7 @@ class Peg:
 
         self.radius = pegRad
 
-        self.mass = 20 # magic number, just pulled this one out of thin air
+        self.mass = defaultPegMass
 
         self.posAdjust = self.radius # this is used to draw the image for the peg in the correct position
         self.isHit = False

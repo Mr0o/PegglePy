@@ -115,7 +115,7 @@ if "--no-max-velocity" in sys.argv:
 else:
     maxBallVelocity = 10 # by limiting the velocity, we can prevent the ball from going crazy (physics glitches).
 defaultBallMass = 4
-defaultPegMass = 60 # even though the pegs do not move, they still have mass because this has an effect on the collision physics (60 is a magic number, that happens to work well)
+defaultPegMass = 40 # even though the pegs do not move, they still have mass because this has an effect on the collision physics (40 is a magic number, that happens to work well)
 # check if the script has been passed '--no-gravity' as an argument
 if "--no-gravity" in sys.argv:
     gravity = Vector(0,0)
