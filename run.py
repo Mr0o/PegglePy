@@ -174,6 +174,7 @@ else:
 while gameRunning:
     clock.tick(999999)
     dt = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
+    dt *= timeScale
     
     launch_button = False
     gamePadFineTuneAmount = 0
@@ -183,7 +184,7 @@ while gameRunning:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                 if not configs["MUSIC_ENABLED"]:
                     stopMusic()
@@ -223,7 +224,7 @@ while gameRunning:
                 pygame.display.set_caption(
                     "PegglePy   -   " + levelFileName)
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                 if not configs["MUSIC_ENABLED"]:
                     stopMusic()
@@ -231,10 +232,10 @@ while gameRunning:
             if event.key == pygame.K_ESCAPE:  # enable or disable cheats
                 gamePaused = not gamePaused
             if event.key == pygame.K_0:
-                if frameRate == 144:
-                    frameRate = 30
+                if timeScale == closeCallTimeScale:
+                    timeScale = 1.0
                 else:
-                    frameRate = 144
+                    timeScale = closeCallTimeScale
             if event.key == pygame.K_m:
                 configs["SOUND_ENABLED"] = not configs["SOUND_ENABLED"]
             if event.key == pygame.K_n:
@@ -258,7 +259,7 @@ while gameRunning:
                     levelEditor(screen, clock)
 
                 # reset the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
 
                 # prevent accidental click on launch
@@ -317,7 +318,7 @@ while gameRunning:
                         powerUpType = "spooky"
                 if event.button == 2:  # the '△'/triangle button on a ps4 controller
                     # reset the game
-                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                         balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)  # horrifying function that resets the game
                     if not configs["MUSIC_ENABLED"]:
                         stopMusic()
@@ -367,7 +368,7 @@ while gameRunning:
                         powerUpType = "spooky"
                 if event.button == 3:  # the 'Y' button on an xbox controller
                     # reset the game
-                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                         balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                     if not configs["MUSIC_ENABLED"]:
                         stopMusic()
@@ -465,7 +466,7 @@ while gameRunning:
         # prevent the click from instantly launching a ball
         delayTimer = TimedEvent(0.25)
         # horrifying function that resets the game
-        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
             balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
         if not configs["MUSIC_ENABLED"]:
             stopMusic()
@@ -604,17 +605,17 @@ while gameRunning:
                         ballTouchingPeg = isBallTouchingPeg(
                             p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
                         if ballTouchingPeg:
-                            if frameRate != 27 and len(balls) < 2:
+                            if timeScale != closeCallTimeScale and len(balls) < 2:
                                 # only play sound once
                                 if configs["SOUND_ENABLED"]:
                                     playSoundPitch(drumRoll)
-                            frameRate = 27  # gives the "slow motion" effect
+                            timeScale = closeCallTimeScale # slow motion
                             closeBall = b
-                        elif frameRate != 144:
+                        elif timeScale != 1.0:
                             # only play sound once
                             if configs["SOUND_ENABLED"]:
                                 playSoundPitch(sighSound)
-                            frameRate = 144
+                            timeScale = 1.0
 
                     # ball physics and game logic
                     if ball_pos_1 in p.pegScreenLocations or (ball_pos_2 and ball_pos_2 in p.pegScreenLocations):
@@ -861,7 +862,7 @@ while gameRunning:
             if configs["SOUND_ENABLED"]:
                 playSoundPitch(cymbal)
             alreadyPlayedOdeToJoy = True
-            frameRate = 60  # still kinda slow motion, but a little bit faster
+            timeScale = odeToJoyTimeScale # slow motion but not as slow as close call
 
         # reset everything and remove hit pegs
         if done and shouldClear:
@@ -879,7 +880,7 @@ while gameRunning:
             ballsRemaining -= 1
             pegsHit = 0
             longShotBonus = False
-            frameRate = 144
+            timeScale = 1.0
             # forces the trajectory to be recalculated in case the mouse aim has not changed
             previousAim = Vector(0, 1)
             if powerUpType == "multiball" or powerUpType == "spooky-multiball":
@@ -956,7 +957,7 @@ while gameRunning:
     else:
         # zoom out
         if zoom > 1.0:
-            if alreadyPlayedOdeToJoy or frameRate == 27:
+            if alreadyPlayedOdeToJoy or timeScale == closeCallTimeScale:
                 zoom -= 0.0025
             else:
                 zoom -= 0.005
@@ -1028,7 +1029,7 @@ while gameRunning:
             delayTimer = TimedEvent(0.50)
         elif pauseSelection == "restart":
             # reset the game
-            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                 balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
@@ -1041,7 +1042,7 @@ while gameRunning:
             pygame.display.set_caption(
                 "PegglePy   -   " + levelFileName)
             # horrifying function that resets the game
-            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                 balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
@@ -1077,7 +1078,7 @@ while gameRunning:
                                 orangeCount += 1
 
                         # reset the game
-                        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                             balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
 
                 elif selection == "settings":
@@ -1085,7 +1086,7 @@ while gameRunning:
                         selection = "mainMenu"
 
             # reset the game
-            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                 balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
 
             # prevent accidental click on launch
@@ -1130,7 +1131,7 @@ while gameRunning:
                                     orangeCount += 1
 
                             # reset the game
-                            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                                 balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                             
                             delayTimer = TimedEvent(0.50)
@@ -1141,7 +1142,7 @@ while gameRunning:
                             selection = "mainMenu"
                     
                 # reset the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                 
                 # prevent accidental click on launch
@@ -1163,7 +1164,7 @@ while gameRunning:
                         orangeCount += 1
 
                 # reset the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, longShotBonus, staticImage = resetGame(
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
                     balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
                 
                 delayTimer = TimedEvent(0.50)

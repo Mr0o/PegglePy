@@ -229,12 +229,12 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     bucket.reset()
     gameOver = False
     alreadyPlayedOdeToJoy = False
-    frameRate = 144
+    timeScale = 1.0
     LongShotBonus = False
     # change the song
     newSong()
     staticImage = createStaticImage(pegs)
-    return ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, frameRate, LongShotBonus, staticImage
+    return ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, LongShotBonus, staticImage
 
 
 def distBetweenTwoPoints(x1, y1, x2, y2):

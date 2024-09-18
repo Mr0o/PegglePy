@@ -140,6 +140,10 @@ longShotDistance = configs["WIDTH"] / 3
 ballRad = 12
 pegRad = 25
 noGravityTimeLength = 10 # how many seconds the no-gravity power up lasts
+# value to slow down or speed up the game
+timeScale = 1.0
+closeCallTimeScale = 0.15
+odeToJoyTimeScale = 0.3
 
 #images
 ballImg = pygame.image.load("resources/images/balls/200x200/ball.png")
