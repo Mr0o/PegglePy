@@ -34,10 +34,9 @@ import pygame
 ##### pygame stuff #####
 pygame.init()
 # set fullscreen
+screen = pygame.display.set_mode(((configs["WIDTH"], configs["HEIGHT"])))
 if configs["FULLSCREEN"]:
-    screen = pygame.display.set_mode(((configs["WIDTH"], configs["HEIGHT"])), pygame.FULLSCREEN)  # display surface
-else:
-    screen = pygame.display.set_mode(((configs["WIDTH"], configs["HEIGHT"])))  # display surface
+    pygame.display.toggle_fullscreen()
 
 clock = pygame.time.Clock()  # game clock
 
@@ -172,7 +171,7 @@ else:
 
 ##### main loop #####
 while gameRunning:
-    clock.tick(999999)
+    clock.tick(configs["REFRESH_RATE"])
     dt = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
     dt *= timeScale
     
@@ -233,7 +232,7 @@ while gameRunning:
                 gamePaused = not gamePaused
             if event.key == pygame.K_0:
                 if timeScale == closeCallTimeScale:
-                    timeScale = 1.0
+                    timeScale = baseTimeScale
                 else:
                     timeScale = closeCallTimeScale
             if event.key == pygame.K_m:
@@ -611,11 +610,11 @@ while gameRunning:
                                     playSoundPitch(drumRoll)
                             timeScale = closeCallTimeScale # slow motion
                             closeBall = b
-                        elif timeScale != 1.0:
+                        elif timeScale != baseTimeScale:
                             # only play sound once
                             if configs["SOUND_ENABLED"]:
                                 playSoundPitch(sighSound)
-                            timeScale = 1.0
+                            timeScale = baseTimeScale
 
                     # ball physics and game logic
                     if ball_pos_1 in p.pegScreenLocations or (ball_pos_2 and ball_pos_2 in p.pegScreenLocations):
@@ -880,7 +879,7 @@ while gameRunning:
             ballsRemaining -= 1
             pegsHit = 0
             longShotBonus = False
-            timeScale = 1.0
+            timeScale = baseTimeScale
             # forces the trajectory to be recalculated in case the mouse aim has not changed
             previousAim = Vector(0, 1)
             if powerUpType == "multiball" or powerUpType == "spooky-multiball":

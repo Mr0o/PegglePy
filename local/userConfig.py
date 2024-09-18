@@ -7,6 +7,7 @@ configs = {
     "HEIGHT": 900,
     "FULLSCREEN": False,
     "VSYNC": True,
+    "REFRESH_RATE": 60,
     "DEBUG_MODE": False,
     "SOUND_ENABLED": True,
     "SOUND_VOLUME": 0.25,

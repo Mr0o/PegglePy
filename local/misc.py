@@ -4,7 +4,7 @@ from random import randint
 
 ### local imports ###
 from local.load_level import loadData, createDefaultPegsPos
-from local.config import segmentCount
+from local.config import segmentCount, baseTimeScale
 from local.userConfig import configs
 from local.resources import backgroundImg
 from local.peg import Peg
@@ -229,7 +229,7 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     bucket.reset()
     gameOver = False
     alreadyPlayedOdeToJoy = False
-    timeScale = 1.0
+    timeScale = baseTimeScale
     LongShotBonus = False
     # change the song
     newSong()

@@ -89,6 +89,10 @@ else:
     (configs["WIDTH"], configs["HEIGHT"]) = userResolution
     
 # set the refresh rate if VSYNC is enabled
+if configs["VSYNC"]:
+    configs["REFRESH_RATE"] = 165
+else:
+    configs["REFRESH_RATE"] = 9999
 
 
 #power up (spooky, multiball, zenball, guideball, spooky-multiball)
@@ -141,7 +145,8 @@ ballRad = 12
 pegRad = 25
 noGravityTimeLength = 10 # how many seconds the no-gravity power up lasts
 # value to slow down or speed up the game
-timeScale = 1.0
+baseTimeScale = 1.0
+timeScale = baseTimeScale
 closeCallTimeScale = 0.15
 odeToJoyTimeScale = 0.3
 
