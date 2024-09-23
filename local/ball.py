@@ -23,6 +23,11 @@ class Ball:
         self.lastPegHit = None # used for when the ball gets stuck
         self.lastPegHitPos = None # used to determine long shot bonus
         
+        # previous position of the ball (used for collision detection)
+        self.prevPos = Vector(x, y)
+        self.prevAcc = Vector(0, 0)
+        self.prevVel = Vector(0, 0)
+        
 
     # F = M*A 
     # Adds a force(Vector) to the velocity
@@ -33,15 +38,9 @@ class Ball:
         self.vel.add(fcopy)
 
     def update(self, dt: float = 1, zeroGravity = False):
-        # if not zeroGravity:
-        #     self.applyForce(gravity)
-
-        # self.vel.x *= 0.9993 #drag
-        # self.vel.add(self.acc)
-        # self.pos.add(self.vel)
-        # self.acc.mult(0)
-        
-        # scale all the forces by the time step (dt; delta time)
+        self.prevPos = self.pos.copy()
+        self.prevAcc = self.acc.copy()
+        self.prevVel = self.vel.copy()
         
         if not zeroGravity:
             gravityCopy = gravity.copy()
@@ -72,3 +71,8 @@ class Ball:
         self.isLaunch = False
         self.isAlive = False
         self.inBucket = False
+        self.lastPegHit = None
+        self.lastPegHitPos = None
+        self.prevPos = Vector(self.originX, self.originY)
+        self.prevAcc = Vector(0, 0)
+        self.prevVel = Vector(0, 0)
