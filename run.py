@@ -231,7 +231,7 @@ while gameRunning:
             if event.key == pygame.K_ESCAPE:  # enable or disable cheats
                 gamePaused = not gamePaused
             if event.key == pygame.K_0:
-                if timeScale == closeCallTimeScale:
+                if timeScale != baseTimeScale:
                     timeScale = baseTimeScale
                 else:
                     timeScale = closeCallTimeScale
@@ -247,6 +247,12 @@ while gameRunning:
             # toggle zoom
             if event.key == pygame.K_x:
                 zoomInOnBall = not zoomInOnBall
+            # triple the time scale
+            if event.key == pygame.K_t:
+                if timeScale == baseTimeScale:
+                    timeScale = baseTimeScale * 3
+                else:
+                    timeScale = baseTimeScale
             # open the main menu
             if event.key == pygame.K_z:
                 selection = mainMenu(screen)
