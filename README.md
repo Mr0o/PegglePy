@@ -109,9 +109,7 @@ python3 run.py --skip-auto-install
 - To enable the debug features, press 1
 - To enable cheats, press 2
 - To change the current powerup, press 3
-- To show the screen segment lines, press 4 (must have debug enabled)
-- To decrease segment count, press 5 (Note: changing this number live during gameplay will break the physics)
-- To increase segment count, press 6 (Note: changing this number live during gameplay will break the physics)
+- To show the quadtree debug, press 4 (must have debug enabled)
 - To show full calculated trajectory, press 7 (must have debug enabled) (this can also be useful for cheating, lol)
 - To enable a perfomance hack (speedHack), press 8
 - to show the timer values on all the pegs, press 9 (must have debug enabled)
