@@ -24,8 +24,6 @@ class Peg:
 
         self.pegImg = bluePegImg
 
-        self.pegScreenLocations: list[int] = [] # list of screen segment locations (it is possible for a peg to cross multiple segments)
-
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
 
 

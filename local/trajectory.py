@@ -3,15 +3,21 @@ import time
 from local.vectors import Vector, subVectors
 from local.ball import Ball
 from local.peg import Peg
-from local.config import LAUNCH_FORCE, trajectoryDepth, segmentCount
-from local.config import configs
+from local.config import LAUNCH_FORCE, trajectoryDepth
+from local.config import configs, quadtreeCapacity
 from local.collision import isBallTouchingPeg, resolveCollision
-from local.misc import getBallScreenLocation
+from local.quadtree import QuadtreePegs, Rectangle
 
 def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debugTrajectory = False):
     hit = False
     previousFakeBall = Ball(startPos.x, startPos.y)
-
+    
+    # create a quadtree to store the pegs
+    boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
+    quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+    for p in pegs:
+        quadtree.insert(p)
+            
     #include bucket pegs in the trajectory calculation
     for fakePeg in bucketPegs:
         pegs.append(fakePeg)
@@ -31,48 +37,32 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
 
 
         #### collision ####
-        ballScreenPosList = getBallScreenLocation(fakeBall, segmentCount)
 
         if hit:# ##powerup## if ball has collided then stop calculating and return
-            for p in pegs:
-                shouldCheckCollision = False
-                for ballScreenPos in ballScreenPosList:
-                    for pegScreenLocation in p.pegScreenLocations:
-                        if ballScreenPos == pegScreenLocation:
-                            shouldCheckCollision = True 
-    
-                if shouldCheckCollision:
-                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    if ballTouchingPeg:
-                        return fakeBalls
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            pegsInRange = quadtree.query(queryRect)
+            for p in pegsInRange:
+                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                if ballTouchingPeg:
+                    return fakeBalls
         elif collisionGuideBall and not hit: # if guideBall powerup is being used
-            for p in pegs:
-                shouldCheckCollision = False
-                for ballScreenPos in ballScreenPosList:
-                    for pegScreenLocation in p.pegScreenLocations:
-                        if ballScreenPos == pegScreenLocation:
-                            shouldCheckCollision = True 
-                            
-                if shouldCheckCollision:
-                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    if ballTouchingPeg:
-                        fakeBall = resolveCollision(fakeBall, p)
-                        hit = True
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            pegsInRange = quadtree.query(queryRect)
+            for p in pegsInRange:         
+                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                if ballTouchingPeg:
+                    fakeBall = resolveCollision(fakeBall, p)
+                    hit = True
         elif not collisionGuideBall: # ##normal## if ball has collided then stop calculating and return
-            for p in pegs:
-                shouldCheckCollision = False
-                for ballScreenPos in ballScreenPosList:
-                    for pegScreenLocation in p.pegScreenLocations:
-                        if ballScreenPos == pegScreenLocation:
-                            shouldCheckCollision = True 
-
-                if shouldCheckCollision:
-                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    if ballTouchingPeg:
-                        if not debugTrajectory:
-                            return fakeBalls
-                        else:
-                            fakeBall = resolveCollision(fakeBall, p)
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            pegsInRange = quadtree.query(queryRect)
+            for p in pegsInRange:
+                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                if ballTouchingPeg:
+                    if not debugTrajectory:
+                        return fakeBalls
+                    else:
+                        fakeBall = resolveCollision(fakeBall, p)
 
             
         fakeBall.update()
@@ -102,6 +92,12 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
 
     ogAim = aim
     aim.setAngleDeg(aim.getAngleDeg() - maxRangeDegrees/2)
+    
+    # create a quadtree to store the pegs
+    boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
+    quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+    for p in pegs:
+        quadtree.insert(p)
 
     startTime = time.time()
     for _ in range(maxRangeDegrees*2):
@@ -122,27 +118,20 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
                 fakeBall.applyForce(previousFakeBall.acc)
                 fakeBall.applyForce(previousFakeBall.vel)
 
-            ballScreenPosList = getBallScreenLocation(fakeBall, segmentCount)
-
             #### collision ####
-            for p in pegs:
-                shouldCheckCollision = False
-                for ballScreenPos in ballScreenPosList:
-                    for pegScreenLocation in p.pegScreenLocations:
-                        if ballScreenPos == pegScreenLocation:
-                            shouldCheckCollision = True 
-                            
-                if shouldCheckCollision:
-                    ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
-                    if ballTouchingPeg:
-                        fakeBall = resolveCollision(fakeBall, p)
-                        # add points
-                        if not p.isHit: 
-                            p.isHit = True
-                            if p.color == "orange":
-                                score += 1000000 #(1 million points) this makes orange pegs a high priority
-                            else:
-                                score += 10
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            pegsInRange = quadtree.query(queryRect)
+            for p in pegsInRange:
+                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                if ballTouchingPeg:
+                    fakeBall = resolveCollision(fakeBall, p)
+                    # add points
+                    if not p.isHit: 
+                        p.isHit = True
+                        if p.color == "orange":
+                            score += 1000000 #(1 million points) this makes orange pegs a high priority
+                        else:
+                            score += 10
 
             fakeBall.update()
 

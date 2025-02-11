@@ -14,6 +14,7 @@ try:
     # refer to the vectors.py module for information on these functions
     from local.vectors import Vector, subVectors
     from local.collision import isBallTouchingPeg, resolveCollision
+    from local.quadtree import QuadtreePegs, Rectangle
 
     from local.ball import Ball
     from local.peg import Peg
@@ -105,6 +106,7 @@ zoom = 1
 
 noGravityPowerUpTimer = TimedEvent()
 noGravityPowerUpTimer.setTimer(0.1)
+quadtreeDebug = False
 
 pegs: list[Peg]
 
@@ -154,9 +156,6 @@ if selection != "quit":
     # set the caption to include the level name
     pygame.display.set_caption("PegglePy   -   " + levelFileName)
 
-    # assign each peg a screen location, this is to better optimize collison detection (only check pegs on the same screen location as the ball)
-    assignPegScreenLocation(pegs, segmentCount)
-
     staticImage = createStaticImage(pegs)
 
     loadRandMusic()
@@ -168,6 +167,14 @@ if selection != "quit":
 
 else:
     gameRunning = False
+    
+# Set up the quadtree
+boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
+quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+
+# Insert pegs into the quadtree
+for peg in pegs:
+    quadtree.insert(peg)
 
 ##### main loop #####
 while gameRunning:
@@ -183,8 +190,8 @@ while gameRunning:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                    balls, createPegColors, bucket, pegs, originPegs, quadtree)
                 if not configs["MUSIC_ENABLED"]:
                     stopMusic()
             if event.key == pygame.K_1:  # enable or disable configs["DEBUG_MODE"] features
@@ -204,16 +211,8 @@ while gameRunning:
                     powerUpType = "no-gravity"
                 elif powerUpType == "no-gravity":
                     powerUpType = "spooky"
-            if event.key == pygame.K_4:  # enable or disable configs["DEBUG_MODE"] view of collision segments
-                debugCollision = not debugCollision
-            if event.key == pygame.K_5:  # configs["DEBUG_MODE"] - decrease collision segment count
-                segmentCount -= 1
-                # reassign each pegs segment location
-                assignPegScreenLocation(pegs, segmentCount)
-            if event.key == pygame.K_6:  # configs["DEBUG_MODE"] - increase collision segment count
-                segmentCount += 1
-                # reassign each pegs segment location
-                assignPegScreenLocation(pegs, segmentCount)
+            if event.key == pygame.K_4:  # toggle quadtreeDebug
+                quadtreeDebug = not quadtreeDebug
             if event.key == pygame.K_7:  # configs["DEBUG_MODE"] - enable or disable full trajectory drawing
                 debugTrajectory = not debugTrajectory
             if event.key == pygame.K_l:  # load a new level
@@ -223,8 +222,8 @@ while gameRunning:
                 pygame.display.set_caption(
                     "PegglePy   -   " + levelFileName)
                 # horrifying function that resets the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                    balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                 if not configs["MUSIC_ENABLED"]:
                     stopMusic()
                 delayTimer = TimedEvent(0.50)
@@ -264,8 +263,8 @@ while gameRunning:
                     levelEditor(screen, clock)
 
                 # reset the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                    balls,  createPegColors, bucket, pegs, originPegs, quadtree)
 
                 # prevent accidental click on launch
                 delayTimer = TimedEvent(0.5)
@@ -323,8 +322,8 @@ while gameRunning:
                         powerUpType = "spooky"
                 if event.button == 2:  # the '△'/triangle button on a ps4 controller
                     # reset the game
-                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                        balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)  # horrifying function that resets the game
+                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                        balls,  createPegColors, bucket, pegs, originPegs, quadtree)  # horrifying function that resets the game
                     if not configs["MUSIC_ENABLED"]:
                         stopMusic()
                 if event.button == 4:  # the 'L1' button on a ps4 controller
@@ -373,8 +372,8 @@ while gameRunning:
                         powerUpType = "spooky"
                 if event.button == 3:  # the 'Y' button on an xbox controller
                     # reset the game
-                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                        balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                    ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                        balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                     if not configs["MUSIC_ENABLED"]:
                         stopMusic()
                 if event.button == 6:  # the 'start' button on an xbox controller
@@ -471,8 +470,8 @@ while gameRunning:
         # prevent the click from instantly launching a ball
         delayTimer = TimedEvent(0.25)
         # horrifying function that resets the game
-        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-            balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+            balls,  createPegColors, bucket, pegs, originPegs, quadtree)
         if not configs["MUSIC_ENABLED"]:
             stopMusic()
 
@@ -597,14 +596,11 @@ while gameRunning:
         # update ball physics and pegs, additional game logic
         for b in balls:
             if b.isAlive:
-                ballScreenPosList = getBallScreenLocation(b, segmentCount)
-                ball_pos_1 = ballScreenPosList[0]
-                if len(ballScreenPosList) > 1:
-                    ball_pos_2 = ballScreenPosList[1]
-                else: ball_pos_2 = False
                 #### collision ####
-                for p in pegs:
-
+                # get the pegs that are in the same screen location as the ball
+                quearyRect = Rectangle(b.pos.x, b.pos.y, b.radius, b.radius)
+                nearbyPegs = quadtree.query(boundary)
+                for p in nearbyPegs:
                     # if the current peg is the last remaining orange peg then apply special effects
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
                         ballTouchingPeg = isBallTouchingPeg(
@@ -623,160 +619,167 @@ while gameRunning:
                             timeScale = baseTimeScale
 
                     # ball physics and game logic
-                    if ball_pos_1 in p.pegScreenLocations or (ball_pos_2 and ball_pos_2 in p.pegScreenLocations):
-                        ballTouchingPeg = isBallTouchingPeg(
-                            p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
-                        if ballTouchingPeg:
-                            # resolve the collision between the ball and peg
-                            b = resolveCollision(b, p)
+                    ballTouchingPeg = isBallTouchingPeg(
+                        p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
+                    if ballTouchingPeg:
+                        # resolve the collision between the ball and peg
+                        b = resolveCollision(b, p)
 
-                            # save the peg that was last hit, used for when the ball is stuck and for bonus points
-                            b.lastPegHit = p
+                        # save the peg that was last hit, used for when the ball is stuck and for bonus points
+                        # p is the quadtree quary, so lets find the actual peg in the pegs list
+                        for peg in pegs:
+                            if peg.pos.x == p.pos.x and peg.pos.y == p.pos.y:
+                                b.lastPegHit = peg
+                                break
 
-                            # automatically remove pegs that a ball is stuck on
-                            if autoRemovePegs:
-                                p.ballStuckTimer.update()
+                        # automatically remove pegs that a ball is stuck on
+                        if autoRemovePegs:
+                            p.ballStuckTimer.update()
 
-                                # when timer has triggered, remove the last hit peg
-                                if p.ballStuckTimer.isTriggered and b.lastPegHit != None:
-                                    pegs.remove(b.lastPegHit)  # remove the peg
-                                    b.lastPegHit = None
-                                    hasPegBeenRemoved = True
-                                    p.ballStuckTimer.cancelTimer()
+                            # when timer has triggered, remove the last hit peg
+                            if p.ballStuckTimer.isTriggered and b.lastPegHit != None:
+                                pegs.remove(b.lastPegHit)  # remove the peg
+                                b.lastPegHit = None
+                                hasPegBeenRemoved = True
+                                p.ballStuckTimer.cancelTimer()
+                                # update quadtree before updating ball physics
+                                quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+                                for peg in pegs:
+                                    quadtree.insert(peg)
 
-                                # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
-                                if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
-                                    p.ballStuckTimer.setTimer(
-                                        autoRemovePegsTimerValue)
-                                elif b.vel.getMag() > 0.5:
-                                    p.ballStuckTimer.cancelTimer()
-                                    b.lastPegHit = None
+                            # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
+                            if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
+                                p.ballStuckTimer.setTimer(
+                                    autoRemovePegsTimerValue)
+                            elif b.vel.getMag() > 0.5:
+                                p.ballStuckTimer.cancelTimer()
+                                b.lastPegHit = None
 
-                            # check for long shot bonus
-                            if b.lastPegHitPos != p.pos and b.lastPegHitPos != None and p.color == "orange" and not p.isHit:
-                                if distBetweenTwoPoints(b.lastPegHitPos.x, b.lastPegHitPos.y, p.pos.x, p.pos.y) > longShotDistance:
-                                    if not longShotBonus:
+                        # check for long shot bonus
+                        if b.lastPegHitPos != p.pos and b.lastPegHitPos != None and p.color == "orange" and not p.isHit:
+                            if distBetweenTwoPoints(b.lastPegHitPos.x, b.lastPegHitPos.y, p.pos.x, p.pos.y) > longShotDistance:
+                                if not longShotBonus:
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(longShotSound)
+                                    score += 25000
+                                    b.lastPegHitPos = None
+                                    longShotBonus = True
+
+                                    # used for showing the bonus score
+                                    longShotPos = Vector(
+                                        p.pos.x, p.pos.y)
+
+                                    if pygame.joystick.get_count() > 0 and controllerInput:
+                                        if configs["DEBUG_MODE"]:
+                                            print("Debug: Rumble")
+                                        joystick = pygame.joystick.Joystick(
+                                            0)
+                                        joystick.init()
+                                        joystick.rumble(1, 1, 100)
+
+                        # used for long shot check
+                        b.lastPegHitPos = p.pos
+
+                        # peg color update and powerup sounds
+                        if not p.isHit:
+                            hasPegBeenHit = True  # has a peg been hit this frame
+                            p.isHit = True
+                            pegsHit += 1
+                            p.update_color()  # change the color to signify it has been hit
+                            pitchRaiseCount += 1
+                            if p.color == "orange":
+                                orangeCount -= 1
+                            if p.isPowerUp:
+                                if powerUpType == "spooky":
+                                    if powerUpCount < 1:
                                         if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(longShotSound)
-                                        score += 25000
-                                        b.lastPegHitPos = None
-                                        longShotBonus = True
-
-                                        # used for showing the bonus score
-                                        longShotPos = Vector(
-                                            p.pos.x, p.pos.y)
-
-                                        if pygame.joystick.get_count() > 0 and controllerInput:
-                                            if configs["DEBUG_MODE"]:
-                                                print("Debug: Rumble")
-                                            joystick = pygame.joystick.Joystick(
-                                                0)
-                                            joystick.init()
-                                            joystick.rumble(1, 1, 100)
-
-                            # used for long shot check
-                            b.lastPegHitPos = p.pos
-
-                            # peg color update and powerup sounds
-                            if not p.isHit:
-                                hasPegBeenHit = True  # has a peg been hit this frame
-                                p.isHit = True
-                                pegsHit += 1
-                                p.update_color()  # change the color to signify it has been hit
-                                pitchRaiseCount += 1
-                                if p.color == "orange":
-                                    orangeCount -= 1
-                                if p.isPowerUp:
-                                    if powerUpType == "spooky":
-                                        if powerUpCount < 1:
-                                            if configs["SOUND_ENABLED"]:
-                                                playSoundPitch(powerUpSpooky1)
-                                            firstSpookyHit = True
-                                        elif powerUpCount == 1:
-                                            if configs["SOUND_ENABLED"]:
-                                                playSoundPitch(powerUpSpooky2)
-                                            firstSpookyHit = False
-                                    if powerUpType == "multiball":
+                                            playSoundPitch(powerUpSpooky1)
+                                        firstSpookyHit = True
+                                    elif powerUpCount == 1:
                                         if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(powerUpMultiBall)
-                                        addNewBall = True
-                                    if powerUpType == "zenball":
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(powerUpZenBallHit)
-                                    if powerUpType == "guideball":
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(powerUpGuideBall)
-                                        powerUpCount += 2
-                                    if powerUpType == "spooky-multiball":
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(powerUpMultiBall)
-                                        addNewBall = True
-                                        powerUpCount += 1
-                                    if powerUpType == "no-gravity":
-                                        if powerUpCount < 1:
-                                            # start the no gravity powerup timer
-                                            noGravityPowerUpTimer.setTimer(
-                                                noGravityTimeLength)
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(powerUpNoGravity, 1.9)
-                                            playSoundPitch(powerUpNoGravity, 0.8)
-                                        
-                                        
+                                            playSoundPitch(powerUpSpooky2)
+                                        firstSpookyHit = False
+                                if powerUpType == "multiball":
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(powerUpMultiBall)
+                                    addNewBall = True
+                                if powerUpType == "zenball":
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(powerUpZenBallHit)
+                                if powerUpType == "guideball":
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(powerUpGuideBall)
+                                    powerUpCount += 2
+                                if powerUpType == "spooky-multiball":
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(powerUpMultiBall)
+                                    addNewBall = True
                                     powerUpCount += 1
-                                    powerUpActive = True
+                                if powerUpType == "no-gravity":
+                                    if powerUpCount < 1:
+                                        # start the no gravity powerup timer
+                                        noGravityPowerUpTimer.setTimer(
+                                            noGravityTimeLength)
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(powerUpNoGravity, 1.9)
+                                        playSoundPitch(powerUpNoGravity, 0.8)
+                                    
+                                    
+                                powerUpCount += 1
+                                powerUpActive = True
 
-                                # peg hit sounds
-                                if pitchRaiseCount <= 7:
-                                    if not p.isPowerUp:
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(low_hit_sound, pitch)
-                                    pitch -= 0.05  # magic number
-                                if pitchRaiseCount == 7:
-                                    pitch = 1.32  # magic number
-                                elif pitchRaiseCount > 7 and pitchRaiseCount < 26:
-                                    if not p.isPowerUp:
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(normal_hit_sound, pitch)
-                                    pitch -= 0.045  # magic number
-                                elif pitchRaiseCount >= 26:
-                                    if not p.isPowerUp:
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(normal_hit_sound, pitch)
+                            # peg hit sounds
+                            if pitchRaiseCount <= 7:
+                                if not p.isPowerUp:
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(low_hit_sound, pitch)
+                                pitch -= 0.05  # magic number
+                            if pitchRaiseCount == 7:
+                                pitch = 1.32  # magic number
+                            elif pitchRaiseCount > 7 and pitchRaiseCount < 26:
+                                if not p.isPowerUp:
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(normal_hit_sound, pitch)
+                                pitch -= 0.045  # magic number
+                            elif pitchRaiseCount >= 26:
+                                if not p.isPowerUp:
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(normal_hit_sound, pitch)
 
-                                # cheats
-                                if cheats:
-                                    if powerUpType == "spooky":
-                                        # if configs["SOUND_ENABLED"]:
-                                        #   playSoundPitch(powerUpSpooky1)
-                                        powerUpCount += 1
-                                    if powerUpType == "multiball":
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(powerUpMultiBall)
-                                        addNewBall = True
-                                        powerUpCount += 1
-                                    if powerUpType == "guideball":
-                                        powerUpCount += 2
-                                    if powerUpType == "spooky-multiball":
-                                        if configs["SOUND_ENABLED"]:
-                                            playSoundPitch(powerUpMultiBall)
-                                        # if configs["SOUND_ENABLED"]:
-                                        #   playSoundPitch(powerUpSpooky1)
-                                        addNewBall = True
-                                        powerUpCount += 2
-                                    if powerUpType == "zenball":
-                                        powerUpCount += 1
-                                    if powerUpType == "no-gravity":
-                                        noGravityPowerUpActive = True
+                            # cheats
+                            if cheats:
+                                if powerUpType == "spooky":
+                                    # if configs["SOUND_ENABLED"]:
+                                    #   playSoundPitch(powerUpSpooky1)
+                                    powerUpCount += 1
+                                if powerUpType == "multiball":
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(powerUpMultiBall)
+                                    addNewBall = True
+                                    powerUpCount += 1
+                                if powerUpType == "guideball":
+                                    powerUpCount += 2
+                                if powerUpType == "spooky-multiball":
+                                    if configs["SOUND_ENABLED"]:
+                                        playSoundPitch(powerUpMultiBall)
+                                    # if configs["SOUND_ENABLED"]:
+                                    #   playSoundPitch(powerUpSpooky1)
+                                    addNewBall = True
+                                    powerUpCount += 2
+                                if powerUpType == "zenball":
+                                    powerUpCount += 1
+                                if powerUpType == "no-gravity":
+                                    noGravityPowerUpActive = True
 
-                                # keep track of points earned
-                                # pointsEarned.append(p.points)
-                                score += (p.points *
-                                          getScoreMultiplier(orangeCount, pegsHit))
+                            # keep track of points earned
+                            # pointsEarned.append(p.points)
+                            score += (p.points *
+                                        getScoreMultiplier(orangeCount, pegsHit))
 
-                                if speedHack:
-                                    # update the static image to show the peg has been hit (can increase performance, but at the cost of visual wierdness)
-                                    staticImage = updateStaticImage(
-                                        staticImage, p)
+                            if speedHack:
+                                # update the static image to show the peg has been hit (can increase performance, but at the cost of visual wierdness)
+                                staticImage = updateStaticImage(
+                                    staticImage, p)
 
                 #if no-gravity powerup is active
                 if noGravityPowerUpActive:
@@ -844,6 +847,10 @@ while gameRunning:
         if hasPegBeenRemoved:
             hasPegBeenRemoved = False
             staticImage = createStaticImage(pegs)
+            # update quadtree before updating ball physics
+            quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+            for peg in pegs:
+                quadtree.insert(peg)
 
         # this little loop and if statement will determine if any of the balls are still alive and therfore if everything should be cleared/reset or not
         done = True
@@ -898,6 +905,11 @@ while gameRunning:
             for s in pointsEarned:
                 score += s
             staticImage = createStaticImage(pegs)
+            
+            # quadtree update
+            quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+            for peg in pegs:
+                quadtree.insert(peg)
 
         # bucket, pass the power up info for the bucket to update its collison and image
         bucket.update(dt, powerUpType, powerUpActive)
@@ -1034,8 +1046,8 @@ while gameRunning:
             delayTimer = TimedEvent(0.50)
         elif pauseSelection == "restart":
             # reset the game
-            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                balls,  createPegColors, bucket, pegs, originPegs, quadtree)
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
             gamePaused = False
@@ -1047,8 +1059,8 @@ while gameRunning:
             pygame.display.set_caption(
                 "PegglePy   -   " + levelFileName)
             # horrifying function that resets the game
-            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                balls,  createPegColors, bucket, pegs, originPegs, quadtree)
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
             gamePaused = False
@@ -1083,16 +1095,16 @@ while gameRunning:
                                 orangeCount += 1
 
                         # reset the game
-                        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                            balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                        ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                            balls,  createPegColors, bucket, pegs, originPegs, quadtree)
 
                 elif selection == "settings":
                     if settingsMenu(screen) == "mainMenu":
                         selection = "mainMenu"
 
             # reset the game
-            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                balls,  createPegColors, bucket, pegs, originPegs, quadtree)
 
             # prevent accidental click on launch
             delayTimer = TimedEvent(0.5)
@@ -1136,8 +1148,8 @@ while gameRunning:
                                     orangeCount += 1
 
                             # reset the game
-                            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                                balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                            ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                                balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                             
                             delayTimer = TimedEvent(0.50)
                         
@@ -1147,8 +1159,8 @@ while gameRunning:
                             selection = "mainMenu"
                     
                 # reset the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                    balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                 
                 # prevent accidental click on launch
                 delayTimer = TimedEvent(0.5)
@@ -1169,8 +1181,8 @@ while gameRunning:
                         orangeCount += 1
 
                 # reset the game
-                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage = resetGame(
-                    balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs)
+                ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
+                    balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                 
                 delayTimer = TimedEvent(0.50)
 
@@ -1271,15 +1283,6 @@ while gameRunning:
                 "Speed Hack: ON", False, (255, 255, 255))
             screen.blit(speedHackText, (245, 5))
 
-        if debugCollision:
-            collSegmentDisp = debugFont.render(
-                "Collision Segments: " + str(segmentCount), False, (0, 255, 255))
-            screen.blit(collSegmentDisp, (230, 7))
-            # draw collision sections
-            segmentWidth = configs["WIDTH"] / segmentCount
-            for i in range(segmentCount):
-                drawLine(segmentWidth*i, 0, segmentWidth*i, configs["HEIGHT"])
-
         # draw each pegs ballStuckTimer value
         if autoRemovePegs and debugAutoRemovePegsTimer:
             for p in pegs:
@@ -1291,6 +1294,10 @@ while gameRunning:
                     stuckTimerText = debugFont.render(
                         str(round(autoRemovePegsTimerValue, 3)), False, (255, 255, 255))
                     screen.blit(stuckTimerText, (p.pos.x, p.pos.y))
+                    
+        # draw the quadtree
+        if quadtreeDebug:
+            quadtree.show(screen)
 
     # display red text indicating if cheats are enabled
     if cheats:

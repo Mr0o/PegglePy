@@ -136,7 +136,6 @@ pitchRaiseCount = 0
 showCollision = False
 previousAim = Vector(0,1)
 shouldClear = False
-segmentCount = 20
 autoRemovePegs = True
 autoRemovePegsTimerValue = 0.2 # how much time in seconds to wait before removing a peg that a ball is stuck on
 debugAutoRemovePegsTimer = False # if true, each pegs autoRemovePegsTimer will be displayed on the screen
@@ -149,6 +148,7 @@ baseTimeScale = 1.0
 timeScale = baseTimeScale
 closeCallTimeScale = 0.15
 odeToJoyTimeScale = 0.3
+quadtreeCapacity = 20
 
 #images
 ballImg = pygame.image.load("resources/images/balls/200x200/ball.png")

@@ -4,38 +4,13 @@ from random import randint
 
 ### local imports ###
 from local.load_level import loadData, createDefaultPegsPos
-from local.config import segmentCount, baseTimeScale
+from local.config import baseTimeScale, quadtreeCapacity
 from local.userConfig import configs
 from local.resources import backgroundImg
 from local.peg import Peg
 from local.ball import Ball
 from local.audio import newSong
-
-# iterate through each peg x,y position to determine its location on the screen
-
-
-def assignPegScreenLocation(pegs: list[Peg], segmentCount: int):
-    segmentWidth = configs["WIDTH"]/segmentCount
-    for p in pegs:
-        for i in range(segmentCount+1):
-            if p.pos.x >= segmentWidth*(i-1) - p.radius and p.pos.x <= segmentWidth*i + p.radius:
-                p.pegScreenLocations.append(i)
-
-
-def getBallScreenLocation(b: Ball, segmentCount) -> list[int]:
-    segmentWidth = configs["WIDTH"]/segmentCount
-    pos1 = ceil((b.pos.x - b.radius)/segmentWidth)
-    pos2 = ceil((b.pos.x + b.radius)/segmentWidth)
-
-    if pos1 == pos2: return [pos1]
-    else: return [pos1, pos2]
-
-    # for i in range(segmentCount+1):
-    #     if b.pos.x > segmentWidth*(i-1) - b.radius and b.pos.x < segmentWidth*i + b.radius:
-    #         locations.append(i)
-    #         break
-
-    # return locations
+from local.quadtree import QuadtreePegs, Rectangle
 
 
 def getScoreMultiplier(remainingOrangePegs, pegsHit=0) -> int:
@@ -202,7 +177,7 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
 
 
 # quite horrendous, will be fixed in the future... hopefully :)
-def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, originPegs):
+def resetGame(balls,  createPegColors, bucket, pegs, originPegs, quadtree):
     # reset everything
     balls.clear()  # clear all the balls
     balls.append(Ball(configs["WIDTH"]/2, configs["HEIGHT"]/25))  # recreate the original ball
@@ -218,7 +193,6 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     for peg in pegs:
         peg.reset()
     pegs = createPegColors(pegs)
-    assignPegScreenLocation(pegs, segmentCount)
     orangeCount = 0
     for peg in pegs:
         if peg.color == "orange":
@@ -234,7 +208,11 @@ def resetGame(balls, assignPegScreenLocation, createPegColors, bucket, pegs, ori
     # change the song
     newSong()
     staticImage = createStaticImage(pegs)
-    return ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, LongShotBonus, staticImage
+    boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
+    quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+    for peg in pegs:
+        quadtree.insert(peg)
+    return ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, LongShotBonus, staticImage, quadtree
 
 
 def distBetweenTwoPoints(x1, y1, x2, y2):
