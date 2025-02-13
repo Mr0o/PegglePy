@@ -108,6 +108,8 @@ noGravityPowerUpTimer = TimedEvent()
 noGravityPowerUpTimer.setTimer(0.1)
 quadtreeDebug = False
 useQuadtree = True
+# transparent surface for the quadtree
+quadtreeStaticScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
 
 pegs: list[Peg]
 
@@ -216,6 +218,9 @@ while gameRunning:
                     powerUpType = "spooky"
             if event.key == pygame.K_4:  # toggle quadtreeDebug
                 quadtreeDebug = not quadtreeDebug
+                if quadtreeDebug:
+                    quadtreeStaticScreen.fill((0, 0, 0, 0))
+                    quadtree.show(quadtreeStaticScreen)
             if event.key == pygame.K_5:  # toggle quadtree vs brute force collision detection
                 useQuadtree = not useQuadtree
             if event.key == pygame.K_7:  # configs["DEBUG_MODE"] - enable or disable full trajectory drawing
@@ -654,6 +659,9 @@ while gameRunning:
                                 quadtree = QuadtreePegs(boundary, len(pegs))
                                 for peg in pegs:
                                     quadtree.insert(peg)
+                                if quadtreeDebug:
+                                    quadtreeStaticScreen.fill((0, 0, 0, 0))
+                                    quadtree.show(quadtreeStaticScreen)
 
                             # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
                             if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
@@ -859,6 +867,10 @@ while gameRunning:
             quadtree = QuadtreePegs(boundary, len(pegs))
             for peg in pegs:
                 quadtree.insert(peg)
+                quadtree.insert(peg)
+            if quadtreeDebug:
+                quadtreeStaticScreen.fill((0, 0, 0, 0))
+                quadtree.show(quadtreeStaticScreen)
 
         # this little loop and if statement will determine if any of the balls are still alive and therfore if everything should be cleared/reset or not
         done = True
@@ -918,6 +930,9 @@ while gameRunning:
             quadtree = QuadtreePegs(boundary, len(pegs))
             for peg in pegs:
                 quadtree.insert(peg)
+            if quadtreeDebug:
+                quadtreeStaticScreen.fill((0, 0, 0, 0))
+                quadtree.show(quadtreeStaticScreen)
 
         # bucket, pass the power up info for the bucket to update its collison and image
         bucket.update(dt, powerUpType, powerUpActive)
@@ -1305,7 +1320,7 @@ while gameRunning:
                     
         # draw the quadtree
         if quadtreeDebug:
-            quadtree.show(screen)
+            screen.blit(quadtreeStaticScreen, (0, 0))
             if useQuadtree:
                 # draw white circle around each peg in the query
                 for p in nearbyPegs:
