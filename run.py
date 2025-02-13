@@ -1322,14 +1322,16 @@ while gameRunning:
         if quadtreeDebug:
             screen.blit(quadtreeStaticScreen, (0, 0))
             if useQuadtree:
-                # draw white circle around each peg in the query
+                # draw red circle around each peg in the query
                 for p in nearbyPegs:
-                    drawCircle(p.pos.x, p.pos.y, p.radius, (255, 255, 255))
+                    drawCircle(p.pos.x, p.pos.y, p.radius, (255, 0, 0))
                 
             # draw white rectangle around the query rect
             pygame.draw.rect(screen, (0, 255, 0), (queryRect.x-queryRectSize, queryRect.y-queryRectSize, queryRectSize*2, queryRectSize*2), 2)
             
-            print("Quadtree Capacity: " + str(quadtree.capacity))
+            # draw the quadtree capacity
+            capacityText = debugFont.render("Capacity: "+str(quadtree.capacity), False, (255, 255, 255))
+            screen.blit(capacityText, (configs["WIDTH"]-200, 20))
             
         # draw text to show if the quadtree is being used
         if not useQuadtree:
