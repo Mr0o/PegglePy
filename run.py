@@ -177,10 +177,6 @@ quadtree = QuadtreePegs(boundary, 4)
 queryRect = Rectangle(0, 0, 0, 0)
 nearbyPegs = []
 
-# Insert pegs into the quadtree
-for peg in pegs:
-    quadtree.insert(peg)
-
 ##### main loop #####
 while gameRunning:
     clock.tick(configs["REFRESH_RATE"])
