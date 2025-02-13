@@ -183,6 +183,10 @@ while gameRunning:
     dt = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
     dt *= timeScale
     
+    if quadtree.pegs == [] and pegs != []:
+        for p in pegs:
+            quadtree.insert(p)
+    
     launch_button = False
     gamePadFineTuneAmount = 0
     for event in pygame.event.get():  # check events and quit if the program is closed
