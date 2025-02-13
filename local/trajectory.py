@@ -107,7 +107,7 @@ def findBestTrajectory(aim: Vector, startPos : Vector, pegs : list[Peg], quadtre
                 fakeBall.applyForce(previousFakeBall.vel)
 
             #### collision ####
-            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:
                 ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
