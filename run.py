@@ -504,7 +504,7 @@ while gameRunning:
             # only calculate the trajectory if the mouse has been moved - reduces cpu time
             if previousAim.x != launchAim.x or previousAim.y != launchAim.y:
                 trajectory = calcTrajectory(launchAim, ball.pos, pegs.copy(), bucket.fakePegs.copy(
-                ), (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
+                ), quadtree, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
         previousAim = Vector(launchAim.x, launchAim.y)
 
         delayTimer.update()  # prevent the ball from launching instantly after the game is reset
@@ -551,7 +551,7 @@ while gameRunning:
                 print("Debug: Zenball launched")
                 startTime = time.time()
             bestAim, bestScore, bestTrajectory = findBestTrajectory(Vector(
-                launchAim.x, launchAim.y), Vector(ball.pos.x, ball.pos.y), pegs.copy())
+                launchAim.x, launchAim.y), Vector(ball.pos.x, ball.pos.y), pegs.copy(), quadtree)
 
             if configs["DEBUG_MODE"]:
                 print("Debug: Zenball best aim found in " +
@@ -1328,6 +1328,8 @@ while gameRunning:
                 
             # draw white rectangle around the query rect
             pygame.draw.rect(screen, (0, 255, 0), (queryRect.x-queryRectSize, queryRect.y-queryRectSize, queryRectSize*2, queryRectSize*2), 2)
+            
+            print("Quadtree Capacity: " + str(quadtree.capacity))
             
         # draw text to show if the quadtree is being used
         if not useQuadtree:

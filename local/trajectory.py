@@ -8,15 +8,9 @@ from local.config import configs
 from local.collision import isBallTouchingPeg, resolveCollision
 from local.quadtree import QuadtreePegs, Rectangle
 
-def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, collisionGuideBall = False, depth = trajectoryDepth, debugTrajectory = False):
+def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, quadtree : QuadtreePegs, collisionGuideBall = False, depth = trajectoryDepth, debugTrajectory = False):
     hit = False
     previousFakeBall = Ball(startPos.x, startPos.y)
-    
-    # create a quadtree to store the pegs
-    boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
-    quadtree = QuadtreePegs(boundary, len(pegs))
-    for p in pegs:
-        quadtree.insert(p)
             
     #include bucket pegs in the trajectory calculation
     for fakePeg in bucketPegs:
@@ -78,7 +72,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
     return fakeBalls
 
 
-def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeDegrees = 21, depth = 9000, setTimeLimit = 25):
+def findBestTrajectory(aim: Vector, startPos : Vector, pegs : list[Peg], quadtree : QuadtreePegs, maxRangeDegrees = 21, depth = 9000, setTimeLimit = 25):
     # default maxRange and depth were found using a performance test on a level with 120 pegs, which can be run with the 'performance_test.py' module
     # the default values are the values that gave the best performance (shortest time, but with the greatest depth and range possible)
 
@@ -92,12 +86,6 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
 
     ogAim = aim
     aim.setAngleDeg(aim.getAngleDeg() - maxRangeDegrees/2)
-    
-    # create a quadtree to store the pegs
-    boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
-    quadtree = QuadtreePegs(boundary, len(pegs))
-    for p in pegs:
-        quadtree.insert(p)
 
     startTime = time.time()
     for _ in range(maxRangeDegrees*2):
