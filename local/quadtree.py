@@ -37,6 +37,8 @@ class QuadtreePegs:
         self.capacity = numPegs // 4
         if self.capacity < 4:
             self.capacity = 4
+        if numPegs <= 100:
+            self.capacity = 16
             
         self.pegs: list[Peg] = []
         self.divided = False
@@ -90,7 +92,7 @@ class QuadtreePegs:
             self.southeast.show(surface)
             self.southwest.show(surface)
             
-    def query(self, range: Rectangle):
+    def query(self, range: Rectangle) -> list[Peg]:
         found = []
         if not self.boundary.intersects(range):
             return found
