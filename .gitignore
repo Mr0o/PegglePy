@@ -9,6 +9,8 @@ __pycache__
 
 user.cfg
 
+*.prof
+
 # ignore all level files except for 'official' levels
 ```
 *.lvl
