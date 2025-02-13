@@ -173,7 +173,7 @@ else:
     
 # Set up the quadtree
 boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
-quadtree = QuadtreePegs(boundary, len(pegs))
+quadtree = QuadtreePegs(boundary, 4)
 queryRect = Rectangle(0, 0, 0, 0)
 nearbyPegs = []
 
