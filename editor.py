@@ -43,6 +43,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
 
     widthBound = 35
     heightBound = 150
+    lowerHeightBound = 75
 
     pygame.display.set_caption("PegglePy  -  Level Editor")
 
@@ -117,7 +118,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
         if not editorPaused:
             # check if mouse is out of bounds
             mouseOutofBounds = False
-            if mousePos.y > configs["HEIGHT"] - heightBound or mousePos.y < heightBound or mousePos.x > configs["WIDTH"] - widthBound or mousePos.x < widthBound:
+            if mousePos.y > configs["HEIGHT"] - lowerHeightBound or mousePos.y < heightBound or mousePos.x > configs["WIDTH"] - widthBound or mousePos.x < widthBound:
                 mouseOutofBounds = True
 
             # if mouse clicked, create a new ball at the mouse position
@@ -175,8 +176,8 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
         if not editorPaused: 
             # don't draw any of this while the game is paused (its distracting)
             if mouseOutofBounds:
-                pygame.draw.rect(screen, (255, 0, 0), (widthBound, heightBound,
-                                configs["WIDTH"] - widthBound*2, configs["HEIGHT"] - heightBound*2), 2)
+                # draw the bounds for the width, lower height and upper height
+                pygame.draw.rect(screen, (255, 0, 0), (widthBound, heightBound, configs["WIDTH"] - widthBound*2, configs["HEIGHT"] - heightBound - lowerHeightBound), 2)
 
                 # draw invalid transparent peg img (red peg)
                 screen.blit(invalidPegImg, (mousePos.x -
@@ -203,6 +204,8 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
         screen.blit(helpText2, (int(configs["WIDTH"]-150), 25))
         helpText3 = helpFont.render("L = Load", False, (255, 255, 255))
         screen.blit(helpText3, (int(configs["WIDTH"]-150), 40))
+        helpText4 = helpFont.render("Drag mouse to draw shapes", False, (255, 255, 255))
+        screen.blit(helpText4, (int(configs["WIDTH"]-350), 55))
 
         # draw a circle where the ball would be
         pygame.draw.circle(screen, (255, 255, 255), [configs["WIDTH"]/2, configs["HEIGHT"]/25], 5)
