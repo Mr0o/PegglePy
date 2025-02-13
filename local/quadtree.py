@@ -1,7 +1,6 @@
 import pygame
 import random
 from local.peg import Peg
-from local.config import quadtreeCapacity, quadtreeCapacityLarge, quadtreeCapacityLimit
 
 # ------------------------------
 # Quadtree support classes
@@ -36,6 +35,8 @@ class QuadtreePegs:
         
         # determine the capacity automatically based on the number of pegs
         self.capacity = numPegs // 4
+        if self.capacity < 4:
+            self.capacity = 4
             
         self.pegs: list[Peg] = []
         self.divided = False

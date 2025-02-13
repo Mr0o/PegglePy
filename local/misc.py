@@ -4,7 +4,7 @@ from random import randint
 
 ### local imports ###
 from local.load_level import loadData, createDefaultPegsPos
-from local.config import baseTimeScale, quadtreeCapacity
+from local.config import baseTimeScale
 from local.userConfig import configs
 from local.resources import backgroundImg
 from local.peg import Peg
@@ -209,7 +209,7 @@ def resetGame(balls,  createPegColors, bucket, pegs, originPegs, quadtree):
     newSong()
     staticImage = createStaticImage(pegs)
     boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
-    quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+    quadtree = QuadtreePegs(boundary, len(pegs))
     for peg in pegs:
         quadtree.insert(peg)
     return ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, LongShotBonus, staticImage, quadtree
