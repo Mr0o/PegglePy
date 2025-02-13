@@ -37,8 +37,6 @@ class QuadtreePegs:
         self.capacity = numPegs // 4
         if self.capacity < 4:
             self.capacity = 4
-        if numPegs <= 100:
-            self.capacity = 16
             
         self.pegs: list[Peg] = []
         self.divided = False
