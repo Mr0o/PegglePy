@@ -3,8 +3,8 @@ import time
 from local.vectors import Vector, subVectors
 from local.ball import Ball
 from local.peg import Peg
-from local.config import LAUNCH_FORCE, trajectoryDepth
-from local.config import configs, quadtreeCapacity
+from local.config import LAUNCH_FORCE, trajectoryDepth, queryRectSize
+from local.config import configs
 from local.collision import isBallTouchingPeg, resolveCollision
 from local.quadtree import QuadtreePegs, Rectangle
 
@@ -14,7 +14,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
     
     # create a quadtree to store the pegs
     boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
-    quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+    quadtree = QuadtreePegs(boundary, len(pegs))
     for p in pegs:
         quadtree.insert(p)
             
@@ -39,14 +39,14 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
         #### collision ####
 
         if hit:# ##powerup## if ball has collided then stop calculating and return
-            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:
                 ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
                 if ballTouchingPeg:
                     return fakeBalls
         elif collisionGuideBall and not hit: # if guideBall powerup is being used
-            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:         
                 ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
@@ -54,7 +54,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                     fakeBall = resolveCollision(fakeBall, p)
                     hit = True
         elif not collisionGuideBall: # ##normal## if ball has collided then stop calculating and return
-            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius*1.5, fakeBall.radius*1.5)
+            queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:
                 ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
@@ -95,7 +95,7 @@ def findBestTrajectory(aim: Vector, startPos: Vector, pegs: list[Peg], maxRangeD
     
     # create a quadtree to store the pegs
     boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
-    quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+    quadtree = QuadtreePegs(boundary, len(pegs))
     for p in pegs:
         quadtree.insert(p)
 
