@@ -8,6 +8,7 @@ from local.vectors import Vector
 from local.audio import playSoundPitch, newSong
 from local.load_level import loadData
 from local.misc import createPegColors, loadDefaultLevel
+import re
 
 
 def getLevelName(levelFilePath: str) -> str:
@@ -45,10 +46,15 @@ def getLevelsList(levelsDirectory: str = "levels") -> list[str]:
         
         print("Loading default level...")
 
-    # sort the list of levels by name alphabetically
-    levelsList.sort()
+    levelsList = sorted(levelsList, key=natural_key)
     
     return levelsList
+
+
+def natural_key(filePath: str):
+        name = getLevelName(filePath)
+        primary = 0 if name.startswith("Level") else 1
+        return (primary, [int(text) if text.isdigit() else text.lower() for text in re.split('(\d+)', name)])
 
 
 def loadLevel(levelFilePath) -> tuple[list[Peg], list[Peg], int]:
