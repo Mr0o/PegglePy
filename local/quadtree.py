@@ -1,7 +1,7 @@
 import pygame
 import random
 from local.peg import Peg
-from local.vectors import Vector
+from local.config import quadtreeCapacity, quadtreeCapacityLarge, quadtreeCapacityLimit
 
 # ------------------------------
 # Quadtree support classes
@@ -30,10 +30,13 @@ class Rectangle:
                     range.y + range.h < self.y - self.h)
 
 class QuadtreePegs:
-    def __init__(self, boundary, capacity):
+    def __init__(self, boundary, numPegs):
         # boundary: Rectangle
         self.boundary: Rectangle = boundary
-        self.capacity = capacity  # maximum number of pegs before subdivision
+        
+        # determine the capacity automatically based on the number of pegs
+        self.capacity = numPegs // 4
+            
         self.pegs: list[Peg] = []
         self.divided = False
 

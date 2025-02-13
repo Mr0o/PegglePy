@@ -107,6 +107,7 @@ zoom = 1
 noGravityPowerUpTimer = TimedEvent()
 noGravityPowerUpTimer.setTimer(0.1)
 quadtreeDebug = False
+useQuadtree = True
 
 pegs: list[Peg]
 
@@ -170,7 +171,9 @@ else:
     
 # Set up the quadtree
 boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
-quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+quadtree = QuadtreePegs(boundary, len(pegs))
+queryRect = Rectangle(0, 0, 0, 0)
+nearbyPegs = []
 
 # Insert pegs into the quadtree
 for peg in pegs:
@@ -213,6 +216,8 @@ while gameRunning:
                     powerUpType = "spooky"
             if event.key == pygame.K_4:  # toggle quadtreeDebug
                 quadtreeDebug = not quadtreeDebug
+            if event.key == pygame.K_5:  # toggle quadtree vs brute force collision detection
+                useQuadtree = not useQuadtree
             if event.key == pygame.K_7:  # configs["DEBUG_MODE"] - enable or disable full trajectory drawing
                 debugTrajectory = not debugTrajectory
             if event.key == pygame.K_l:  # load a new level
@@ -597,9 +602,12 @@ while gameRunning:
         for b in balls:
             if b.isAlive:
                 #### collision ####
-                # get the pegs that are in the same screen location as the ball
-                quearyRect = Rectangle(b.pos.x, b.pos.y, b.radius, b.radius)
-                nearbyPegs = quadtree.query(boundary)
+                # get the pegs that are in the same screen location as the ball (scaled by queryRectSize)
+                queryRect = Rectangle(b.pos.x, b.pos.y, queryRectSize, queryRectSize)
+                if useQuadtree:
+                    nearbyPegs = quadtree.query(queryRect)
+                else:
+                    nearbyPegs = pegs
                 for p in nearbyPegs:
                     # if the current peg is the last remaining orange peg then apply special effects
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
@@ -643,7 +651,7 @@ while gameRunning:
                                 hasPegBeenRemoved = True
                                 p.ballStuckTimer.cancelTimer()
                                 # update quadtree before updating ball physics
-                                quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+                                quadtree = QuadtreePegs(boundary, len(pegs))
                                 for peg in pegs:
                                     quadtree.insert(peg)
 
@@ -791,7 +799,7 @@ while gameRunning:
                 
                 b.update(dt, noGravityPowerUpActive)
 
-                # check if ball has hit the sides of the bucket
+                # check if ball has hit the sides of the bucket (this is a special case handled after the pegs have been checked)
                 collidedPeg = bucket.isBallCollidingWithBucketEdge(b)
                 if collidedPeg:
                     b = resolveCollision(b, collidedPeg)
@@ -848,7 +856,7 @@ while gameRunning:
             hasPegBeenRemoved = False
             staticImage = createStaticImage(pegs)
             # update quadtree before updating ball physics
-            quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+            quadtree = QuadtreePegs(boundary, len(pegs))
             for peg in pegs:
                 quadtree.insert(peg)
 
@@ -907,7 +915,7 @@ while gameRunning:
             staticImage = createStaticImage(pegs)
             
             # quadtree update
-            quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+            quadtree = QuadtreePegs(boundary, len(pegs))
             for peg in pegs:
                 quadtree.insert(peg)
 
@@ -1298,6 +1306,18 @@ while gameRunning:
         # draw the quadtree
         if quadtreeDebug:
             quadtree.show(screen)
+            if useQuadtree:
+                # draw white circle around each peg in the query
+                for p in nearbyPegs:
+                    drawCircle(p.pos.x, p.pos.y, p.radius, (255, 255, 255))
+                
+            # draw white rectangle around the query rect
+            pygame.draw.rect(screen, (0, 255, 0), (queryRect.x-queryRectSize, queryRect.y-queryRectSize, queryRectSize*2, queryRectSize*2), 2)
+            
+        # draw text to show if the quadtree is being used
+        if not useQuadtree:
+            quadtreeText = debugFont.render("Quadtree: OFF", False, (255, 255, 255))
+            screen.blit(quadtreeText, (configs["WIDTH"]-200, 5))
 
     # display red text indicating if cheats are enabled
     if cheats:
