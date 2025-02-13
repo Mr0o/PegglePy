@@ -1,61 +1,67 @@
-# test for the quadtree module
-
-import pygame
+import unittest
+from collections import namedtuple
 import random
 from local.quadtree import QuadtreePegs, Rectangle
-from local.peg import Peg
-from local.vectors import Vector
 
-def test_quadtree():
-    # Set up the screen
-    pygame.init()
-    screen = pygame.display.set_mode((800, 600))
-    pygame.display.set_caption("Quadtree Test")
-    clock = pygame.time.Clock()
+# Import the quadtree module to test its functionality
 
-    # Set up the quadtree
-    boundary = Rectangle(400, 300, 400, 300)
-    quadtree = QuadtreePegs(boundary, quadtreeCapacity)
+# Define a simple Vector and FakePeg for testing purposes
+Vector = namedtuple("Vector", ["x", "y"])
 
-    # Create some pegs
-    pegs = []
-    for i in range(20):
-        x = random.randint(0, 800)
-        y = random.randint(0, 600)
-        peg = Peg(x, y)
-        pegs.append(peg)
+class FakePeg:
+    def __init__(self, x, y):
+        self.pos = Vector(x, y)
 
-    # Insert pegs into the quadtree
-    for peg in pegs:
-        quadtree.insert(peg)
+class TestQuadtreePegs(unittest.TestCase):
+    def setUp(self):
+        # Create a boundary that covers a 200x200 area centered at (100,100)
+        self.boundary = Rectangle(100, 100, 100, 100)
+        # Use a capacity that forces subdivisions quickly for testing
+        self.qt = QuadtreePegs(self.boundary, numPegs=16)
 
-    # Main loop
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+    def test_insert_inside(self):
+        # Insert a peg well within the boundary
+        peg = FakePeg(100, 100)
+        inserted = self.qt.insert(peg)
+        self.assertTrue(inserted)
+        self.assertIn(peg, self.qt.pegs)
 
-        # Draw the pegs
-        screen.fill((0, 0, 0))
-        query_range = Rectangle(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], 50, 50)
-        found = quadtree.query(query_range)
+    def test_insert_outside(self):
+        # Create a peg outside the boundary
+        peg = FakePeg(250, 250)
+        inserted = self.qt.insert(peg)
+        self.assertFalse(inserted)
+
+    def test_subdivide_and_insert(self):
+        # Insert enough pegs to force subdivision
+        pegs = [FakePeg(100 + random.uniform(-50, 50), 
+                         100 + random.uniform(-50, 50)) for _ in range(20)]
+        count = 0
+        for peg in pegs:
+            if self.qt.insert(peg):
+                count += 1
+        self.assertEqual(count, len(pegs))
+        # Check that quadtree is subdivided after exceeding capacity
+        self.assertTrue(self.qt.divided)
+
+    def test_query(self):
+        # Insert multiple pegs in known positions
+        pegs = [
+            FakePeg(90, 90),
+            FakePeg(110, 90),
+            FakePeg(90, 110),
+            FakePeg(110, 110),
+            FakePeg(150, 150)  # Outside query
+        ]
+        for peg in pegs:
+            self.qt.insert(peg)
+
+        # Query a rectangle that should catch the first four pegs
+        query_range = Rectangle(100, 100, 20, 20)
+        found = self.qt.query(query_range)
+        self.assertEqual(len(found), 4)
         for peg in found:
-            if peg.isHit:
-                pygame.draw.circle(screen, (255, 255, 255), (int(peg.pos.x), int(peg.pos.y)), peg.radius, 1)
-            else:
-                pygame.draw.circle(screen, (255, 0, 0), (int(peg.pos.x), int(peg.pos.y)), peg.radius, 1)
-                
-        # Draw the query range
-        pygame.draw.rect(screen, (0, 255, 0), (query_range.x - query_range.w / 2, query_range.y - query_range.h / 2, query_range.w, query_range.h), 1)
-        
-        #draw the quadtree
-        quadtree.show(screen)
+            self.assertTrue(query_range.contains(peg))
 
-        # Update the display
-        pygame.display.flip()
-        clock.tick(60)
-
-    pygame.quit()
-    
-test_quadtree()
+if __name__ == "__main__":
+    unittest.main()
