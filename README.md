@@ -3,6 +3,10 @@ A clone of peggle written in python using pygame
 
 I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the resulting code is something I am less proud of. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
 
+### Changes Log Febuary 2025
+- Implemented quadtree algorithm for collision detection (doubles the performance in some cases)
+- Added 8 more levels to the game (bringing the total to 10)
+
 ### Changes Log September 2024
 - The game now finally runs the physics independently of the frame rate (uses delta time)
 - Massively improved the collisions for ball vs peg, much less buggy and chaotic now
@@ -110,6 +114,7 @@ python3 run.py --skip-auto-install
 - To enable cheats, press 2
 - To change the current powerup, press 3
 - To show the quadtree debug, press 4 (must have debug enabled)
+- To disable or enable the quadtree algorithm, press 5 (You should leave it enabled, but disabling is useful to compare performance)
 - To show full calculated trajectory, press 7 (must have debug enabled) (this can also be useful for cheating, lol)
 - To enable a perfomance hack (speedHack), press 8
 - to show the timer values on all the pegs, press 9 (must have debug enabled)
