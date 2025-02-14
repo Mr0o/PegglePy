@@ -148,7 +148,8 @@ baseTimeScale = 1.0
 timeScale = baseTimeScale
 closeCallTimeScale = 0.15
 odeToJoyTimeScale = 0.3
-queryRectSize = 45 # size of the rectangle used to query the quadtree
+# size of rect query (radius of the ball and the peg)
+queryRectSize = ballRad*1.2 + pegRad*1.2
 
 #images
 ballImg = pygame.image.load("resources/images/balls/200x200/ball.png")
