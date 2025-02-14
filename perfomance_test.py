@@ -5,6 +5,7 @@ from local.misc import createPegColors, loadLevel
 from local.trajectory import findBestTrajectory
 from local.vectors import Vector
 from local.userConfig import configs
+from local.quadtree import QuadtreePegs, Rectangle
 
 testMaxRange = 40
 testDepth = 1200
@@ -38,13 +39,18 @@ if __name__ == "__main__":
     if runTest:
         times = []
         runStart = time.time()
+        
+        # create a quadtree
+        quadtree = QuadtreePegs(Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2), len(pegs))
+        for peg in pegs:
+            quadtree.insert(peg)
 
         print(f"Running test for {testRunTime} seconds...")
 
         i = 0
         while(time.time() < runStart + testRunTime):
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, testMaxRange, testDepth)
+            findBestTrajectory(aim, startPos, pegs, testMaxRange, testDepth, quadtree)
             end = time.time()
             print(f"({i+1}) Time taken: {end-start} secs")
             times.append(end-start)
@@ -64,6 +70,11 @@ if __name__ == "__main__":
 
         maxRange = 20
         depth = 1000
+        
+        # create a quadtree
+        quadtree = QuadtreePegs(Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2), len(pegs))
+        for peg in pegs:
+            quadtree.insert(peg)
 
         print("Running depth test...")
         elapsedTime = 0
@@ -75,7 +86,7 @@ if __name__ == "__main__":
                 depth += 750
             i += 1
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, maxRange, depth)
+            findBestTrajectory(aim, startPos, pegs, quadtree, maxRange, int(depth))
             end = time.time()
             elapsedTime = end-start
             print(f"({i}) Elapsed time:", elapsedTime)
@@ -88,7 +99,7 @@ if __name__ == "__main__":
             maxRange += 1
             i+=1
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, maxRange, int(depth))
+            findBestTrajectory(aim, startPos, pegs, quadtree, maxRange, int(depth))
             end = time.time()
             elapsedTime = end-start
             print(f"({i}) Elapsed time:", elapsedTime)
@@ -104,7 +115,7 @@ if __name__ == "__main__":
                 depth += 750
             i += 1
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, maxRange, depth)
+            findBestTrajectory(aim, startPos, pegs, quadtree, maxRange, int(depth))
             end = time.time()
             elapsedTime = end-start
             print(f"({i}) Elapsed time:", elapsedTime)
