@@ -1,8 +1,6 @@
 # PegglePy
 A clone of peggle written in python using pygame
 
-I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the resulting code is something I am less proud of. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
-
 ### Changes Log Febuary 2025
 - Implemented quadtree algorithm for collision detection (doubles the performance in some cases)
 - Added 8 more levels to the game (bringing the total to 10)
@@ -142,3 +140,6 @@ python3 run.py --run-auto-install
 ```
 python3 run.py --skip-auto-install
 ```
+
+
+I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the resulting code is something I am less proud of. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
