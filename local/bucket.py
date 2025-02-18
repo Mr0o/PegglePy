@@ -115,9 +115,9 @@ class Bucket:
             return self.bucketBackImg, self.bucketFrontImg
     
     # the bucket has fake pegs on the edges, this is so the ball can bounce off of the bucket
-    def isBallCollidingWithBucketEdge(self, ball):
+    def isBallCollidingWithBucketEdge(self, ball, dt):
         for fakePeg in self.fakePegs:
-            if isBallTouchingPeg(ball.pos.x, ball.pos.y, ball.radius, fakePeg.pos.x, fakePeg.pos.y, fakePeg.radius):
+            if isBallTouchingPeg(ball, fakePeg, dt):
                 return fakePeg
         return None
 

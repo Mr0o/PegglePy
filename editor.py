@@ -12,6 +12,7 @@ from local.userConfig import configs
 from local.load_level import loadData, saveData
 from local.collision import isBallTouchingPeg
 from local.peg import Peg
+from local.ball import Ball
 from local.misc import createStaticImage, updateStaticImage
 from local.trigger_events import TimedEvent
 from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, setMusicVolume, newSong
@@ -131,7 +132,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
                     # check if mouse is touching any other already existing pegs
                     else:
                         for peg in pegs:
-                            if isBallTouchingPeg(mousePos.x, mousePos.y, peg.radius/6, peg.pos.x, peg.pos.y, peg.radius):
+                            mouseBall = Ball(mousePos.x, mousePos.y)
+                            mouseBall.radius = peg.radius/6
+                            if isBallTouchingPeg(mouseBall, peg, 1):
                                 validNewPegPos = False
                                 break
 
@@ -155,7 +158,9 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
             elif mouseClicked[2]:
                 selectedPegs = []
                 for peg in pegs:
-                    if isBallTouchingPeg(mousePos.x, mousePos.y, peg.radius, peg.pos.x, peg.pos.y, peg.radius):
+                    mouseBall = Ball(mousePos.x, mousePos.y)
+                    mouseBall.radius = peg.radius
+                    if isBallTouchingPeg(mouseBall, peg, 1):
                         selectedPegs.append(peg)
 
                 # remove any selected pegs

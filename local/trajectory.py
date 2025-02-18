@@ -8,7 +8,7 @@ from local.config import configs
 from local.collision import isBallTouchingPeg, resolveCollision
 from local.quadtree import QuadtreePegs, Rectangle
 
-def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, quadtree : QuadtreePegs, collisionGuideBall = False, depth = trajectoryDepth, debugTrajectory = False):
+def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs, quadtree : QuadtreePegs, dt, collisionGuideBall = False, depth = trajectoryDepth, debugTrajectory = False):
     hit = False
     previousFakeBall = Ball(startPos.x, startPos.y)
             
@@ -36,27 +36,27 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
             queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:
-                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                ballTouchingPeg = isBallTouchingPeg(fakeBall, p, dt)
                 if ballTouchingPeg:
                     return fakeBalls
         elif collisionGuideBall and not hit: # if guideBall powerup is being used
             queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:         
-                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                ballTouchingPeg = isBallTouchingPeg(fakeBall, p, dt)
                 if ballTouchingPeg:
-                    fakeBall = resolveCollision(fakeBall, p)
+                    fakeBall = resolveCollision(fakeBall, p, dt)
                     hit = True
         elif not collisionGuideBall: # ##normal## if ball has collided then stop calculating and return
             queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:
-                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                ballTouchingPeg = isBallTouchingPeg(fakeBall, p, dt)
                 if ballTouchingPeg:
                     if not debugTrajectory:
                         return fakeBalls
                     else:
-                        fakeBall = resolveCollision(fakeBall, p)
+                        fakeBall = resolveCollision(fakeBall, p, dt)
 
             
         fakeBall.update()
@@ -72,7 +72,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
     return fakeBalls
 
 
-def findBestTrajectory(aim: Vector, startPos : Vector, pegs : list[Peg], quadtree : QuadtreePegs, maxRangeDegrees = 21, depth = 2500, setTimeLimit = 6):
+def findBestTrajectory(aim: Vector, startPos : Vector, pegs : list[Peg], quadtree : QuadtreePegs, dt, maxRangeDegrees = 21, depth = 2500, setTimeLimit = 6):
     # default maxRange and depth were found using a performance test on a level with 120 pegs, which can be run with the 'performance_test.py' module
     # the default values are the values that gave the best performance (shortest time, but with the greatest depth and range possible)
 
@@ -110,9 +110,9 @@ def findBestTrajectory(aim: Vector, startPos : Vector, pegs : list[Peg], quadtre
             queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
             pegsInRange = quadtree.query(queryRect)
             for p in pegsInRange:
-                ballTouchingPeg = isBallTouchingPeg(p.pos.x, p.pos.y, p.radius, fakeBall.pos.x, fakeBall.pos.y, fakeBall.radius)
+                ballTouchingPeg = isBallTouchingPeg(fakeBall, p, dt)
                 if ballTouchingPeg:
-                    fakeBall = resolveCollision(fakeBall, p)
+                    fakeBall = resolveCollision(fakeBall, p, dt)
                     # add points
                     if not p.isHit: 
                         p.isHit = True
