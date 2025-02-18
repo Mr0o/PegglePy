@@ -676,11 +676,11 @@ while gameRunning:
                                     quadtreeStaticScreen.fill((0, 0, 0, 0))
                                     quadtree.show(quadtreeStaticScreen)
 
-                            # if the velocity is less than 0.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
-                            if b.vel.getMag() <= 0.5 and p.ballStuckTimer.isActive == False:
+                            # if the velocity is less than 1.5 then it might be stuck, wait a few seconds and remove the peg its stuck on
+                            if b.vel.getMag() <= 1.5 and p.ballStuckTimer.isActive == False:
                                 p.ballStuckTimer.setTimer(
                                     autoRemovePegsTimerValue)
-                            elif b.vel.getMag() > 0.5:
+                            elif b.vel.getMag() > 1.5:
                                 p.ballStuckTimer.cancelTimer()
                                 b.lastPegHit = None
 
