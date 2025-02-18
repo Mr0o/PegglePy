@@ -27,6 +27,9 @@ if __name__ == "__main__":
         else:
             print("Invalid argument for runTest, must be 'True' or 'False'")
             sys.exit(1)
+
+    # dt for 165 fps
+    dt = 1/165
     
     # load a level
     pegs, originPegs, orangeCount, levelFileName = loadLevel()
@@ -50,7 +53,7 @@ if __name__ == "__main__":
         i = 0
         while(time.time() < runStart + testRunTime):
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, testMaxRange, testDepth, quadtree)
+            findBestTrajectory(aim, startPos, pegs, testMaxRange, testDepth, quadtree, 0.016)
             end = time.time()
             print(f"({i+1}) Time taken: {end-start} secs")
             times.append(end-start)
@@ -86,7 +89,7 @@ if __name__ == "__main__":
                 depth += 750
             i += 1
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, quadtree, maxRange, int(depth))
+            findBestTrajectory(aim, startPos, pegs, quadtree, dt, maxRange, int(depth))
             end = time.time()
             elapsedTime = end-start
             print(f"({i}) Elapsed time:", elapsedTime)
@@ -99,7 +102,7 @@ if __name__ == "__main__":
             maxRange += 1
             i+=1
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, quadtree, maxRange, int(depth))
+            findBestTrajectory(aim, startPos, pegs, quadtree, dt, maxRange, int(depth))
             end = time.time()
             elapsedTime = end-start
             print(f"({i}) Elapsed time:", elapsedTime)
@@ -115,7 +118,7 @@ if __name__ == "__main__":
                 depth += 750
             i += 1
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, quadtree, maxRange, int(depth))
+            findBestTrajectory(aim, startPos, pegs, quadtree, dt, maxRange, int(depth))
             end = time.time()
             elapsedTime = end-start
             print(f"({i}) Elapsed time:", elapsedTime)
