@@ -106,6 +106,11 @@ zoom = 1
 
 noGravityPowerUpTimer = TimedEvent()
 noGravityPowerUpTimer.setTimer(0.1)
+physicsTimeDebug = False
+totalTime = 0
+physicsTime = 0
+drawTime = 0
+updateTime = 0
 quadtreeDebug = False
 useQuadtree = True
 # transparent surface for the quadtree
@@ -179,6 +184,8 @@ nearbyPegs = []
 
 ##### main loop #####
 while gameRunning:
+    startTotalTime = time.time()
+    
     clock.tick(configs["REFRESH_RATE"])
     dt = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
     dt *= timeScale
@@ -223,6 +230,8 @@ while gameRunning:
                     quadtree.show(quadtreeStaticScreen)
             if event.key == pygame.K_5:  # toggle quadtree vs brute force collision detection
                 useQuadtree = not useQuadtree
+            if event.key == pygame.K_6:  # toggle physics time debug
+                physicsTimeDebug = not physicsTimeDebug
             if event.key == pygame.K_7:  # configs["DEBUG_MODE"] - enable or disable full trajectory drawing
                 debugTrajectory = not debugTrajectory
             if event.key == pygame.K_l:  # load a new level
@@ -504,7 +513,7 @@ while gameRunning:
             # only calculate the trajectory if the mouse has been moved - reduces cpu time
             if previousAim.x != launchAim.x or previousAim.y != launchAim.y:
                 trajectory = calcTrajectory(launchAim, ball.pos, pegs.copy(), bucket.fakePegs.copy(
-                ), quadtree, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
+                ), quadtree, dt, (powerUpType == "guideball" and powerUpActive), trajectoryDepth, debugTrajectory)
         previousAim = Vector(launchAim.x, launchAim.y)
 
         delayTimer.update()  # prevent the ball from launching instantly after the game is reset
@@ -551,7 +560,7 @@ while gameRunning:
                 print("Debug: Zenball launched")
                 startTime = time.time()
             bestAim, bestScore, bestTrajectory = findBestTrajectory(Vector(
-                launchAim.x, launchAim.y), Vector(ball.pos.x, ball.pos.y), pegs.copy(), quadtree)
+                launchAim.x, launchAim.y), Vector(ball.pos.x, ball.pos.y), pegs.copy(), quadtree, dt)
 
             if configs["DEBUG_MODE"]:
                 print("Debug: Zenball best aim found in " +
@@ -582,7 +591,8 @@ while gameRunning:
         if cheats and mouseClicked[2] and ball.isAlive and not ball.isLaunch:
             isValidPlacement = True
             for ball in balls:
-                if isBallTouchingPeg(ball.pos.x, ball.pos.y, ball.radius, mx, my, ball.radius):
+                mouseBall = Ball(mx, my)
+                if isBallTouchingPeg(ball, mouseBall, 1):
                     isValidPlacement = False
             if isValidPlacement:
                 newCheatBall = Ball(mx, my)
@@ -603,6 +613,9 @@ while gameRunning:
         else:
             noGravityPowerUpActive = False
 
+        # measure performance of the physics calculations loop
+        startPhysicsTime = time.time()
+        
         # update ball physics and pegs, additional game logic
         for b in balls:
             if b.isAlive:
@@ -616,8 +629,9 @@ while gameRunning:
                 for p in nearbyPegs:
                     # if the current peg is the last remaining orange peg then apply special effects
                     if p.color == "orange" and orangeCount == 1 and not p.isHit:
-                        ballTouchingPeg = isBallTouchingPeg(
-                            p.pos.x, p.pos.y, p.radius*5, b.pos.x, b.pos.y, b.radius)
+                        largerRadPeg = Peg(p.pos.x, p.pos.y)
+                        largerRadPeg.radius = p.radius * 5
+                        ballTouchingPeg = isBallTouchingPeg(b, largerRadPeg, dt)
                         if ballTouchingPeg:
                             if timeScale != closeCallTimeScale and len(balls) < 2:
                                 # only play sound once
@@ -632,11 +646,10 @@ while gameRunning:
                             timeScale = baseTimeScale
 
                     # ball physics and game logic
-                    ballTouchingPeg = isBallTouchingPeg(
-                        p.pos.x, p.pos.y, p.radius, b.pos.x, b.pos.y, b.radius)
+                    ballTouchingPeg = isBallTouchingPeg(b, p, dt)
                     if ballTouchingPeg:
                         # resolve the collision between the ball and peg
-                        b = resolveCollision(b, p)
+                        b = resolveCollision(b, p, dt)
 
                         # save the peg that was last hit, used for when the ball is stuck and for bonus points
                         # p is the quadtree quary, so lets find the actual peg in the pegs list
@@ -808,9 +821,9 @@ while gameRunning:
                 b.update(dt, noGravityPowerUpActive)
 
                 # check if ball has hit the sides of the bucket (this is a special case handled after the pegs have been checked)
-                collidedPeg = bucket.isBallCollidingWithBucketEdge(b)
+                collidedPeg = bucket.isBallCollidingWithBucketEdge(b, dt)
                 if collidedPeg:
-                    b = resolveCollision(b, collidedPeg)
+                    b = resolveCollision(b, collidedPeg, dt)
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
@@ -852,6 +865,9 @@ while gameRunning:
             # remove any 'dead' balls
             elif not b.isAlive and b != ball:
                 balls.remove(b)
+                
+        # save time for physics calculations
+        physicsTime = time.time() - startPhysicsTime
 
         # if a peg was hit or removed this frame, update the static image (this is an optimazation to prevent the static image from being updated more than once per frame)
         if hasPegBeenHit and not speedHack:
@@ -936,6 +952,9 @@ while gameRunning:
 
         # bucket, pass the power up info for the bucket to update its collison and image
         bucket.update(dt, powerUpType, powerUpActive)
+        
+    # measure time for draw calls
+    startDrawTime = time.time()
 
     ##### draw #####
     screen.blit(staticImage, (0, 0))
@@ -1245,6 +1264,9 @@ while gameRunning:
         # show the long shot text
         longShotText = infoFont.render("Long Shot!", False, (255, 110, 0))
         screen.blit(longShotText, (longShotPos.x-35, longShotPos.y-20))
+        
+    # save the draw time
+    drawTime = time.time() - startDrawTime
 
     # debugging stuff
     if configs["DEBUG_MODE"]:
@@ -1337,7 +1359,30 @@ while gameRunning:
         if not useQuadtree:
             quadtreeText = debugFont.render("Quadtree: OFF", False, (255, 255, 255))
             screen.blit(quadtreeText, (configs["WIDTH"]-200, 5))
-
+            
+        # draw performance information
+        if physicsTimeDebug:
+            physicsTimeText = debugFont.render("Physics Time: "+str(round(physicsTime*1000, 2))+" ms", False, (255, 255, 255))
+            screen.blit(physicsTimeText, (configs["WIDTH"]-200, 35))
+            
+            # draw the percent of the frame time that the physics calculations take up
+            physicsPercent = 0
+            if physicsTime > 0 and clock.get_time() > 0:
+                physicsPercent = physicsTime / (physicsTime + clock.get_rawtime())
+            
+            physicsPercentText = debugFont.render("Physics Percent: "+str(round(physicsPercent*100, 2))+"%", False, (255, 255, 255))
+            screen.blit(physicsPercentText, (configs["WIDTH"]-200, 50))
+            
+            drawTimeText = debugFont.render("Draw Time: "+str(round(drawTime*1000, 2))+" ms", False, (255, 255, 255))
+            screen.blit(drawTimeText, (configs["WIDTH"]-200, 65))
+            
+            totalTimeText = debugFont.render("Total Time: "+str(round(totalTime*1000, 2))+" ms", False, (255, 255, 255))
+            screen.blit(totalTimeText, (configs["WIDTH"]-200, 80))
+            
+            # draw the fps
+            fpsText = debugFont.render("FPS: "+str(round(clock.get_fps(), 2)), False, (255, 255, 255))
+            screen.blit(fpsText, (configs["WIDTH"]-200, 95)) 
+        
     # display red text indicating if cheats are enabled
     if cheats:
         cheatsIcon = debugFont.render("CHEATS ENABLED", False, (255, 0, 0))
@@ -1345,5 +1390,6 @@ while gameRunning:
 
     pygame.display.update()
     
+    totalTime = time.time() - startTotalTime
 
 print("Goodbye")
