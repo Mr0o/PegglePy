@@ -830,6 +830,10 @@ while gameRunning:
                     if b.pos.y + b.radius > configs["HEIGHT"]:
                         b.pos.y = 0 + b.radius
                         b.inBucket = False
+                        # set previous values to current values to prevent collision detection breaking during screen wrap
+                        b.prevPos = Vector(b.pos.x, b.pos.y)
+                        b.prevAcc = Vector(b.acc.x, b.acc.y)
+                        b.prevVel = Vector(b.vel.x, b.vel.y)
                         if powerUpCount == 1 and firstSpookyHit:
                             if configs["SOUND_ENABLED"]:
                                 playSoundPitch(powerUpSpooky2)
