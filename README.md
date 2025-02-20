@@ -4,6 +4,7 @@ A clone of peggle written in python using pygame
 ### Changes Log Febuary 2025
 - Implemented quadtree algorithm for collision detection (doubles the performance in some cases)
 - Added 8 more levels to the game (bringing the total to 10)
+- Improved the collision physics, allowing for more robust collisions at lower framerates or higher velocities
 
 ### Changes Log September 2024
 - The game now finally runs the physics independently of the frame rate (uses delta time)
