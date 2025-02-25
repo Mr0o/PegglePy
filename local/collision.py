@@ -39,8 +39,8 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
     if samples == 0:
         samples = 1
     # prevent samples from being too high
-    if samples > 100:
-        samples = 100
+    if samples > 15:
+        samples = 15
     for i in range(samples + 1):
         t = i / samples
         samplePoint = ball.prevPos.copy()
