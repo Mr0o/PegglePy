@@ -33,7 +33,14 @@ def point_to_segment_distance(P: Vector, A: Vector, B: Vector) -> float:
 # Continuous circle vs circle collision detection and resolution with dt.
 ###############################################################################
 def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
-    samples = 10
+    # determine samples based on the distance between the two points
+    samples = int(sqrt((ball.pos.x - ball.prevPos.x) ** 2 + (ball.pos.y - ball.prevPos.y) ** 2) * 2)
+    # prevent division by zero
+    if samples == 0:
+        samples = 1
+    # prevent samples from being too high
+    if samples > 100:
+        samples = 100
     for i in range(samples + 1):
         t = i / samples
         samplePoint = ball.prevPos.copy()
@@ -55,7 +62,14 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
 ###############################################################################
 def resolveCollision(ball: Ball, peg: Peg, dt: float) -> Ball:
     # 1) Approximate the time-of-impact via sampling along ball.prevPos -> ball.pos.
-    samples = 10
+    # determine samples based on the distance between the two points
+    samples = int(sqrt((ball.pos.x - ball.prevPos.x) ** 2 + (ball.pos.y - ball.prevPos.y) ** 2) * 2)
+    # prevent division by zero
+    if samples == 0:
+        samples = 1
+    # prevent samples from being too high
+    if samples > 100:
+        samples = 100
     impact_t = None
     for i in range(samples + 1):
         t = i / samples
