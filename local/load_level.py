@@ -3,7 +3,7 @@ try:
     from tkinter import filedialog
     tkinterInstalled = True
 except ImportError:
-    print("WARN: Tkinter is not installed. You will be unable to load or save levels.")
+    print("WARN: Tkinter is not installed. You will be unable to save levels.")
     print("Please install tkinter")
     tkinterInstalled = False
 
@@ -14,6 +14,7 @@ from local.userConfig import configs
 from local.peg import Peg
 
 if tkinterInstalled:
+    # This function is no longer used, it was replaced with the new level select menu
     def fileSelectWindow():
         #initiate tinker and hide window 
         main_win = tkinter.Tk() 
@@ -44,7 +45,7 @@ if tkinterInstalled:
         # returns the path to the selected file
         return selected_file
 
-
+    # This is still used to save levels in the level editor (I would like to replace this with a new save menu at some point)
     def fileSaveWindow():
         #initiate tinker and hide window 
         main_win = tkinter.Tk() 
@@ -83,13 +84,11 @@ else:
     def fileSelectWindow():
         print("Tkinter is not installed, you will be unable to load or save levels.")
         print("Please install tkinter.")
-        print("Loading default level...")
         return None
 
     def fileSaveWindow():
-        print("Tkinter is not installed, you will be unable to load or save levels.")
+        print("Tkinter is not installed, you will be unable to save levels.")
         print("Please install tkinter.")
-        print("Loading default level...")
         return None
 
 
@@ -142,6 +141,28 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
         # adjust the position of every peg by the difference
         for peg in pegs:
             peg.pos.x += difference
+        
+        
+        # Do same process again for the Y axis
+        topMostPeg = pegs[0]
+        for peg in pegs:
+            if peg.pos.y < topMostPeg.pos.y:
+                topMostPeg = peg
+        bottomMostPeg = pegs[0]
+        for peg in pegs:
+            if peg.pos.y > bottomMostPeg.pos.y:
+                bottomMostPeg = peg
+            
+        # find the center of the top most and bottom most pegs
+        centerOfTopAndBottomPegs = (topMostPeg.pos.y + bottomMostPeg.pos.y)/2
+        # find the center of the screen
+        screenCenter = configs["HEIGHT"]/2
+        # find the difference between the center of the screen and the center of the top and bottom most pegs
+        difference = screenCenter - centerOfTopAndBottomPegs
+        
+        # adjust the position of every peg by the difference
+        for peg in pegs:
+            peg.pos.y += difference
 
 
     
@@ -322,12 +343,12 @@ def createDefaultPegsPos():
 
     return posList
 
-if __name__ == '__main__':
-    print("Warning !!! Be careful, files may be overwritten or deleted")
+# if __name__ == '__main__':
+#     print("Warning !!! Be careful, files may be overwritten or deleted")
 
-    testPegs, filepath = loadData()
-    print (str(len(testPegs)) + " pegs found in the level")
+#     testPegs, filepath = loadData()
+#     print (str(len(testPegs)) + " pegs found in the level")
     
-    testPegs = [Peg(1,1)]
-    #saveData(testPegs)
-    print(fileSaveWindow())
+#     testPegs = [Peg(1,1)]
+#     #saveData(testPegs)
+#     print(fileSaveWindow())
