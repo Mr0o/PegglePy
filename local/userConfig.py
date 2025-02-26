@@ -20,6 +20,8 @@ defaultConfigs = configs.copy()
 # read the user.cfg file and set the variables
 def loadSettings() -> None:
     # the user.cfg contains settings such as resolution, sound volume, music volume, etc.
+    if configs["DEBUG_MODE"]:
+        print("DEBUG: Loading settings...")
     ### read the file ###
     try:
         with open("user.cfg", "r") as f:
@@ -45,7 +47,9 @@ def loadSettings() -> None:
         
 def saveSettings() -> None:
     # save the variables to the user.cfg file
-    
+    if configs["DEBUG_MODE"]:
+        print("DEBUG: Saving settings...")
+
     try:
         with open("user.cfg", "w") as f:
             for key, value in configs.items():
