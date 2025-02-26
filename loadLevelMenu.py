@@ -74,13 +74,15 @@ def loadLevel(levelFilePath) -> tuple[list[Peg], list[Peg], int]:
 
 # this menu will be used to load levels
 def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -> tuple[list[Peg], list[Peg], int]:
-    # play menu music
-    pygame.mixer.music.stop()
-    # load the menu music
-    pygame.mixer.music.load(menuMusicPath)
-    # play the music
-    if configs["MUSIC_ENABLED"]:
-        pygame.mixer.music.play(-1)
+    # check if music is already playing
+    if not pygame.mixer.music.get_busy():
+        # play menu music
+        pygame.mixer.music.stop()
+        # load the menu music
+        pygame.mixer.music.load(menuMusicPath)
+        # play the music
+        if configs["MUSIC_ENABLED"]:
+            pygame.mixer.music.play(-1)
 
     # button positions
     buttonScale = 2.5
@@ -112,6 +114,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
 
     # if there are no levels in the levels folder, load the default level
     if len(levelsList) == 0:
+        print("WARN: No levels found, loading default level...")
         return loadDefaultLevel()
 
     # create a list of pygame.Surface objects and load the level preview images

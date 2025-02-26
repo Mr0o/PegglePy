@@ -9,8 +9,10 @@ from local.slider import Slider
 
 # this menu will serve as the point where the game and the editor can both be accessed
 def settingsMenu(screen: pygame.Surface):
-    # play menu music
-    newSong()
+    # check if music is already playing
+    if not pygame.mixer.music.get_busy():
+        if configs["MUSIC_ENABLED"]:
+            newSong()
 
     # button positions
     buttonScale = 2.5
