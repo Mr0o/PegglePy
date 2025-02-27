@@ -292,7 +292,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
 
             # draw the level selection rectangle
             # position it at WIDHT/3 at the same length across all levels
-            rect = pygame.Rect(configs["WIDTH"]/5, configs["HEIGHT"]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height() + 1, configs["WIDTH"]/5*3, levelNameText.get_height() -1)
+            rect = pygame.Rect(configs["WIDTH"]/5, configs["HEIGHT"]/3 - levelNameText.get_height()/2 + i*levelNameText.get_height(), configs["WIDTH"]/5*3, levelNameText.get_height())
 
             # maximum scroll value (scale the value by the height of the level name text)
             # get the position of the last level rect
