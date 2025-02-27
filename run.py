@@ -938,10 +938,8 @@ while gameRunning:
             if powerUpType == "multiball" or powerUpType == "spooky-multiball":
                 powerUpActive = False
                 powerUpCount = 0
-            for _ in range(8):  # temporary fix to bug with pegs not being removed
-                for p in pegs:
-                    if p.isHit:
-                        pegs.remove(p)
+            # remove hit pegs
+            pegs = [p for p in pegs if not p.isHit]
             for s in pointsEarned:
                 score += s
             staticImage = createStaticImage(pegs)
