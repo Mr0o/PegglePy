@@ -1475,7 +1475,7 @@ while gameRunning:
             # draw the percent of the frame time that the physics calculations take up
             physicsPercent = 0
             if physicsTime > 0 and clock.get_time() > 0:
-                physicsPercent = physicsTime / (physicsTime + clock.get_rawtime())
+                physicsPercent = physicsTime / (clock.get_time() / 1000)
             
             physicsPercentText = debugFont.render("Physics Percent: "+str(round(physicsPercent*100, 2))+"%", False, (255, 255, 255))
             screen.blit(physicsPercentText, (configs["WIDTH"]-200, 50))
