@@ -6,15 +6,10 @@ def installDependencies():
         import numpy
         import samplerate
         
+        # check for pygame.IS_CE
         try:
-            # test whether its pygame-ce (pygame community edition)
-            # we will do this by trying to get the refresh rate of the display
-            pygame.init()
-            pygame.display.init()
-            pygame.display.set_mode((1, 1))
-            pygame.display.get_current_refresh_rate()
-        except AttributeError:
-            # if we get an AttributeError, then it is not pygame-ce (feature is not in pygame)
+            from pygame import IS_CE
+        except ImportError:
             print("pygame is installed, but pygame-ce is required.") 
             print("Uninstalling pygame and installing pygame-ce...")
             import subprocess
@@ -54,6 +49,7 @@ import sys
 if "--run-auto-install" in sys.argv:
     if installDependencies():
         print("\nDependencies installed successfully.")
+        print("Game started")
     exit()
     
 # skip installing dependencies if the --skip-auto-install flag is passed
