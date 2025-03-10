@@ -272,7 +272,8 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
             selection = "mainMenu"
 
         # draw the background
-        screen.blit(altBackgroundImg, (0, 0))
+        altBgImg = pygame.transform.scale(altBackgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
+        screen.blit(altBgImg, (0, 0))
 
         # draw the buttons
 
