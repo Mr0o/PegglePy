@@ -90,13 +90,6 @@ if configs["FULLSCREEN"]:
 else:
     # set the resolution to userResolution
     (configs["WIDTH"], configs["HEIGHT"]) = userResolution
-    
-# set the refresh rate if VSYNC is enabled
-if configs["VSYNC"]:
-    configs["REFRESH_RATE"] = 165
-else:
-    configs["REFRESH_RATE"] = 9999
-
 
 #power up (spooky, multiball, zenball, guideball, spooky-multiball)
 powerUpType = "spooky"

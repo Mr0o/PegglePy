@@ -20,9 +20,9 @@ try:
     from local.peg import Peg
     from local.bucket import Bucket
 except ImportError as e:
-    print("ERROR: Unable to import local modules, this is likely due to a missing file or folder. Please make sure to run the script from within the PegglePy directory.")
-    print(str(e))
-    print("Exiting...")
+    print("ERROR: Unable to import local modules, this is likely due to a missing file or folder. Please make sure to run the script from within the PegglePy directory.\n")
+    print(str(e.msg))
+    print("\nExiting...")
     sys.exit(1)
 
 from menu import mainMenu, getPauseScreen
@@ -38,6 +38,12 @@ pygame.init()
 screen = pygame.display.set_mode(((configs["WIDTH"], configs["HEIGHT"])))
 if configs["FULLSCREEN"]:
     pygame.display.toggle_fullscreen()
+
+# set the refresh rate if VSYNC is enabled
+if configs["VSYNC"]:
+    configs["REFRESH_RATE"] = pygame.display.get_current_refresh_rate()
+else:
+    configs["REFRESH_RATE"] = 0
 
 clock = pygame.time.Clock()  # game clock
 
@@ -271,6 +277,15 @@ while gameRunning:
                     timeScale = baseTimeScale * 3
                 else:
                     timeScale = baseTimeScale
+            # toggle VSYNC
+            if event.key == pygame.K_v:
+                if configs["REFRESH_RATE"] == 0:
+                    configs["VSYNC"] = True
+                    configs["REFRESH_RATE"] = pygame.display.get_current_refresh_rate()
+                else:
+                    configs["VSYNC"] = False
+                    configs["REFRESH_RATE"] = 0
+                saveSettings()
             # open the main menu
             if event.key == pygame.K_z:
                 selection = mainMenu(screen)
