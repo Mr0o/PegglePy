@@ -427,7 +427,6 @@ while gameRunning:
     if pygame.joystick.get_count() > 0:
         # connect to the first controller
         joystick = pygame.joystick.Joystick(0)
-        joystick.init()
         # 0 is the x axis on the left joystick (at least on xbox controllers)
         joystickX = joystick.get_axis(0)
     else:
