@@ -4,7 +4,7 @@ import time
 ##### local imports #####
 try:
     from local.config import *
-    from local.userConfig import configs, saveSettings
+    from local.userConfig import configs, defaultConfigs, saveSettings
     from local.trajectory import calcTrajectory, findBestTrajectory
     from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, autoPauseMusic, newSong, setMusicVolume
     from local.resources import *  # pygame audio, fonts and images
@@ -61,6 +61,31 @@ def drawCircle(x, y, rad=5, rgb=(255, 255, 255)):
 def drawLine(x1, y1, x2, y2):
     pygame.draw.line(screen, (255, 0, 0), [x1, y1], [x2, y2])
 
+
+### main menu ###
+selection = "none"
+editorSelection = "none"
+while selection != "start" and selection != "quit":
+    selection = mainMenu(screen)
+
+    if selection == "quit":
+        gameRunning = False
+    elif selection == "editor":
+        time.sleep(0.5)  # prevent accidental click on launch
+        editorSelection, pegs = levelEditor(screen, clock)
+        if editorSelection == "quit":
+            gameRunning = False
+            selection = "quit"
+        elif editorSelection == "play":
+            selection = "start"
+
+    elif selection == "settings":
+        time.sleep(0.15)
+        if settingsMenu(screen) == "mainMenu":
+            selection = "none"
+
+# prevent accidental click on launch
+delayTimer = TimedEvent(0.5)
 
 ### testing stuff ###
 balls: list[Ball]
@@ -123,31 +148,6 @@ useQuadtree = True
 quadtreeStaticScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
 
 pegs: list[Peg]
-
-### main menu ###
-selection = "none"
-editorSelection = "none"
-while selection != "start" and selection != "quit":
-    selection = mainMenu(screen)
-
-    if selection == "quit":
-        gameRunning = False
-    elif selection == "editor":
-        time.sleep(0.5)  # prevent accidental click on launch
-        editorSelection, pegs = levelEditor(screen, clock)
-        if editorSelection == "quit":
-            gameRunning = False
-            selection = "quit"
-        elif editorSelection == "play":
-            selection = "start"
-
-    elif selection == "settings":
-        time.sleep(0.15)
-        if settingsMenu(screen) == "mainMenu":
-            selection = "none"
-
-# prevent accidental click on launch
-delayTimer = TimedEvent(0.5)
 
 if selection != "quit":
     if editorSelection != "play":
@@ -286,6 +286,100 @@ while gameRunning:
                     configs["VSYNC"] = False
                     configs["REFRESH_RATE"] = 0
                 saveSettings()
+                
+            
+            # toggle FULLSCREEN
+            if event.key == pygame.K_f:
+                if configs["FULLSCREEN"]:
+                    #pygame.display.toggle_fullscreen()
+                    # change window size to default user resolution
+                    configs["WIDTH"], configs["HEIGHT"] = defaultConfigs["WIDTH"], defaultConfigs["HEIGHT"]
+                    screen = pygame.display.set_mode(
+                        (configs["WIDTH"], configs["HEIGHT"]))
+                else:
+                    #pygame.display.toggle_fullscreen()
+                    # change window size to monitor resolution
+                    screen = pygame.display.set_mode(
+                        (0, 0), pygame.FULLSCREEN)
+                    configs["WIDTH"], configs["HEIGHT"] = screen.get_size()
+                        
+                    
+                configs["FULLSCREEN"] = not configs["FULLSCREEN"]
+                saveSettings()
+                
+                # adjust the positions of every peg to be centered on the screen based on configs["WIDTH"] and configs["HEIGHT"]
+                # get the position of the left most peg
+                leftMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.x < leftMostPeg.pos.x:
+                        leftMostPeg = peg
+                rightMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.x > rightMostPeg.pos.x:
+                        rightMostPeg = peg
+
+                # find the center of the left most and right most pegs
+                centerOfLeftAndRightPegs = (leftMostPeg.pos.x + rightMostPeg.pos.x)/2
+                # find the center of the screen
+                screenCenter = configs["WIDTH"]/2
+                # find the difference between the center of the screen and the center of the left and right most pegs
+                difference = screenCenter - centerOfLeftAndRightPegs
+
+                # adjust the position of every peg by the difference
+                for peg in pegs:
+                    peg.pos.x += difference
+                    
+                # adjust the position of each ball by the difference
+                for ball in balls:
+                    ball.pos.x += difference
+                    
+                
+                # Do same process again for the Y axis
+                topMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.y < topMostPeg.pos.y:
+                        topMostPeg = peg
+                bottomMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.y > bottomMostPeg.pos.y:
+                        bottomMostPeg = peg
+                    
+                # find the center of the top most and bottom most pegs
+                centerOfTopAndBottomPegs = (topMostPeg.pos.y + bottomMostPeg.pos.y)/2
+                # find the center of the screen
+                screenCenter = configs["HEIGHT"]/2
+                # find the difference between the center of the screen and the center of the top and bottom most pegs
+                difference = screenCenter - centerOfTopAndBottomPegs
+                
+                # adjust the position of every peg by the difference
+                for peg in pegs:
+                    peg.pos.y += difference
+                
+                # adjust the position of each ball by the difference
+                for ball in balls:
+                    ball.pos.y += difference
+                    
+                # update ball position if none of the balls are alive
+                if not any([ball.isAlive for ball in balls]):
+                    ball.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"]/25)
+                    ball.prevPos = ball.pos.copy()
+                    
+                    inputAim = Vector(configs["WIDTH"]/2, (configs["HEIGHT"]/25)+50)
+                    
+                # update the quadtree boundary
+                boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
+                
+                # update the quadtree
+                quadtree = QuadtreePegs(boundary, 4)
+                queryRect = Rectangle(0, 0, 0, 0)
+                nearbyPegs = []
+                
+                # update the bucket y position to be at the bottom of the screen
+                bucket.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - bucket.bucketBackImg.get_height())  # position
+                                
+                # update the static image
+                staticImage = createStaticImage(pegs)
+                    
             # open the main menu
             if event.key == pygame.K_z:
                 selection = mainMenu(screen)
