@@ -351,7 +351,6 @@ while gameRunning:
                         if configs["DEBUG_MODE"]:
                             print("rumble test - 100 ms")
                         joystick = pygame.joystick.Joystick(0)
-                        joystick.init()
                         joystick.rumble(1, 1, 100)
                 if event.button == 5:  # the 'R1' button on a ps4 controller
                     # cheats
@@ -413,7 +412,6 @@ while gameRunning:
                         if configs["DEBUG_MODE"]:
                             print("rumble test - 100 ms")
                         joystick = pygame.joystick.Joystick(0)
-                        joystick.init()
                         joystick.rumble(1, 1, 100)
                 if event.button == 5:  # the 'right bumper' button on an xbox controller
                     cheats = not cheats
@@ -702,7 +700,6 @@ while gameRunning:
                                             print("Debug: Rumble")
                                         joystick = pygame.joystick.Joystick(
                                             0)
-                                        joystick.init()
                                         joystick.rumble(1, 1, 100)
 
                         # used for long shot check
