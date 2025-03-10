@@ -300,10 +300,7 @@ def levelEditor(screen: pygame.Surface, clock: pygame.time.Clock, standalone: bo
 
         pygame.display.update()
 
-        if editorPaused:
-            clock.tick(60)
-        else:
-            clock.tick(144)  # lock game timeScale to 144 fps
+        clock.tick(configs["REFRESH_RATE"])
 
 
 
