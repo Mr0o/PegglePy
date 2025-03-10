@@ -5,6 +5,29 @@ def installDependencies():
         import pygame
         import numpy
         import samplerate
+        
+        try:
+            # test whether its pygame-ce (pygame community edition)
+            # we will do this by trying to get the refresh rate of the display
+            pygame.init()
+            pygame.display.init()
+            pygame.display.set_mode((1, 1))
+            pygame.display.get_current_refresh_rate()
+        except AttributeError:
+            # if we get an AttributeError, then it is not pygame-ce (feature is not in pygame)
+            print("pygame is installed, but pygame-ce is required.") 
+            print("Uninstalling pygame and installing pygame-ce...")
+            import subprocess
+            import sys
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "pygame", "-y"])
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+                import pygame
+            except Exception as e:
+                print("ERROR: Failed to install pygame-ce.")
+                print("Details: " + str(e))
+                sys.exit(1)
+            
     except Exception:
         # automatically install PegglePy dependencies
         print("Installing dependencies...")
@@ -17,26 +40,10 @@ def installDependencies():
             import pygame
             import numpy
             import samplerate
-        except Exception:
-            # attempt 2
-            try:
-                import os
-                os.system("pip install -r requirements.txt")
-                import pygame
-                import numpy
-                import samplerate
-            except Exception:
-                # attempt 3
-                try:
-                    import os
-                    os.system("pip3 install -r requirements.txt")
-                    import pygame
-                    import numpy
-                    import samplerate
-                except Exception as e:
-                    print("ERROR: Failed to install dependencies. Please make sure that pip is installed and try again.")
-                    print("Details: " + str(e))
-                    sys.exit(1)
+        except Exception as e:
+            print("ERROR: Failed to install dependencies.")
+            print("Details: " + str(e))
+            sys.exit(1)
     
     return True
 
