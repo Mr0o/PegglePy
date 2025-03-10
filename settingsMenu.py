@@ -233,7 +233,7 @@ def settingsMenu(screen: pygame.Surface):
         # update display
         pygame.display.update()
 
-        clock.tick(60)
+        clock.tick(configs["REFRESH_RATE"])
 
 
         # check if the user has made a selection

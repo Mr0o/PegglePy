@@ -390,7 +390,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
         # update display
         pygame.display.update()
 
-        clock.tick(60)
+        clock.tick(configs["REFRESH_RATE"])
 
         # check if the user has made a selection
         if selection != "none":
