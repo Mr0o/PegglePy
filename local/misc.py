@@ -142,6 +142,8 @@ def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
     staticImg = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]))
 
     # draw background
+    bgImg = pygame.image.load("resources/images/background960x720.jpg")
+    bgImg =  pygame.transform.scale(backgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
     staticImg.blit(bgImg, (0, 0))
 
     # draw pegs

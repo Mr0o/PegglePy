@@ -7,7 +7,7 @@ configs = {
     "HEIGHT": 900,
     "FULLSCREEN": False,
     "VSYNC": True,
-    "REFRESH_RATE": 60,
+    "REFRESH_RATE": -1,
     "DEBUG_MODE": False,
     "SOUND_ENABLED": True,
     "SOUND_VOLUME": 0.25,
@@ -36,6 +36,14 @@ def loadSettings() -> None:
                     
                 # set the value in the configs dictionary
                 configs[key] = value
+                
+        # check if REFRESH_RATE is set to -1, if so, set it to the monitor's refresh rate
+        if configs["REFRESH_RATE"] == -1:
+            import pygame
+            pygame.init()
+            configs["REFRESH_RATE"] = pygame.display.get_current_refresh_rate()
+            defaultConfigs["REFRESH_RATE"] = configs["REFRESH_RATE"]
+            saveSettings()
                 
     except FileNotFoundError:
         # if the file doesn't exist, create it

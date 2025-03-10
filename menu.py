@@ -3,7 +3,11 @@ import time
 import webbrowser # for opening github page
 
 from local.config import configs
-from local.resources import *
+from local.resources import menuMusicPath, buttonClickSound, largeButtonUnpressedImg, largeButtonPressedImg, settingsButtonImg, startButtonImg, buttonUnpressedImg, buttonPressedImg
+from local.resources import restartButtonImg, buttonPressedImg, buttonUnpressedImg
+from local.resources import altBackgroundImg as altBgImg
+from local.resources import menuFont, menuButtonFont, infoFont, debugFont
+from local.resources import buttonClickSound
 from local.vectors import Vector
 from local.audio import playSoundPitch
 
@@ -186,6 +190,7 @@ def mainMenu(screen: pygame.Surface):
 
 
         # draw the background
+        altBackgroundImg = pygame.transform.scale(altBgImg, (configs["WIDTH"], configs["HEIGHT"]))
         screen.blit(altBackgroundImg, (0, 0))
 
         # draw the title
