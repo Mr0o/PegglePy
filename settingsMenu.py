@@ -2,7 +2,9 @@ import pygame
 import time
 
 from local.userConfig import configs, saveSettings, defaultConfigs
-from local.resources import *
+from local.resources import buttonUnpressedImg, buttonPressedImg, largeButtonUnpressedImg, largeButtonPressedImg, buttonClickSound
+from local.resources import menuButtonFont, menuFont, debugFont
+from local.resources import altBackgroundImg
 from local.vectors import Vector
 from local.audio import playSoundPitch, setMusicVolume, newSong
 from local.slider import Slider
@@ -42,6 +44,9 @@ def settingsMenu(screen: pygame.Surface):
     clock = pygame.time.Clock()
 
     pygame.display.set_caption("PegglePy  -  Settings")
+    
+    altBackgroundImg = pygame.image.load("resources/images/alt_background960x720.jpg")
+    altBackgroundImg =  pygame.transform.scale(altBackgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
 
     # main loop
     while True:
@@ -119,7 +124,34 @@ def settingsMenu(screen: pygame.Surface):
                 else:
                     configs["VSYNC"] = False
                     configs["REFRESH_RATE"] = 0
-
+                    
+        # check if mouse is over fullscreen checkbox
+        if mousePos.x > 50 and mousePos.x < 100 and mousePos.y > 550 and mousePos.y < 600:
+            # mouse button is down
+            if mouseDown:
+                configs["FULLSCREEN"] = not configs["FULLSCREEN"]
+                playSoundPitch(buttonClickSound)
+                
+                # toggle fullscreen
+                if not configs["FULLSCREEN"]:
+                    #pygame.display.toggle_fullscreen()
+                    # change window size to default user resolution
+                    configs["WIDTH"], configs["HEIGHT"] = defaultConfigs["WIDTH"], defaultConfigs["HEIGHT"]
+                    screen = pygame.display.set_mode(
+                        (configs["WIDTH"], configs["HEIGHT"]))
+                else:
+                    #pygame.display.toggle_fullscreen()
+                    # change window size to monitor resolution
+                    screen = pygame.display.set_mode(
+                        (0, 0), pygame.FULLSCREEN)
+                    configs["WIDTH"], configs["HEIGHT"] = screen.get_size()
+                
+                altBackgroundImg = pygame.image.load("resources/images/alt_background960x720.jpg")
+                altBackgroundImg =  pygame.transform.scale(altBackgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
+                
+                # update back button position
+                backButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-20, configs["HEIGHT"] - 50*buttonScale-20)
+                
         # draw the background
         screen.blit(altBackgroundImg, (0, 0))
 
@@ -186,7 +218,7 @@ def settingsMenu(screen: pygame.Surface):
             # draw the checkbox
             pygame.draw.rect(screen, (255, 255, 255), (50, 350, 50, 50), 2)
         # VSYNC
-        vsyncLabel = menuButtonFont.render("VSYNC", True, (255, 255, 255))
+        vsyncLabel = menuButtonFont.render("Vsync", True, (255, 255, 255))
         screen.blit(vsyncLabel, (110, 450))
         if configs["VSYNC"]:
             # draw the checkbox
@@ -197,6 +229,18 @@ def settingsMenu(screen: pygame.Surface):
         else:
             # draw the checkbox
             pygame.draw.rect(screen, (255, 255, 255), (50, 450, 50, 50), 2)
+        # FULLSCREEN
+        fullscreenLabel = menuButtonFont.render("Fullscreen", True, (255, 255, 255))
+        screen.blit(fullscreenLabel, (110, 550))
+        if configs["FULLSCREEN"]:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 550, 50, 50), 2)
+            # draw the x
+            pygame.draw.line(screen, (255, 0, 0), (50, 550), (100, 600), 2)
+            pygame.draw.line(screen, (255, 0, 0), (100, 550), (50, 600), 2)
+        else:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 550, 50, 50), 2)
             
 
         # draw the buttons
