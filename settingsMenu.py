@@ -104,7 +104,21 @@ def settingsMenu(screen: pygame.Surface):
             if mouseDown:
                 configs["SOUND_ENABLED"] = not configs["SOUND_ENABLED"]
                 playSoundPitch(buttonClickSound)
-
+                
+        # check if mouse is over vsync checkbox
+        if mousePos.x > 50 and mousePos.x < 100 and mousePos.y > 450 and mousePos.y < 500:
+            # mouse button is down
+            if mouseDown:
+                configs["VSYNC"] = not configs["VSYNC"]
+                playSoundPitch(buttonClickSound)
+                
+                # toggle VSYNC
+                if configs["REFRESH_RATE"] == 0:
+                    configs["VSYNC"] = True
+                    configs["REFRESH_RATE"] = pygame.display.get_current_refresh_rate()
+                else:
+                    configs["VSYNC"] = False
+                    configs["REFRESH_RATE"] = 0
 
         # draw the background
         screen.blit(altBackgroundImg, (0, 0))
@@ -171,6 +185,18 @@ def settingsMenu(screen: pygame.Surface):
         else:
             # draw the checkbox
             pygame.draw.rect(screen, (255, 255, 255), (50, 350, 50, 50), 2)
+        # VSYNC
+        vsyncLabel = menuButtonFont.render("VSYNC", True, (255, 255, 255))
+        screen.blit(vsyncLabel, (110, 450))
+        if configs["VSYNC"]:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 450, 50, 50), 2)
+            # draw the x
+            pygame.draw.line(screen, (255, 0, 0), (50, 450), (100, 500), 2)
+            pygame.draw.line(screen, (255, 0, 0), (100, 450), (50, 500), 2)
+        else:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 450, 50, 50), 2)
             
 
         # draw the buttons
