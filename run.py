@@ -192,7 +192,11 @@ nearbyPegs = []
 while gameRunning:
     startTotalTime = time.time()
     
-    clock.tick(configs["REFRESH_RATE"])
+    # minimum refresh rate is 120 (for now, this temporary fix allows the physics to update more frequently, improving accuracy)
+    if configs["REFRESH_RATE"] <= 120 and configs["VSYNC"]:
+        clock.tick(120)
+    else:
+        clock.tick(configs["REFRESH_RATE"])
     dt = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
     dt *= timeScale
     
