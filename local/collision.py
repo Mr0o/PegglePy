@@ -33,7 +33,12 @@ def point_to_segment_distance(P: Vector, A: Vector, B: Vector) -> float:
 # Continuous circle vs circle collision detection and resolution with dt.
 ###############################################################################
 def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
-    samples = 10
+    if dt > 24:
+        samples = int(dt)
+    else:
+        samples = 10
+    # limit samples to 200 to prevent major performance drop offs
+    samples = min(samples, 200)
     for i in range(samples + 1):
         t = i / samples
         samplePoint = ball.prevPos.copy()
@@ -55,7 +60,12 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
 ###############################################################################
 def resolveCollision(ball: Ball, peg: Peg, dt: float) -> Ball:
     # 1) Approximate the time-of-impact via sampling along ball.prevPos -> ball.pos.
-    samples = 10
+    if dt > 24:
+        samples = int(dt)
+    else:
+        samples = 10
+    # limit samples to 200 to prevent major performance drop offs
+    samples = min(samples, 200)
     impact_t = None
     for i in range(samples + 1):
         t = i / samples
@@ -112,7 +122,12 @@ def resolveCollision(ball: Ball, peg: Peg, dt: float) -> Ball:
 # Continuous line collision detection and resolution with dt.
 ###############################################################################
 def isBallTouchingLine(ball: Ball, linex1: float, liney1: float, linex2: float, liney2: float, dt: float) -> bool:
-    samples = 10
+    if dt > 24:
+        samples = int(dt)
+    else:
+        samples = 10
+    # limit samples to 200 to prevent major performance drop offs
+    samples = min(samples, 200)
     L1 = Vector(linex1, liney1)
     L2 = Vector(linex2, liney2)
     for i in range(samples + 1):
