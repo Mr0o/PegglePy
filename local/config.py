@@ -11,11 +11,11 @@ def installDependencies():
             from pygame import IS_CE
         except ImportError:
             print("pygame is installed, but pygame-ce is required.") 
-            print("Uninstalling pygame and installing pygame-ce...")
+            print("Installing pygame-ce...\n")
             import subprocess
             import sys
             try:
-                subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "pygame", "-y"])
+                #subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "pygame", "-y"])
                 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
                 import pygame
             except Exception as e:
