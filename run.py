@@ -731,10 +731,7 @@ while gameRunning:
             if b.isAlive:
                 #### collision ####
                 # get the pegs that are in the same screen location as the ball (scaled by queryRectSize)
-                # increase the size of the queryRect by the change in position across the frame (compared to the previous frame)
-                ballPosDelta = subVectors(b.pos, b.prevPos)
-                ballPosDelta.limitMag(100)
-                queryRect = Rectangle(b.pos.x - abs(ballPosDelta.getMag()),b.pos.y - abs(ballPosDelta.getMag()), abs(ballPosDelta.getMag()) + queryRectSize, abs(ballPosDelta.getMag()) + queryRectSize)
+                queryRect = Rectangle(b.pos.x, b.pos.y, queryRectSize, queryRectSize)
                 if useQuadtree:
                     nearbyPegs = quadtree.query(queryRect)
                 else:
@@ -1462,8 +1459,8 @@ while gameRunning:
                 for p in nearbyPegs:
                     drawCircle(p.pos.x, p.pos.y, p.radius, (255, 0, 0))
                 
-            # draw green rectangle around the queryRect
-            pygame.draw.rect(screen, (0, 255, 0), (ball.pos.x-queryRect.w, ball.pos.y-queryRect.h, queryRect.w*2, queryRect.h*2), 2)
+            # draw white rectangle around the query rect
+            pygame.draw.rect(screen, (0, 255, 0), (queryRect.x-queryRectSize, queryRect.y-queryRectSize, queryRectSize*2, queryRectSize*2), 2)
             
             # draw the quadtree capacity
             capacityText = debugFont.render("Capacity: "+str(quadtree.capacity), False, (255, 255, 255))
