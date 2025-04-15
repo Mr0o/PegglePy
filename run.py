@@ -146,6 +146,7 @@ quadtreeDebug = False
 useQuadtree = True
 # transparent surface for the quadtree
 quadtreeStaticScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
+dt = 1
 
 pegs: list[Peg]
 
@@ -197,8 +198,13 @@ while gameRunning:
         clock.tick(120)
     else:
         clock.tick(configs["REFRESH_RATE"])
-    dt = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
-    dt *= timeScale
+    dtTemp = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
+    dtTemp *= timeScale
+    
+    if dtTemp > 25:
+        dt = 25
+    else:
+        dt = dtTemp
     
     if quadtree.pegs == [] and pegs != []:
         for p in pegs:
