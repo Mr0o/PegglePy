@@ -147,6 +147,7 @@ useQuadtree = True
 # transparent surface for the quadtree
 quadtreeStaticScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
 dt = 1
+dtArray = [] # track previous dt values
 
 pegs: list[Peg]
 
@@ -199,12 +200,14 @@ while gameRunning:
     else:
         clock.tick(configs["REFRESH_RATE"])
     dtTemp = clock.get_time() / 5 # divide by 5 (magic number) to match the legacy code that ran at 144 fps
-    dtTemp *= timeScale
     
-    if dtTemp > 25:
-        dt = 25
-    else:
-        dt = dtTemp
+    # get the average dt over the last 10 frames
+    dtArray.append(dtTemp)
+    if len(dtArray) > 10:
+        dtArray.pop(0)
+    dt = sum(dtArray) / len(dtArray)
+    dt *= timeScale
+    
     
     if quadtree.pegs == [] and pegs != []:
         for p in pegs:
@@ -1499,6 +1502,10 @@ while gameRunning:
             # draw the fps
             fpsText = debugFont.render("FPS: "+str(round(clock.get_fps(), 2)), False, (255, 255, 255))
             screen.blit(fpsText, (configs["WIDTH"]-200, 95)) 
+            
+            # draw the dt (delta time)
+            dtText = debugFont.render("Time Step (dt): "+str(round(dt*1000, 2))+"", False, (255, 255, 255))
+            screen.blit(dtText, (configs["WIDTH"]-200, 125))
         
     # display red text indicating if cheats are enabled
     if cheats:
