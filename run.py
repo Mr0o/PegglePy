@@ -125,6 +125,8 @@ controllerInput = False
 #inputAim = Vector(configs["WIDTH"]/2, (configs["HEIGHT"]/25)+50)
 inputAim = Vector(configs["WIDTH"]/2, (configs["HEIGHT"]/25)+50)
 gamePadFineTuneAmount = 0
+debugBallPrevPos = False
+
 
 longShotTextTimer = TimedEvent()
 
@@ -290,6 +292,9 @@ while gameRunning:
                     timeScale = baseTimeScale * 3
                 else:
                     timeScale = baseTimeScale
+            # toggle debugBallPrevPos
+            if event.key == pygame.K_p:
+                debugBallPrevPos = not debugBallPrevPos
             # toggle VSYNC
             if event.key == pygame.K_v:
                 if configs["REFRESH_RATE"] == 0:
@@ -1506,6 +1511,19 @@ while gameRunning:
             # draw the dt (delta time)
             dtText = debugFont.render("Time Step (dt): "+str(round(dt*1000, 2))+"", False, (255, 255, 255))
             screen.blit(dtText, (configs["WIDTH"]-200, 125))
+            
+        # draw ball previous position and draw line to the current position
+        if debugBallPrevPos:
+            for b in balls:
+                if b.isAlive:
+                    # draw the previous position
+                    drawCircle(b.prevPos.x, b.prevPos.y, 5, (0, 255, 0))
+                    # draw a line from the previous position to the current position
+                    pygame.draw.line(screen, (255, 0, 0), (b.prevPos.x, b.prevPos.y), (b.pos.x, b.pos.y), 2)
+                    # draw a line from the previous velocity to the current position
+                    pygame.draw.line(screen, (255, 0, 255), (b.prevPos.x, b.prevPos.y), (b.prevPos.x + b.prevVel.x*10, b.prevPos.y + b.prevVel.y*10), 2)
+                    # draw a line from the current velocity to the next position
+                    pygame.draw.line(screen, (0, 255, 255), (b.pos.x, b.pos.y), (b.pos.x + b.vel.x*10, b.pos.y + b.vel.y*10), 2)
         
     # display red text indicating if cheats are enabled
     if cheats:
