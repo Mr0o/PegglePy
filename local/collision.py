@@ -2,6 +2,7 @@ from math import sqrt
 from local.vectors import Vector
 from local.ball import Ball
 from local.peg import Peg
+from local.config import collisionSampleSize
 
 EPSILON = 0.25  # Tolerance to ignore very slight penetrations
 RESTITUITON = 0.90  # Coefficient of restitution
@@ -33,10 +34,7 @@ def point_to_segment_distance(P: Vector, A: Vector, B: Vector) -> float:
 # Continuous circle vs circle collision detection and resolution with dt.
 ###############################################################################
 def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
-    if dt > 24:
-        samples = int(dt)
-    else:
-        samples = 10
+    samples = collisionSampleSize
     # limit samples to 100 to prevent major performance drop offs
     samples = min(samples, 100)
     for i in range(samples + 1):
@@ -60,10 +58,7 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
 ###############################################################################
 def resolveCollision(ball: Ball, peg: Peg, dt: float) -> Ball:
     # 1) Approximate the time-of-impact via sampling along ball.prevPos -> ball.pos.
-    if dt < 10:
-        samples = 10
-    else:
-        samples = int(dt) // 4
+    samples = collisionSampleSize
     # limit samples to 100 to prevent major performance drop offs
     samples = min(samples, 100)
     impact_t = None
@@ -122,10 +117,7 @@ def resolveCollision(ball: Ball, peg: Peg, dt: float) -> Ball:
 # Continuous line collision detection and resolution with dt.
 ###############################################################################
 def isBallTouchingLine(ball: Ball, linex1: float, liney1: float, linex2: float, liney2: float, dt: float) -> bool:
-    if dt > 24:
-        samples = int(dt)
-    else:
-        samples = 100
+    samples = collisionSampleSize
     # limit samples to 000 to prevent major performance drop offs
     samples = min(samples, 100)
     L1 = Vector(linex1, liney1)
