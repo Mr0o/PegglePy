@@ -136,7 +136,8 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
 
         # scale the peg image
         p = pegs[0]
-        scaledPegImg = pygame.transform.scale(p.pegImg.copy(), (int(p.pegImg.get_width()*levelPreviewImgScaleW), int(p.pegImg.get_height()*levelPreviewImgScaleH)))
+        #scaledPegImg = pygame.transform.scale(p.pegImg.copy(), (int(p.pegImg.get_width()*levelPreviewImgScaleW), int(p.pegImg.get_height()*levelPreviewImgScaleH)))
+        scaledPegImg = pygame.transform.scale(bluePegImg.copy(), (int(bluePegImg.get_width()*levelPreviewImgScaleW), int(bluePegImg.get_height()*levelPreviewImgScaleH)))
         # draw the pegs
         for peg in pegs:
             levelPreviewImg.blit(scaledPegImg, (peg.pos.x*levelPreviewImgScaleW, peg.pos.y*levelPreviewImgScaleW))

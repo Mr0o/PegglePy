@@ -4,7 +4,7 @@ from random import randint
 
 ### local imports ###
 from local.load_level import loadData, createDefaultPegsPos
-from local.config import baseTimeScale
+from local.config import baseTimeScale, bluePegImg, orangePegImg, greenPegImg, hitBluePegImg, hitOrangePegImg, hitGreenPegImg
 from local.userConfig import configs
 from local.resources import backgroundImg
 from local.peg import Peg
@@ -148,8 +148,23 @@ def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
 
     # draw pegs
     for p in pegs:
+            # check peg color
+        if p.color == "orange":
+            pegImg = orangePegImg
+        elif p.color == "green":
+            pegImg = greenPegImg
+        else:
+            pegImg = bluePegImg
+        # check if peg is hit
+        if p.isHit:
+            if p.color == "orange":
+                pegImg = hitOrangePegImg
+            elif p.color == "green":
+                pegImg = hitGreenPegImg
+            else:
+                pegImg = hitBluePegImg
         staticImg.blit(
-            p.pegImg, (p.pos.x - p.posAdjust, p.pos.y - p.posAdjust))
+            pegImg, (p.pos.x - p.posAdjust, p.pos.y - p.posAdjust))
 
     # anti-aliasing
     # staticImg = pygame.transform.smoothscale(staticImg, (configs["WIDTH"], configs["HEIGHT"]))
@@ -159,8 +174,24 @@ def createStaticImage(pegs: list[Peg], bgImg=backgroundImg):
 
 # blit a single peg to the static image rather than redrawing the entire image (this may not look correct if the peg is overlapping another peg)
 def updateStaticImage(staticImg: pygame.Surface, peg: Peg):
-    staticImg.blit(peg.pegImg, (peg.pos.x - peg.posAdjust,
-                   peg.pos.y - peg.posAdjust))
+    # check peg color
+    if peg.color == "orange":
+        pegImg = orangePegImg
+    elif peg.color == "green":
+        pegImg = greenPegImg
+    else:
+        pegImg = bluePegImg
+    # check if peg is hit
+    if peg.isHit:
+        if peg.color == "orange":
+            pegImg = hitOrangePegImg
+        elif peg.color == "green":
+            pegImg = hitGreenPegImg
+        else:
+            pegImg = hitBluePegImg
+    # blit the peg to the static image
+    staticImg.blit(pegImg, (peg.pos.x - peg.posAdjust,
+                             peg.pos.y - peg.posAdjust))
 
     return staticImg
 

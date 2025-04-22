@@ -1,5 +1,5 @@
 import pygame
-from local.config import configs
+from local.config import configs, bluePegImg
 from local.peg import Peg # need access to the default peg img
 
 pygame.init()
@@ -51,13 +51,12 @@ newPegSound = pygame.mixer.Sound("resources/audio/sounds/peg_pop.ogg")
 invalidPegSound = pygame.mixer.Sound("resources/audio/sounds/tonelo.ogg")
 
 # pegs img with transparency (for mouse hover (blue) and invalid peg placement (red))
-tempPeg = Peg(0, 0)
-transparentPegImg = tempPeg.pegImg.copy()
+transparentPegImg = bluePegImg.copy()
 # set alpha to 50
 transparentPegImg.fill((255, 255, 255, 50), None, pygame.BLEND_RGBA_MULT)
 
 # create a second copy of the peg image, but with a red tint
-invalidPegImg = tempPeg.pegImg.copy()
+invalidPegImg = bluePegImg.copy()
 invalidPegImg.fill((255, 0, 0, 60), None, pygame.BLEND_RGBA_MULT)
 
 #MENU stuff
