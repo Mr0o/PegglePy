@@ -1509,7 +1509,7 @@ while gameRunning:
             screen.blit(fpsText, (configs["WIDTH"]-200, 95)) 
             
             # draw the dt (delta time)
-            dtText = debugFont.render("Time Step (dt): "+str(round(dt*1000, 2))+"", False, (255, 255, 255))
+            dtText = debugFont.render("Time Step (dt): "+str(round(dt, 2))+" s", False, (255, 255, 255))
             screen.blit(dtText, (configs["WIDTH"]-200, 125))
             
         # draw ball previous position and draw line to the current position
