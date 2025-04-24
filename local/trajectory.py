@@ -45,7 +45,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
             for p in pegsInRange:         
                 ballTouchingPeg = isBallTouchingPeg(fakeBall, p, dt)
                 if ballTouchingPeg:
-                    fakeBall = resolveCollision(fakeBall, p, dt)
+                    fakeBall = resolveCollision(fakeBall, [p], dt)
                     hit = True
         elif not collisionGuideBall: # ##normal## if ball has collided then stop calculating and return
             queryRect = Rectangle(fakeBall.pos.x, fakeBall.pos.y, queryRectSize, queryRectSize)
@@ -56,8 +56,7 @@ def calcTrajectory(aim : Vector, startPos : Vector, pegs : list[Peg], bucketPegs
                     if not debugTrajectory:
                         return fakeBalls
                     else:
-                        fakeBall = resolveCollision(fakeBall, p, dt)
-
+                        fakeBall = resolveCollision(fakeBall, [p], dt)
             
         fakeBall.update()
         
@@ -112,7 +111,7 @@ def findBestTrajectory(aim: Vector, startPos : Vector, pegs : list[Peg], quadtre
             for p in pegsInRange:
                 ballTouchingPeg = isBallTouchingPeg(fakeBall, p, dt)
                 if ballTouchingPeg:
-                    fakeBall = resolveCollision(fakeBall, p, dt)
+                    fakeBall = resolveCollision(fakeBall, [p], dt)
                     # add points
                     if not p.isHit: 
                         p.isHit = True
