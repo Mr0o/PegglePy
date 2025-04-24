@@ -147,7 +147,7 @@ odeToJoyTimeScale = 0.3
 # size of rect query (radius of the ball and the peg)
 queryRectSize = ballRad*1.2 + pegRad*1.2
 # value to determine number of samples for collision detection
-collisionSampleSize = 5
+collisionSampleSize = 10
 
 #images
 ballImg = pygame.image.load("resources/images/balls/200x200/ball.png")
