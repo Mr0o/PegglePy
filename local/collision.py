@@ -35,8 +35,6 @@ def point_to_segment_distance(P: Vector, A: Vector, B: Vector) -> float:
 ###############################################################################
 def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
     samples = collisionSampleSize
-    # limit samples to 100 to prevent major performance drop offs
-    samples = min(samples, 100)
     for i in range(samples + 1):
         t = i / samples
         samplePoint = ball.prevPos.copy()
@@ -59,8 +57,6 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
 def resolveCollision(ball: Ball, peg: Peg, dt: float) -> Ball:
     # 1) Approximate the time-of-impact via sampling along ball.prevPos -> ball.pos.
     samples = collisionSampleSize
-    # limit samples to 100 to prevent major performance drop offs
-    samples = min(samples, 100)
     impact_t = None
     for i in range(samples + 1):
         t = i / samples
