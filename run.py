@@ -773,7 +773,7 @@ while gameRunning:
                     ballTouchingPeg = isBallTouchingPeg(b, p, dt)
                     if ballTouchingPeg:
                         # resolve the collision between the ball and peg
-                        b = resolveCollision(b, p, dt)
+                        b = resolveCollision(b, nearbyPegs, dt)
 
                         # save the peg that was last hit, used for when the ball is stuck and for bonus points
                         # p is the quadtree quary, so lets find the actual peg in the pegs list
@@ -946,7 +946,7 @@ while gameRunning:
                 # check if ball has hit the sides of the bucket (this is a special case handled after the pegs have been checked)
                 collidedPeg = bucket.isBallCollidingWithBucketEdge(b, dt)
                 if collidedPeg:
-                    b = resolveCollision(b, collidedPeg, dt)
+                    b = resolveCollision(b, [collidedPeg], dt)
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
@@ -1089,8 +1089,8 @@ while gameRunning:
     # draw ball(s)
     if not gameOver:
         for b in balls:
-            screen.blit(ballImg, (b.pos.x - ballImg.get_width() /
-                        2, b.pos.y - ballImg.get_height()/2))
+            screen.blit(ballImg, (b.prevPos.x - ballImg.get_width() /
+                        2, b.prevPos.y - ballImg.get_height()/2))
     # draw front of bucket
     screen.blit(bucketFrontImg, (bucket.pos.x, bucket.pos.y))
     # draw trajectory path
@@ -1516,8 +1516,8 @@ while gameRunning:
         if debugBallPrevPos:
             for b in balls:
                 if b.isAlive:
-                    # draw the previous position
-                    drawCircle(b.prevPos.x, b.prevPos.y, 5, (0, 255, 0))
+                    # draw the current position
+                    drawCircle(b.pos.x, b.pos.y, 5, (0, 255, 0))
                     # draw a line from the previous position to the current position
                     pygame.draw.line(screen, (255, 0, 0), (b.prevPos.x, b.prevPos.y), (b.pos.x, b.pos.y), 2)
                     # draw a line from the previous velocity to the current position
