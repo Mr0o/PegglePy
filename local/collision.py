@@ -34,9 +34,23 @@ def point_to_segment_distance(P: Vector, A: Vector, B: Vector) -> float:
 # Continuous circle vs circle collision detection and resolution with dt.
 ###############################################################################
 def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
-    samples = collisionSampleSize
-    for i in range(samples + 1):
-        t = i / samples
+    samples = collisionSampleSize   # number of points to sample along the path
+    # Check the endpoints first
+    startPoint = ball.prevPos.copy()
+    d_start = startPoint.copy()
+    d_start.sub(peg.pos)
+    if d_start.getMag() <= (ball.radius + peg.radius - EPSILON):
+        return True
+
+    endPoint = ball.pos.copy()
+    d_end = endPoint.copy()
+    d_end.sub(peg.pos)
+    if d_end.getMag() <= (ball.radius + peg.radius - EPSILON):
+        return True
+
+    # Uniformly sample along the swept path
+    for i in range(1, samples):
+        t = i / samples  # t is the fraction of dt along the path
         samplePoint = ball.prevPos.copy()
         delta = ball.pos.copy()
         delta.sub(ball.prevPos)
@@ -44,7 +58,6 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
         samplePoint.add(delta)
         d = samplePoint.copy()
         d.sub(peg.pos)
-        # Only trigger collision if the overlap is more than a small epsilon.
         if d.getMag() <= (ball.radius + peg.radius - EPSILON):
             return True
     return False
@@ -53,57 +66,88 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
 # Updated circle vs. circle collision resolution using dt.
 # We determine the time-of-impact along ball.prevPos->ball.pos then reposition
 # the ball so that its center is exactly (ball.radius+peg.radius) away from peg.pos.
+# also handles multiple collisions with the ball
 ###############################################################################
-def resolveCollision(ball: Ball, peg: Peg, dt: float) -> Ball:
-    # 1) Approximate the time-of-impact via sampling along ball.prevPos -> ball.pos.
-    samples = collisionSampleSize
-    impact_t = None
-    for i in range(samples + 1):
-        t = i / samples
-        samplePoint = ball.prevPos.copy()
-        tmpDelta = ball.pos.copy()
-        tmpDelta.sub(ball.prevPos)
-        tmpDelta.mult(t)
-        samplePoint.add(tmpDelta)
-        diff = samplePoint.copy()
-        diff.sub(peg.pos)
-        # Trigger collision if distance is less than (ball.radius+peg.radius-EPSILON)
-        if diff.getMag() <= (ball.radius + peg.radius - EPSILON):
-            impact_t = t
-            break
+def resolveCollision(ball: Ball, pegs: list[Peg], dt: float) -> Ball:
+    # This tolerance is in fractional dt (0 to 1)
+    tol = 1e-3  
+    best_fraction = 1.0  # best time-of-impact as a fraction of dt
+    best_peg = None
+    best_normal = None
 
-    if impact_t is None:
-        impact_t = 1.0
+    # Check each peg for a collision along the path from prevPos to pos (scaled by dt)
+    for peg in pegs:
+        low, high = 0.0, 1.0
+        impact_fraction = None
+        # Binary search along the swept path to determine the time-of-impact fraction
+        while high - low > tol:
+            mid = (low + high) / 2.0
+            samplePoint = ball.prevPos.copy()
+            delta = ball.pos.copy()
+            delta.sub(ball.prevPos)
+            delta.mult(mid)  # 'mid' represents fraction of dt
+            samplePoint.add(delta)
+            d = samplePoint.copy()
+            d.sub(peg.pos)
+            # If the ball is colliding with the peg at this sample point,
+            # consider it a hit (using EPSILON to ignore very slight penetrations)
+            if d.getMag() <= (ball.radius + peg.radius - EPSILON):
+                impact_fraction = mid
+                high = mid
+            else:
+                low = mid
 
-    # 2) Recompute the samplePoint at time-of-impact.
-    samplePoint = ball.prevPos.copy()
-    tmpDelta = ball.pos.copy()
-    tmpDelta.sub(ball.prevPos)
-    tmpDelta.mult(impact_t)
-    samplePoint.add(tmpDelta)
+        # Keep the peg with the earliest (smallest fraction) collision
+        if impact_fraction is not None and impact_fraction < best_fraction:
+            best_fraction = impact_fraction
+            best_peg = peg
 
-    # 3) Calculate collision normal (from peg to samplePoint).
-    normal = samplePoint.copy()
-    normal.sub(peg.pos)
-    distance = normal.getMag() or 0.001
-    normal.div(distance)
+            # Get the collision point along the path using the computed fraction of dt
+            collisionPos = ball.prevPos.copy()
+            delta = ball.pos.copy()
+            delta.sub(ball.prevPos)
+            delta.mult(impact_fraction)
+            collisionPos.add(delta)
 
-    # 4) Reposition the ball so that it lies exactly (ball.radius+peg.radius) away from peg.pos.
-    ball.pos = peg.pos.copy()
-    normalScaled = normal.copy()
-    normalScaled.mult(ball.radius + peg.radius)
-    ball.pos.add(normalScaled)
+            # Compute the collision normal from peg center to collision point.
+            normal = collisionPos.copy()
+            normal.sub(peg.pos)
+            if normal.getMag() != 0:
+                normal.normalize()
+            else:
+                normal = Vector(0, -1)  # fallback normal if the vectors coincide
+            best_normal = normal
 
-    # 5) Reflect the ball's velocity if it is moving toward the peg.
-    v_dot_n = ball.vel.x * normal.x + ball.vel.y * normal.y
-    # use a different bounciness if the velocity is below 3
+    # If no collision was detected along the swept path, return the ball unmodified.
+    if best_peg is None or best_normal is None:
+        return ball
+
+    # With dt in use, best_fraction represents when (within dt) the collision happens.
+    # Recompute collision point if needed (here it’s used to snap the ball correctly):
+    collisionPos = ball.prevPos.copy()
+    delta = ball.pos.copy()
+    delta.sub(ball.prevPos)
+    delta.mult(best_fraction)
+    collisionPos.add(delta)
+
+    # Calculate the final position so that the centers are exactly (ball.radius + peg.radius) apart.
+    final_normal = best_normal.copy()  # work on a fresh copy
+    final_normal.mult(ball.radius + best_peg.radius)
+    finalPos = best_peg.pos.copy()
+    finalPos.add(final_normal)
+    ball.pos = finalPos
+
+    # Reflect the ball's velocity, but only if it is moving toward the peg.
+    # (v_dot_n is computed using the collision normal from our binary search.)
+    v_dot_n = ball.vel.x * best_normal.x + ball.vel.y * best_normal.y
+    # Use a modified bounciness depending on the ball's current speed.
     bounce = BOUNCINESS
     if ball.vel.getMag() < 2:
         bounce = BOUNCINESS * 0.30
     if ball.vel.getMag() < 1:
         bounce = BOUNCINESS * 0.10
     if v_dot_n < 0:
-        correction = normal.copy()
+        correction = best_normal.copy()
         correction.mult((1 + RESTITUITON * bounce) * v_dot_n)
         ball.vel.sub(correction)
 
