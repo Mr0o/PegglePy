@@ -941,12 +941,12 @@ while gameRunning:
                     if b.vel.getMag() < 0.2:
                         b.vel.add(Vector(0, 1))
                 
-                b.update(dt, noGravityPowerUpActive)
-
                 # check if ball has hit the sides of the bucket (this is a special case handled after the pegs have been checked)
                 collidedPeg = bucket.isBallCollidingWithBucketEdge(b, dt)
                 if collidedPeg:
                     b = resolveCollision(b, [collidedPeg], dt)
+                    
+                b.update(dt, noGravityPowerUpActive)
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
@@ -1421,6 +1421,11 @@ while gameRunning:
         ballVelText = debugFont.render(
             "Velocity: " + str(ball.vel.getMag()), False, (255, 255, 255))
         screen.blit(ballVelText, (100, 20))
+        if len(balls) > 1:
+            # draw number of balls in ball array
+            ballCountText = debugFont.render(
+                str(len(balls)) + " balls", False, (255, 255, 255))
+            screen.blit(ballCountText, (265, 50))
         # draw zenball trajectory (can cause a noticable performance hit due to the number of circles being drawn)
         if not done and powerUpType == "zenball" and bestTrajectory:
             if debugStaticImage == None:
