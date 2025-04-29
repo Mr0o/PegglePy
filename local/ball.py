@@ -61,7 +61,9 @@ class Ball:
         if self.pos.y < self.radius:
             self.pos.y = self.radius
             self.vel.y *= -1
-        if self.pos.y > (configs["HEIGHT"] + self.radius):
+        # use prevPos instead of the current pos so that the spooky ball can warp before it 'dies'
+        # (This is sort of a hack that fixes spooky ball at low framerates)
+        if self.prevPos.y > (configs["HEIGHT"] + self.radius):
             self.isAlive = False
 
     def reset(self):
