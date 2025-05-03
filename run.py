@@ -709,7 +709,7 @@ while gameRunning:
             shouldClear = True
             powerUpCount -= 1
             if powerUpCount < 1:
-                powerUpActive = False
+                powerUpActive = False or cheats
 
         # cheats, place ball anywhere on screen with right click
         if cheats and mouseClicked[2] and ball.isAlive and not ball.isLaunch:
@@ -733,7 +733,7 @@ while gameRunning:
                 noGravityPowerUpActive = False
                 noGravityPowerUpTimer.cancelTimer()
                 powerUpCount -= 1
-                powerUpActive = False
+                powerUpActive = False or cheats
         else:
             noGravityPowerUpActive = False
 
@@ -971,7 +971,7 @@ while gameRunning:
                                 playSoundPitch(powerUpSpooky2)
                         powerUpCount -= 1
                         if powerUpCount < 1:
-                            powerUpActive = False
+                            powerUpActive = False or cheats
 
                 # if active multiball powerup
                 if addNewBall and (powerUpType == "multiball" or powerUpType == "spooky-multiball"):
@@ -1059,7 +1059,7 @@ while gameRunning:
             # forces the trajectory to be recalculated in case the mouse aim has not changed
             previousAim = Vector(0, 1)
             if powerUpType == "multiball" or powerUpType == "spooky-multiball":
-                powerUpActive = False
+                powerUpActive = False or cheats
                 powerUpCount = 0
             # remove hit pegs
             pegs = [p for p in pegs if not p.isHit]
