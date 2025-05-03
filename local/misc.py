@@ -4,9 +4,9 @@ from random import randint
 
 ### local imports ###
 from local.load_level import loadData, createDefaultPegsPos
-from local.config import baseTimeScale, bluePegImg, orangePegImg, greenPegImg, hitBluePegImg, hitOrangePegImg, hitGreenPegImg
+from local.config import baseTimeScale
 from local.userConfig import configs
-from local.resources import backgroundImg
+from local.resources import backgroundImg, bluePegImg, orangePegImg, greenPegImg, hitBluePegImg, hitOrangePegImg, hitGreenPegImg
 from local.peg import Peg
 from local.ball import Ball
 from local.audio import newSong
