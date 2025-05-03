@@ -310,5 +310,7 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
 
     pygame.display.set_icon(editorIconImg)
+    
+    configs["REFRESH_RATE"] = 60
 
     levelEditor(screen, clock, standalone=True)
