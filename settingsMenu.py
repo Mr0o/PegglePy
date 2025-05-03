@@ -297,6 +297,8 @@ if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((configs["WIDTH"], configs["HEIGHT"]))
     clock = pygame.time.Clock()
+    
+    configs["REFRESH_RATE"] = 60
 
     # run the menu
     settingsMenu(screen)
