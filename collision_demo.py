@@ -80,7 +80,7 @@ while True:
     # Check for circle vs. circle collision (ball1 vs ball2)
     if isBallTouchingPeg(ball2, ball1, dt):
         # Assume ball2 is static; resolve the collision for ball1.
-        ball1 = resolveCollision(ball1, ball2, dt)
+        ball1 = resolveCollision(ball1, [ball2], dt)
     
     # --- Drawing ---
     screen.fill((0, 0, 0))
