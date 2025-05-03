@@ -16,7 +16,8 @@ class Slider:
         self.knobColor = (0, 0, 0)
 
         self.sliderRect = pygame.Rect(self.pos.x, self.pos.y, width, height)
-        
+        self.dragging = False  # New flag to track if the slider is being dragged
+
     def getSliderSurface(self) -> pygame.Surface:
         # create a surface for the slider
         sliderSurface = pygame.Surface((self.sliderRect.width, self.sliderRect.height))
@@ -26,29 +27,43 @@ class Slider:
         pygame.draw.rect(sliderSurface, (0, 0, 0), (0, 0, self.sliderRect.width, self.sliderRect.height), 2)
         
         # draw the knob
-        pygame.draw.rect(sliderSurface, self.knobColor, (self.knobPos.x - self.pos.x, self.sliderRect.height / 2 - self.knobHeight / 2, self.knobWidth, self.knobHeight))
+        pygame.draw.rect(
+            sliderSurface,
+            self.knobColor,
+            (
+                self.knobPos.x - self.pos.x,
+                self.sliderRect.height / 2 - self.knobHeight / 2,
+                self.knobWidth,
+                self.knobHeight
+            )
+        )
         
         return sliderSurface
-    
+
     def update(self, mousePos : Vector, isClick : bool) -> None:
-        # check if the mouse is within the slider rect
-        if mousePos.x > self.pos.x and mousePos.x < self.pos.x + self.sliderRect.width:
-            if mousePos.y > self.pos.y and mousePos.y < self.pos.y + self.sliderRect.height:
-                # check if the mouse is clicked
-                if isClick:
-                    # move the knob
-                    self.knobPos.x = mousePos.x - self.knobWidth / 2
-                    
-                    # check if the knob is out of bounds
-                    if self.knobPos.x < self.pos.x:
-                        self.knobPos.x = self.pos.x
-                    elif self.knobPos.x > self.pos.x + self.sliderRect.width - self.knobWidth:
-                        self.knobPos.x = self.pos.x + self.sliderRect.width - self.knobWidth
-                        
-                    # update the value
-                    self.value = round(self.min + (self.knobPos.x - self.pos.x) / (self.sliderRect.width - self.knobWidth) * (self.max - self.min))
-    
-    
+        if isClick:
+            # If this is the start of a drag, enable dragging if the mouse starts inside the slider.
+            if not self.dragging:
+                if mousePos.x > self.pos.x and mousePos.x < self.pos.x + self.sliderRect.width and \
+                   mousePos.y > self.pos.y and mousePos.y < self.pos.y + self.sliderRect.height:
+                    self.dragging = True
+
+            if self.dragging:
+                # Update the knob position based on the mouse's x position even if the mouse leaves the slider bounds.
+                self.knobPos.x = mousePos.x - self.knobWidth / 2
+
+                # Enforce slider boundaries for the knob
+                if self.knobPos.x < self.pos.x:
+                    self.knobPos.x = self.pos.x
+                elif self.knobPos.x > self.pos.x + self.sliderRect.width - self.knobWidth:
+                    self.knobPos.x = self.pos.x + self.sliderRect.width - self.knobWidth
+
+                # Update the value based on the knob's position
+                self.value = round(self.min + (self.knobPos.x - self.pos.x) / (self.sliderRect.width - self.knobWidth) * (self.max - self.min))
+        else:
+            # Reset dragging once the click is released.
+            self.dragging = False
+
     def setValue(self, value : int) -> None:
         # set the value
         self.value = value
