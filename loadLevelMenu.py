@@ -422,6 +422,8 @@ if __name__ == "__main__":
     pygame.init()
     # create the screen
     screen = pygame.display.set_mode((configs["WIDTH"], configs["HEIGHT"]))
+    
+    configs["REFRESH_RATE"] = 60
 
     # run the menu
     print(loadLevelMenu(screen)[3])
