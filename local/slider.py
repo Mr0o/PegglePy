@@ -16,7 +16,8 @@ class Slider:
         self.knobColor = (0, 0, 0)
 
         self.sliderRect = pygame.Rect(self.pos.x, self.pos.y, width, height)
-        self.dragging = False  # New flag to track if the slider is being dragged
+        self.dragging = False  # flag to track if slider is being dragged
+        self.prevClick = False # flag to determine if click was already held down
 
     def getSliderSurface(self) -> pygame.Surface:
         # create a surface for the slider
@@ -42,10 +43,10 @@ class Slider:
 
     def update(self, mousePos : Vector, isClick : bool) -> None:
         if isClick:
-            # If this is the start of a drag, enable dragging if the mouse starts inside the slider.
-            if not self.dragging:
-                if mousePos.x > self.pos.x and mousePos.x < self.pos.x + self.sliderRect.width and \
-                   mousePos.y > self.pos.y and mousePos.y < self.pos.y + self.sliderRect.height:
+            # Only enable dragging if this is the start of a click while over the slider.
+            if not self.prevClick and not self.dragging:
+                if (mousePos.x > self.pos.x and mousePos.x < self.pos.x + self.sliderRect.width and
+                    mousePos.y > self.pos.y and mousePos.y < self.pos.y + self.sliderRect.height):
                     self.dragging = True
 
             if self.dragging:
@@ -59,10 +60,14 @@ class Slider:
                     self.knobPos.x = self.pos.x + self.sliderRect.width - self.knobWidth
 
                 # Update the value based on the knob's position
-                self.value = round(self.min + (self.knobPos.x - self.pos.x) / (self.sliderRect.width - self.knobWidth) * (self.max - self.min))
+                self.value = round(self.min + (self.knobPos.x - self.pos.x) /
+                                   (self.sliderRect.width - self.knobWidth) * (self.max - self.min))
+            # Record that a click is currently held down
+            self.prevClick = True
         else:
-            # Reset dragging once the click is released.
+            # Reset both dragging and previous click once the click is released.
             self.dragging = False
+            self.prevClick = False
 
     def setValue(self, value : int) -> None:
         # set the value
