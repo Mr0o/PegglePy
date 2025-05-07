@@ -1360,6 +1360,9 @@ while gameRunning:
             # Wait until the mouse button is released
             while pygame.mouse.get_pressed()[0]:
                 pygame.event.pump()
+            
+            if configs["MUSIC_ENABLED"]:
+                newSong()
                 
 
     # show if gameOver
