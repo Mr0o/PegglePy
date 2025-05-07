@@ -152,6 +152,13 @@ def settingsMenu(screen: pygame.Surface):
                 # update back button position
                 backButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-20, configs["HEIGHT"] - 50*buttonScale-20)
                 
+        # check if mouse is over debug checkbox
+        if mousePos.x > 50 and mousePos.x < 100 and mousePos.y > 650 and mousePos.y < 700:
+            # mouse button is down
+            if mouseDown:
+                configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
+                playSoundPitch(buttonClickSound)
+                
         # draw the background
         screen.blit(altBackgroundImg, (0, 0))
 
@@ -241,6 +248,18 @@ def settingsMenu(screen: pygame.Surface):
         else:
             # draw the checkbox
             pygame.draw.rect(screen, (255, 255, 255), (50, 550, 50, 50), 2)
+        # DEBUG
+        debugLabel = menuButtonFont.render("Show debug info", True, (255, 255, 255))
+        screen.blit(debugLabel, (110, 650))
+        if configs["DEBUG_MODE"]:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 650, 50, 50), 2)
+            # draw the x
+            pygame.draw.line(screen, (255, 0, 0), (50, 650), (100, 700), 2)
+            pygame.draw.line(screen, (255, 0, 0), (100, 650), (50, 700), 2)
+        else:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 650, 50, 50), 2)
             
 
         # draw the buttons

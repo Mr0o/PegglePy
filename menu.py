@@ -301,9 +301,12 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     # main menu button (positioned bottom left corner)
     mainMenuButtonPos = Vector(10, configs["HEIGHT"] - 25*buttonScale-10)
     mainMenuButtonSize = Vector(50*buttonScale, 25*buttonScale)
-    # editor button (positioned bottom right corner)
-    editorButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-10, configs["HEIGHT"] - 50*buttonScale-10)
-    editorButtonSize = Vector(50*buttonScale, 50*buttonScale)
+    # editor button (positioned bottom left corner above the main menu button)
+    editorButtonSize = Vector(50*buttonScale, 25*buttonScale)
+    editorButtonPos = Vector(mainMenuButtonPos.x, mainMenuButtonPos.y - editorButtonSize.y - 5)
+    # settings button (positioned bottom right corner)
+    settingsButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-20, configs["HEIGHT"] - 50*buttonScale-20)
+    settingsButtonSize = Vector(50*buttonScale, 50*buttonScale)
 
 
     # scale the button images
@@ -315,6 +318,7 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
     restartButtonImgScaled = pygame.transform.scale(restartButtonImg, (restartButtonSize.x, restartButtonSize.y))
     mainMenuButtonImgScaled = pygame.transform.scale(menuButtonUnpressedImg, (mainMenuButtonSize.x, mainMenuButtonSize.y))
     mainMenuButtonPressedImgScaled = pygame.transform.scale(menuButtonPressedImg, (mainMenuButtonSize.x, mainMenuButtonSize.y))
+    settingsButtonImgScaled = pygame.transform.scale(settingsButtonImg, (settingsButtonSize.x, settingsButtonSize.y))
 
     ## check for button clicks ##
     # check if the mouse is over the resume button
@@ -364,6 +368,14 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
             selection = "editor"
             if configs["SOUND_ENABLED"]:
                 playSoundPitch(buttonClickSound)
+                
+    # check if the mouse is over the settings button
+    if mx > settingsButtonPos.x and mx < settingsButtonPos.x + settingsButtonSize.x and my > settingsButtonPos.y and my < settingsButtonPos.y + settingsButtonSize.y:
+        # mouse button is down
+        if mouseClick:
+            selection = "settings"
+            
+            
 
     # create a surface for the pause screen
     pauseScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
@@ -412,11 +424,17 @@ def getPauseScreen(mx, my, mouseClick) -> tuple[pygame.Surface, str]:
 
     # draw the editor button
     if selection != "editor":
-        pauseScreen.blit(smallMenuButtonUnpressedImg, (editorButtonPos.x, editorButtonPos.y))
+        pauseScreen.blit(mainMenuButtonImgScaled, (editorButtonPos.x, editorButtonPos.y))
     else:
         pauseScreen.blit(smallMenuButtonPressedImg, (editorButtonPos.x, editorButtonPos.y))
     editorText = infoFont.render("Editor", False, (255, 255, 255))
     pauseScreen.blit(editorText, (editorButtonPos.x + (editorButtonSize.x - editorText.get_width()) / 2, editorButtonPos.y + (editorButtonSize.y - editorText.get_height()) / 2))
+    
+    # draw the settings button
+    if selection != "settings":
+        pauseScreen.blit(settingsButtonImgScaled, (settingsButtonPos.x, settingsButtonPos.y))
+    else:
+        pauseScreen.blit(settingsButtonImgScaled, (settingsButtonPos.x, settingsButtonPos.y))
 
     # return the surface
     return pauseScreen, selection

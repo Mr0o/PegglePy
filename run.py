@@ -1352,7 +1352,14 @@ while gameRunning:
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                 
                 delayTimer = TimedEvent(0.50)
-
+        
+        elif pauseSelection == "settings":
+            settingsMenu(screen)
+            # Clear any pending mouse button down events (to prevent triggering the setting button again)
+            pygame.event.clear(pygame.MOUSEBUTTONDOWN)
+            # Wait until the mouse button is released
+            while pygame.mouse.get_pressed()[0]:
+                pygame.event.pump()
                 
 
     # show if gameOver
