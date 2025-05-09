@@ -1354,6 +1354,7 @@ while gameRunning:
                 delayTimer = TimedEvent(0.50)
         
         elif pauseSelection == "settings":
+            isFullscreen = configs["FULLSCREEN"] # check state before settings menu opens
             settingsMenu(screen)
             # Clear any pending mouse button down events (to prevent triggering the setting button again)
             pygame.event.clear(pygame.MOUSEBUTTONDOWN)
@@ -1363,6 +1364,81 @@ while gameRunning:
             
             if configs["MUSIC_ENABLED"]:
                 newSong()
+                
+            # if the fullscreen state has changed, update positions to handle fullscreen toggle
+            if configs["FULLSCREEN"] != isFullscreen:
+                # adjust the positions of every peg to be centered on the screen based on configs["WIDTH"] and configs["HEIGHT"]
+                # get the position of the left most peg
+                leftMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.x < leftMostPeg.pos.x:
+                        leftMostPeg = peg
+                rightMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.x > rightMostPeg.pos.x:
+                        rightMostPeg = peg
+
+                # find the center of the left most and right most pegs
+                centerOfLeftAndRightPegs = (leftMostPeg.pos.x + rightMostPeg.pos.x)/2
+                # find the center of the screen
+                screenCenter = configs["WIDTH"]/2
+                # find the difference between the center of the screen and the center of the left and right most pegs
+                difference = screenCenter - centerOfLeftAndRightPegs
+
+                # adjust the position of every peg by the difference
+                for peg in pegs:
+                    peg.pos.x += difference
+                    
+                # adjust the position of each ball by the difference
+                for ball in balls:
+                    ball.pos.x += difference
+                    
+                
+                # Do same process again for the Y axis
+                topMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.y < topMostPeg.pos.y:
+                        topMostPeg = peg
+                bottomMostPeg = pegs[0]
+                for peg in pegs:
+                    if peg.pos.y > bottomMostPeg.pos.y:
+                        bottomMostPeg = peg
+                    
+                # find the center of the top most and bottom most pegs
+                centerOfTopAndBottomPegs = (topMostPeg.pos.y + bottomMostPeg.pos.y)/2
+                # find the center of the screen
+                screenCenter = configs["HEIGHT"]/2
+                # find the difference between the center of the screen and the center of the top and bottom most pegs
+                difference = screenCenter - centerOfTopAndBottomPegs
+                
+                # adjust the position of every peg by the difference
+                for peg in pegs:
+                    peg.pos.y += difference
+                
+                # adjust the position of each ball by the difference
+                for ball in balls:
+                    ball.pos.y += difference
+                    
+                # update ball position if none of the balls are alive
+                if not any([ball.isAlive for ball in balls]):
+                    ball.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"]/25)
+                    ball.prevPos = ball.pos.copy()
+                    
+                    inputAim = Vector(configs["WIDTH"]/2, (configs["HEIGHT"]/25)+50)
+                    
+                # update the quadtree boundary
+                boundary = Rectangle(configs["WIDTH"]/2, configs["HEIGHT"]/2, configs["WIDTH"]/2, configs["HEIGHT"]/2)
+                
+                # update the quadtree
+                quadtree = QuadtreePegs(boundary, 4)
+                queryRect = Rectangle(0, 0, 0, 0)
+                nearbyPegs = []
+                
+                # update the bucket y position to be at the bottom of the screen
+                bucket.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - bucket.bucketBackImg.get_height())  # position
+                                
+                # update the static image
+                staticImage = createStaticImage(pegs)
                 
 
     # show if gameOver
