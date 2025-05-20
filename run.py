@@ -1077,7 +1077,7 @@ while gameRunning:
 
         # bucket, pass the power up info for the bucket to update its collison and image
         bucket.update(dt, powerUpType, powerUpActive)
-        
+
     # measure time for draw calls
     startDrawTime = time.time()
 
@@ -1100,8 +1100,8 @@ while gameRunning:
             done = False
     if done and not gameOver and not gamePaused:
         for fb in trajectory:
-            drawCircle(fb.pos.x, fb.pos.y, 4, (10, 70, 163)) 
-        
+            # draw line from each point in the trajectory
+            pygame.draw.line(screen, (10, 70, 163), (fb.prevPos.x, fb.prevPos.y), (fb.pos.x, fb.pos.y), 6)
 
     # "zoom in" on the ball by transorming the image
     # scale the image and blit it at the position of the ball
