@@ -11,7 +11,7 @@ import pickle # sort of abusing pickle to save the level data (it works, but I d
 
 from local.userConfig import configs
 
-from local.peg import Peg
+from local.peg import Peg, createPegColors
 
 if tkinterInstalled:
     # This function is no longer used, it was replaced with the new level select menu
@@ -342,6 +342,53 @@ def createDefaultPegsPos():
                 (1146, 754)]
 
     return posList
+
+
+def loadLevel(filePath = None) -> tuple[list[Peg], list[Peg], int]:
+    # load the pegs from a level file (pickle)
+    pegs, levelFileName = loadData(filePath)
+    originPegs = pegs.copy()
+
+    pegs = createPegColors(pegs)
+
+    orangeCount = 0
+    for peg in pegs:
+        if peg.color == "orange":
+            orangeCount += 1
+
+    # check that the filepath is not empty
+    if levelFileName == "" or levelFileName == None:
+        levelFileName = "Default"
+    else:
+        # strip everything from the filepath except the filename
+        levelFileName = levelFileName.split("/")[-1]
+        # remove the file extension '.lvl'
+        levelFileName = levelFileName[:-4]
+
+    return pegs, originPegs, orangeCount, levelFileName
+
+
+def loadDefaultLevel() -> tuple[list[Peg], list[Peg], int]:
+    pegsPosList = createDefaultPegsPos()
+    # using x and y tuple, create list of peg objects
+    pegs = []
+    for xyPos in pegsPosList:
+        x, y = xyPos
+        pegs.append(Peg(x, y))
+
+    originPegs = pegs.copy()
+
+    pegs = createPegColors(pegs)
+
+    orangeCount = 0
+    for peg in pegs:
+        if peg.color == "orange":
+            orangeCount += 1
+
+    levelFileName = "Default"
+
+    return pegs, originPegs, orangeCount, levelFileName
+
 
 # if __name__ == '__main__':
 #     print("Warning !!! Be careful, files may be overwritten or deleted")

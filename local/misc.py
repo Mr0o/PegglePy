@@ -1,139 +1,16 @@
 import pygame
-from math import sqrt, ceil
-from random import randint
+from math import sqrt
 
 ### local imports ###
-from local.load_level import loadData, createDefaultPegsPos
 from local.config import baseTimeScale
 from local.userConfig import configs
-from local.resources import backgroundImg, bluePegImg, orangePegImg, greenPegImg, hitBluePegImg, hitOrangePegImg, hitGreenPegImg
+from local.resources import backgroundImg, bluePegImg, orangePegImg, greenPegImg
+from local.resources import hitBluePegImg, hitOrangePegImg, hitGreenPegImg
+from local.resources import glowingBluePegImg, glowingOrangePegImg, glowingGreenPegImg
 from local.peg import Peg
 from local.ball import Ball
 from local.audio import newSong
 from local.quadtree import QuadtreePegs, Rectangle
-
-
-def getScoreMultiplier(remainingOrangePegs, pegsHit=0) -> int:
-    # first multiplier based on remaining orange pegs
-    multiplier = 1
-    if remainingOrangePegs <= 3:
-        multiplier = 10
-    elif remainingOrangePegs <= 6:
-        multiplier = 5
-    elif remainingOrangePegs <= 10:
-        multiplier = 3
-    elif remainingOrangePegs <= 15:
-        multiplier = 2
-
-    # second multiplier based on number of pegs hit by the current ball
-    if pegsHit >= 10 and pegsHit < 15:
-        multiplier *= 2
-    elif pegsHit >= 15 and pegsHit < 18:
-        multiplier *= 5
-    elif pegsHit >= 18 and pegsHit < 22:
-        multiplier *= 8
-    elif pegsHit >= 22 and pegsHit < 25:
-        multiplier *= 10
-    elif pegsHit >= 25 and pegsHit < 35:
-        multiplier *= 20
-    elif pegsHit >= 35:  # if you are hitting this many pegs with one ball, you are either very lucky or cheating but this is the reward either way
-        multiplier *= 100
-    return multiplier
-
-def createPegColors(pegs: list[Peg], color_map: list = None) -> list[Peg]:
-    if color_map:
-        # update peg colors with a fixed map
-        for i in range(0, len(pegs)):
-            peg = pegs[i]
-            peg.color = color_map[i]
-            if peg.color == "orange":
-                peg.isOrange = True
-            elif peg.color == "green":
-                peg.isPowerUp = True
-            peg.update_color()
-    else:
-        target_oranges = 25
-        target_greens = 2
-
-        if len(pegs) < 25:
-            if configs["DEBUG_MODE"]:
-                print("WARN: Level has less than 25 pegs, continuing anyway...")
-            target_oranges = 1 if len(pegs) <= 3 else len(pegs) - 2
-            if len(pegs) <= 2:
-                target_greens = len(pegs) - target_oranges
-        elif len(pegs) > 120:
-            if configs["DEBUG_MODE"]:
-                print(
-                    "WARN: Level has excessive number of pegs, expect performance issues...")
-
-        peg_pool = pegs.copy()
-
-        # create orange pegs
-        orange_count = 0
-        while orange_count < target_oranges:
-            i = randint(0, len(peg_pool) - 1)
-            p = peg_pool.pop(i)
-            p.color = "orange"
-            p.isOrange = True
-            p.update_color()
-
-            orange_count += 1
-
-        # create green pegs
-        for _ in range(target_greens):
-            i = randint(0, len(peg_pool) - 1)
-            p = peg_pool.pop(i)
-            p.color = "green"
-            p.isPowerUp = True
-            p.update_color()
-
-    return pegs
-
-
-def loadLevel(filePath = None) -> tuple[list[Peg], list[Peg], int]:
-    # load the pegs from a level file (pickle)
-    pegs, levelFileName = loadData(filePath)
-    originPegs = pegs.copy()
-
-    pegs = createPegColors(pegs)
-
-    orangeCount = 0
-    for peg in pegs:
-        if peg.color == "orange":
-            orangeCount += 1
-
-    # check that the filepath is not empty
-    if levelFileName == "" or levelFileName == None:
-        levelFileName = "Default"
-    else:
-        # strip everything from the filepath except the filename
-        levelFileName = levelFileName.split("/")[-1]
-        # remove the file extension '.lvl'
-        levelFileName = levelFileName[:-4]
-
-    return pegs, originPegs, orangeCount, levelFileName
-
-
-def loadDefaultLevel() -> tuple[list[Peg], list[Peg], int]:
-    pegsPosList = createDefaultPegsPos()
-    # using x and y tuple, create list of peg objects
-    pegs = []
-    for xyPos in pegsPosList:
-        x, y = xyPos
-        pegs.append(Peg(x, y))
-
-    originPegs = pegs.copy()
-
-    pegs = createPegColors(pegs)
-
-    orangeCount = 0
-    for peg in pegs:
-        if peg.color == "orange":
-            orangeCount += 1
-
-    levelFileName = "Default"
-
-    return pegs, originPegs, orangeCount, levelFileName
 
 
 # create a static image of the background and pegs, this avoids redrawing the background and pegs every frame

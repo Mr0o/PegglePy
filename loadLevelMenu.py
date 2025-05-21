@@ -6,8 +6,8 @@ from local.config import configs
 from local.resources import *
 from local.vectors import Vector
 from local.audio import playSoundPitch, newSong
-from local.load_level import loadData
-from local.misc import createPegColors, loadDefaultLevel
+from local.load_level import loadData, loadDefaultLevel
+from local.peg import createPegColors
 import re
 
 

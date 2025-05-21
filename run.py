@@ -17,7 +17,7 @@ try:
     from local.quadtree import QuadtreePegs, Rectangle
 
     from local.ball import Ball
-    from local.peg import Peg
+    from local.peg import Peg, createPegColors, getScoreMultiplier
     from local.bucket import Bucket
 except ImportError as e:
     print("ERROR: Unable to import local modules, this is likely due to a missing file or folder. Please make sure to run the script from within the PegglePy directory.\n")
