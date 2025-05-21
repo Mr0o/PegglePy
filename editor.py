@@ -9,12 +9,12 @@ from random import randint
 ##### local imports #####
 from local.config import *
 from local.userConfig import configs
-from local.load_level import loadData, saveData
+from local.loadLevel import loadData, saveData
 from local.collision import isBallTouchingPeg
 from local.peg import Peg
 from local.ball import Ball
 from local.misc import createStaticImage, updateStaticImage
-from local.trigger_events import TimedEvent
+from local.triggerEvents import TimedEvent
 from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, setMusicVolume, newSong
 from local.resources import editorIconImg, backgroundImg, infoFont, warnFont, helpFont, transparentPegImg, invalidPegImg, newPegSound, invalidPegSound, debugFont
 

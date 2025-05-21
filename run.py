@@ -9,7 +9,7 @@ try:
     from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, autoPauseMusic, newSong, setMusicVolume
     from local.resources import *  # pygame audio, fonts and images
     from local.misc import *
-    from local.trigger_events import TimedEvent
+    from local.triggerEvents import TimedEvent
 
     # refer to the vectors.py module for information on these functions
     from local.vectors import Vector, subVectors

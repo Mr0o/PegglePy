@@ -1,6 +1,5 @@
 import pygame
 from local.config import configs, pegRad, ballRad
-from local.peg import Peg # need access to the default peg img
 
 pygame.init()
 
