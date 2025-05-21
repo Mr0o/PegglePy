@@ -70,6 +70,14 @@ hitPegRad = pegRad*2
 hitBluePegImg = pygame.transform.scale(hitBluePegImg, (hitPegRad, hitPegRad))
 hitOrangePegImg = pygame.transform.scale(hitOrangePegImg, (hitPegRad, hitPegRad))
 hitGreenPegImg = pygame.transform.scale(hitGreenPegImg, (hitPegRad, hitPegRad))
+#glowing peg
+glowingBluePegImg = pygame.image.load("resources/images/pegs/200x200/glowing_blue_peg.png")
+glowingOrangePegImg = pygame.image.load("resources/images/pegs/200x200/glowing_red_peg.png")
+glowingGreenPegImg = pygame.image.load("resources/images/pegs/200x200/glowing_green_peg.png")
+#transform
+glowingBluePegImg = pygame.transform.scale(glowingBluePegImg, (hitPegRad, hitPegRad))
+glowingOrangePegImg = pygame.transform.scale(glowingOrangePegImg, (hitPegRad, hitPegRad))
+glowingGreenPegImg = pygame.transform.scale(glowingGreenPegImg, (hitPegRad, hitPegRad))
 
 #hitBluePegImg.convert_alpha()
 #hitOrangePegImg.convert_alpha()
