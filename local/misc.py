@@ -85,6 +85,25 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
 
     return staticCircles
 
+# returns the next frame of the animation sequence
+def getNewGamePegAnimationSequenceFrame(pegs: list[Peg], dt: float) -> pygame.Surface:
+    # transparent surface
+    animationFrameScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
+    for peg in pegs:
+        if peg.color == "orange":
+            pegImg = orangePegImg
+        elif peg.color == "green":
+            pegImg = greenPegImg
+        else:
+            pegImg = bluePegImg
+                
+        # set animation image
+        peg.animation.set_image(pegImg)
+        peg.animation.update(dt)
+        peg.animation.draw(animationFrameScreen)
+        
+    return animationFrameScreen
+
 
 # quite horrendous, will be fixed in the future... hopefully :)
 def resetGame(balls,  createPegColors, bucket, pegs, originPegs, quadtree):

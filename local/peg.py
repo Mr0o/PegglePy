@@ -1,8 +1,9 @@
 from random import randint
 
 # refer to the vectors.py module for information on these functions
-from local.trigger_events import TimedEvent
+from local.triggerEvents import TimedEvent
 from local.vectors import Vector
+from local.animate import AnimationFadeIn
 
 from local.config import pegRad, defaultPegMass, configs
 
@@ -25,6 +26,12 @@ class Peg:
         self.points = 10
 
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
+        
+        # create pop‐in animation
+        self.animation: AnimationFadeIn = AnimationFadeIn(self.pos,
+                                   duration=90.0,
+                                   start_scale=3.00)
+        self.animation.reset()
 
 
     def reset(self):
@@ -48,6 +55,22 @@ class Peg:
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
 
 
+    def set_color(self, color: str):
+        # set the appropiate color peg image if it is has been hit or not
+        self.color = color
+        if self.color == "orange":
+            self.points = 100
+            self.isOrange = True
+        elif self.color == "green":
+            self.points = 10
+            self.isPowerUp = True
+        else:
+            self.isOrange = False
+            self.isPowerUp = False
+
+        self.update_color()
+        
+        
     def update_color(self):
         # set the appropiate color peg image if it is has been hit or not
         if not self.isHit:
@@ -56,6 +79,16 @@ class Peg:
             if self.color == "green":
                 self.points = 10
             
+
+    def update_animation(self, dt: float):
+        # drive animation every frame
+        if not self.animation.done:
+            self.animation.update(dt)
+
+    def draw_animation(self):
+        if not self.animation.done:
+            # still popping in
+            self.animation.draw()
 
 
 def getScoreMultiplier(remainingOrangePegs, pegsHit=0) -> int:

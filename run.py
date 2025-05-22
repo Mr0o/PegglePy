@@ -10,6 +10,7 @@ try:
     from local.resources import *  # pygame audio, fonts and images
     from local.misc import *
     from local.triggerEvents import TimedEvent
+    from local.animate import AnimationFadeIn
 
     # refer to the vectors.py module for information on these functions
     from local.vectors import Vector, subVectors
@@ -85,7 +86,7 @@ while selection != "start" and selection != "quit":
             selection = "none"
 
 # prevent accidental click on launch
-delayTimer = TimedEvent(0.5)
+delayTimer = TimedEvent(0.2)
 
 ### testing stuff ###
 balls: list[Ball]
@@ -159,7 +160,7 @@ if selection != "quit":
         #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
         #pegs, originPegs, orangeCount, levelFileName = loadLevel("levels/Level 1.lvl")
 
-        delayTimer = TimedEvent(0.5)
+        delayTimer = TimedEvent(0.2)
     else:
         levelFileName = "Unsaved Editor Level"
         originPegs = pegs.copy()
@@ -192,6 +193,11 @@ quadtree = QuadtreePegs(boundary, 4)
 queryRect = Rectangle(0, 0, 0, 0)
 nearbyPegs = []
 
+isNewGameAnimationSequenceActive = True
+isNewGameAnimationSequenceStart = True
+isNewGameAnimationSequenceDone = True
+
+
 ##### main loop #####
 while gameRunning:
     startTotalTime = time.time()
@@ -217,6 +223,7 @@ while gameRunning:
     
     launch_button = False
     gamePadFineTuneAmount = 0
+    isNewGameAnimationSequenceStart = isNewGameAnimationSequenceDone and isNewGameAnimationSequenceStart and isNewGameAnimationSequenceActive
     for event in pygame.event.get():  # check events and quit if the program is closed
         if event.type == pygame.QUIT:
             gameRunning = False
@@ -227,6 +234,7 @@ while gameRunning:
                     balls, createPegColors, bucket, pegs, originPegs, quadtree)
                 if not configs["MUSIC_ENABLED"]:
                     stopMusic()
+                isNewGameAnimationSequenceStart = True
             if event.key == pygame.K_1:  # enable or disable configs["DEBUG_MODE"] features
                 configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
             if event.key == pygame.K_2:  # enable or disable cheats
@@ -266,7 +274,8 @@ while gameRunning:
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                 if not configs["MUSIC_ENABLED"]:
                     stopMusic()
-                delayTimer = TimedEvent(0.50)
+                delayTimer = TimedEvent(0.30)
+                isNewGameAnimationSequenceStart = True
             if event.key == pygame.K_ESCAPE:  # enable or disable cheats
                 gamePaused = not gamePaused
             if event.key == pygame.K_0:
@@ -413,7 +422,9 @@ while gameRunning:
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
 
                 # prevent accidental click on launch
-                delayTimer = TimedEvent(0.5)
+                delayTimer = TimedEvent(0.30)
+                
+                isNewGameAnimationSequenceStart = True
 
                 if not configs["MUSIC_ENABLED"]:
                     # change the song
@@ -472,6 +483,7 @@ while gameRunning:
                         balls,  createPegColors, bucket, pegs, originPegs, quadtree)  # horrifying function that resets the game
                     if not configs["MUSIC_ENABLED"]:
                         stopMusic()
+                    isNewGameAnimationSequenceStart = True
                 if event.button == 4:  # the 'L1' button on a ps4 controller
                     # rumble test
                     if pygame.joystick.get_count() > 0:
@@ -521,6 +533,7 @@ while gameRunning:
                         balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                     if not configs["MUSIC_ENABLED"]:
                         stopMusic()
+                    isNewGameAnimationSequenceStart = True
                 if event.button == 6:  # the 'start' button on an xbox controller
                     configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
                 if event.button == 7:  # the 'back' button on an xbox controller
@@ -611,13 +624,48 @@ while gameRunning:
     # reset the game when the game is over and the mouse is clicked
     if launch_button and gameOver:
         # prevent the click from instantly launching a ball
-        delayTimer = TimedEvent(0.25)
+        delayTimer = TimedEvent(0.30)
         # horrifying function that resets the game
         ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
             balls,  createPegColors, bucket, pegs, originPegs, quadtree)
         if not configs["MUSIC_ENABLED"]:
             stopMusic()
+            
+    if isNewGameAnimationSequenceStart:
+        isNewGameAnimationSequenceStart = False
+        isNewGameAnimationSequenceActive = True
+        isNewGameAnimationSequenceDone = False
+    
+        # set a delay incremental to each pegs index in the pegs list
+        for i, peg in enumerate(pegs):
+            # scale the delay based on the length of the pegs list
+            # this is to keep the animation time consistent regardless of the number of pegs
+            animationTime = 50 
+            peg.animation.delay = (animationTime / len(pegs)) * i
+            peg.animation.reset()
 
+        if configs["DEBUG_MODE"]:
+            print("Debug: New game animation sequence started")
+
+    if isNewGameAnimationSequenceActive:
+        if not delayTimer.isTriggered:
+            dt = 0
+        animationFrameScreen = getNewGamePegAnimationSequenceFrame(pegs, dt)
+        
+        # check if the animation is done
+        for peg in pegs:
+            if peg.animation.done:
+                isNewGameAnimationSequenceDone = True
+            else:
+                isNewGameAnimationSequenceDone = False
+                break
+        
+        if isNewGameAnimationSequenceDone:
+            isNewGameAnimationSequenceActive = False
+            isNewGameAnimationSequenceDone = True
+            if configs["DEBUG_MODE"]:
+                print("Debug: New game animation sequence done")
+                
     # do not update any game physics or game logic if the game is paused or over
     if not gamePaused and not gameOver:
         # use the mouse position as a vector to calculate the path that is being aimed
@@ -642,7 +690,7 @@ while gameRunning:
 
         delayTimer.update()  # prevent the ball from launching instantly after the game is reset
         # if mouse clicked then trigger ball launch
-        if launch_button and not ball.isAlive and delayTimer.isTriggered and len(balls) < 2:
+        if launch_button and not ball.isAlive and delayTimer.isTriggered and len(balls) < 2 and not isNewGameAnimationSequenceActive:
             if powerUpActive and powerUpType == "guideball":
                 powerUpCount -= 1
                 if powerUpCount < 1:
@@ -1082,7 +1130,17 @@ while gameRunning:
     startDrawTime = time.time()
 
     ##### draw #####
-    screen.blit(staticImage, (0, 0))
+    if isNewGameAnimationSequenceActive:
+        if configs["FULLSCREEN"]:
+            fullscreenBackgroundImg = pygame.transform.scale(
+                backgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
+            screen.blit(fullscreenBackgroundImg, (0, 0))
+        else:
+            screen.blit(backgroundImg, (0, 0))
+        screen.blit(animationFrameScreen, (0, 0))
+    else:
+        screen.blit(staticImage, (0, 0))
+    
     # draw back of bucket
     bucketBackImg, bucketFrontImg = bucket.getImage(powerUpType, powerUpActive)
     screen.blit(bucketBackImg, (bucket.pos.x, bucket.pos.y))
@@ -1210,7 +1268,7 @@ while gameRunning:
         screen.blit(pauseScreen, (0, 0))
         if pauseSelection == "resume":
             gamePaused = False
-            delayTimer = TimedEvent(0.50)
+            delayTimer = TimedEvent(0.30)
         elif pauseSelection == "restart":
             # reset the game
             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
@@ -1218,7 +1276,8 @@ while gameRunning:
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
             gamePaused = False
-            delayTimer = TimedEvent(0.50)
+            delayTimer = TimedEvent(0.30)
+            isNewGameAnimationSequenceStart = True
         elif pauseSelection == "load":
             pygame.mixer.music.stop()
             pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen)
@@ -1231,7 +1290,8 @@ while gameRunning:
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
             gamePaused = False
-            delayTimer = TimedEvent(0.50)
+            delayTimer = TimedEvent(0.30)
+            isNewGameAnimationSequenceStart = True
         elif pauseSelection == "quit":
             gameRunning = False
             time.sleep(0.15)
@@ -1264,6 +1324,8 @@ while gameRunning:
                         # reset the game
                         ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
                             balls,  createPegColors, bucket, pegs, originPegs, quadtree)
+                        
+                        isNewGameAnimationSequenceStart = True
 
                 elif selection == "settings":
                     if settingsMenu(screen) == "mainMenu":
@@ -1273,8 +1335,10 @@ while gameRunning:
             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
                 balls,  createPegColors, bucket, pegs, originPegs, quadtree)
 
+            isNewGameAnimationSequenceStart = True
+
             # prevent accidental click on launch
-            delayTimer = TimedEvent(0.5)
+            delayTimer = TimedEvent(0.30)
 
             #change the song
             if configs["MUSIC_ENABLED"]:
@@ -1318,7 +1382,9 @@ while gameRunning:
                             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
                                 balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                             
-                            delayTimer = TimedEvent(0.50)
+                            delayTimer = TimedEvent(0.30)
+                            
+                            isNewGameAnimationSequenceStart = True
                         
                         
                     elif selection == "settings":
@@ -1329,8 +1395,10 @@ while gameRunning:
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                 
+                isNewGameAnimationSequenceStart = True
+                
                 # prevent accidental click on launch
-                delayTimer = TimedEvent(0.5)
+                delayTimer = TimedEvent(0.30)
 
                 if configs["MUSIC_ENABLED"]:
                     newSong()
@@ -1350,8 +1418,10 @@ while gameRunning:
                 # reset the game
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
-                
-                delayTimer = TimedEvent(0.50)
+
+                delayTimer = TimedEvent(0.30)
+
+                isNewGameAnimationSequenceStart = True
         
         elif pauseSelection == "settings":
             isFullscreen = configs["FULLSCREEN"] # check state before settings menu opens
