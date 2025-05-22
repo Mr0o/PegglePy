@@ -1131,12 +1131,9 @@ while gameRunning:
 
     ##### draw #####
     if isNewGameAnimationSequenceActive:
-        if configs["FULLSCREEN"]:
-            fullscreenBackgroundImg = pygame.transform.scale(
-                backgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
-            screen.blit(fullscreenBackgroundImg, (0, 0))
-        else:
-            screen.blit(backgroundImg, (0, 0))
+        backgroundImg = pygame.transform.scale(
+            backgroundImg, (configs["WIDTH"], configs["HEIGHT"]))
+        screen.blit(backgroundImg, (0, 0))
         screen.blit(animationFrameScreen, (0, 0))
     else:
         screen.blit(staticImage, (0, 0))
