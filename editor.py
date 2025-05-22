@@ -7,7 +7,7 @@ import pygame  # used for input, audio and graphics
 from random import randint
 
 ##### local imports #####
-from local.config import *
+from local.config import configs
 from local.userConfig import configs
 from local.loadLevel import loadData, saveData
 from local.collision import isBallTouchingPeg
@@ -17,6 +17,7 @@ from local.misc import createStaticImage, updateStaticImage
 from local.triggerEvents import TimedEvent
 from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, setMusicVolume, newSong
 from local.resources import editorIconImg, backgroundImg, infoFont, warnFont, helpFont, transparentPegImg, invalidPegImg, newPegSound, invalidPegSound, debugFont
+from local.vectors import Vector
 
 from menu import getEditorPauseScreen
 from loadLevelMenu import loadLevelMenu
