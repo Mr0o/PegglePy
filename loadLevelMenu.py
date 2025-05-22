@@ -327,7 +327,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
                             print ("Level selected: " + str(levelFilePath))
                     # mouse is hovering over the level selection rectangle
                     else:
-                        color = (0, 255, 0)
+                        color = (0, 180, 255)
                         levelNameText = menuButtonFont.render(levelName, True, color)
 
                         # blit the preview image at the top right corner of the screen
@@ -336,7 +336,7 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
             # controller cursor
             if controllerConnected:
                 if i == controllerCursorIndex:
-                    color = (0, 255, 0)
+                    color = (0, 180, 255)
                     levelNameText = menuButtonFont.render(levelName, True, color)
 
                     # blit the preview image at the top right corner of the screen
