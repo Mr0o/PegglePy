@@ -3,16 +3,24 @@ import time
 
 ##### local imports #####
 try:
-    from local.config import *
+    from local.config import baseTimeScale, closeCallTimeScale, timeScale, speedHack, cheats, debugAutoRemovePegsTimer
+    from local.config import closeCallTimeScale, baseTimeScale, odeToJoyTimeScale, longShotDistance, noGravityTimeLength
+    from local.config import LAUNCH_FORCE, queryRectSize, autoRemovePegs, autoRemovePegsTimerValue
+    from local.config import powerUpType, powerUpActive, powerUpCount, pitch, pitchRaiseCount, trajectoryDepth
+    from local.config import ballsRemaining, shouldClear, previousAim
     from local.userConfig import configs, defaultConfigs, saveSettings
     from local.trajectory import calcTrajectory, findBestTrajectory
     from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, autoPauseMusic, newSong, setMusicVolume
-    from local.resources import *  # pygame audio, fonts and images
-    from local.misc import *
+    from local.resources import gameIconImg, backgroundImg, ballImg
+    from local.resources import launch_sound, sighSound, longShotSound, low_hit_sound, normal_hit_sound, failSound, drumRoll, pegPopSound
+    from local.resources import cymbal, freeBallSound, powerUpSpooky1, powerUpSpooky2, powerUpSpooky3, powerUpSpooky4
+    from local.resources import powerUpMultiBall, powerUpGuideBall, powerUpZenBall, powerUpZenBallHit, powerUpNoGravity
+    from local.resources import menuFont, ballCountFont, debugFont, infoFont
+    from local.misc import createStaticImage, createStaticCircles, updateStaticImage
+    from local.misc import distBetweenTwoPoints, resetGame
+    
     from local.triggerEvents import TimedEvent
-    from local.animate import AnimationFadeIn
-
-    # refer to the vectors.py module for information on these functions
+    from local.animate import AnimationFade, getPegAnimationFrame
     from local.vectors import Vector, subVectors
     from local.collision import isBallTouchingPeg, resolveCollision
     from local.quadtree import QuadtreePegs, Rectangle
@@ -156,7 +164,7 @@ pegs: list[Peg]
 
 if selection != "quit":
     if editorSelection != "play":
-        pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, configs["DEBUG_MODE"])
+        pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen)
         #pegs, originPegs, orangeCount, levelFileName = loadDefaultLevel()
         #pegs, originPegs, orangeCount, levelFileName = loadLevel("levels/Level 1.lvl")
 
@@ -197,6 +205,11 @@ isNewGameAnimationSequenceActive = True
 isNewGameAnimationSequenceStart = True
 isNewGameAnimationSequenceDone = True
 
+isRemovePegsAnimationSequenceActive = False
+isRemovePegsAnimationSequenceStart = False
+isRemovePegsAnimationSequenceDone = False
+
+hitPegs: list[Peg] = []
 
 ##### main loop #####
 while gameRunning:
@@ -224,6 +237,7 @@ while gameRunning:
     launch_button = False
     gamePadFineTuneAmount = 0
     isNewGameAnimationSequenceStart = isNewGameAnimationSequenceDone and isNewGameAnimationSequenceStart and isNewGameAnimationSequenceActive
+    isRemovePegsAnimationSequenceStart = isRemovePegsAnimationSequenceDone and isRemovePegsAnimationSequenceStart and isRemovePegsAnimationSequenceActive
     for event in pygame.event.get():  # check events and quit if the program is closed
         if event.type == pygame.QUIT:
             gameRunning = False
@@ -265,7 +279,7 @@ while gameRunning:
                 debugTrajectory = not debugTrajectory
             if event.key == pygame.K_l:  # load a new level
                 stopMusic()
-                pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen, configs["DEBUG_MODE"])
+                pegs, originPegs, orangeCount, levelFileName = loadLevelMenu(screen)
                 # set the caption to include the level name
                 pygame.display.set_caption(
                     "PegglePy   -   " + levelFileName)
@@ -274,7 +288,7 @@ while gameRunning:
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                 if not configs["MUSIC_ENABLED"]:
                     stopMusic()
-                delayTimer = TimedEvent(0.30)
+                delayTimer = TimedEvent(0.50)
                 isNewGameAnimationSequenceStart = True
             if event.key == pygame.K_ESCAPE:  # enable or disable cheats
                 gamePaused = not gamePaused
@@ -422,7 +436,7 @@ while gameRunning:
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
 
                 # prevent accidental click on launch
-                delayTimer = TimedEvent(0.30)
+                delayTimer = TimedEvent(0.50)
                 
                 isNewGameAnimationSequenceStart = True
 
@@ -624,7 +638,7 @@ while gameRunning:
     # reset the game when the game is over and the mouse is clicked
     if launch_button and gameOver:
         # prevent the click from instantly launching a ball
-        delayTimer = TimedEvent(0.30)
+        delayTimer = TimedEvent(0.50)
         # horrifying function that resets the game
         ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
             balls,  createPegColors, bucket, pegs, originPegs, quadtree)
@@ -641,17 +655,15 @@ while gameRunning:
             # scale the delay based on the length of the pegs list
             # this is to keep the animation time consistent regardless of the number of pegs
             animationTime = 50 
-            peg.animation.delay = (animationTime / len(pegs)) * i
-            peg.animation.reset()
-
-        if configs["DEBUG_MODE"]:
-            print("Debug: New game animation sequence started")
+            peg.animation.startFadeIn(((animationTime / len(pegs)) * i) + 10)
 
     if isNewGameAnimationSequenceActive:
+        tempDt = dt
         if not delayTimer.isTriggered:
-            dt = 0
-        animationFrameScreen = getNewGamePegAnimationSequenceFrame(pegs, dt)
-        
+            tempDt = 0
+
+        animationFrameScreen = getPegAnimationFrame(pegs, tempDt)
+
         # check if the animation is done
         for peg in pegs:
             if peg.animation.done:
@@ -663,8 +675,59 @@ while gameRunning:
         if isNewGameAnimationSequenceDone:
             isNewGameAnimationSequenceActive = False
             isNewGameAnimationSequenceDone = True
-            if configs["DEBUG_MODE"]:
-                print("Debug: New game animation sequence done")
+                
+    if isRemovePegsAnimationSequenceStart:
+        isRemovePegsAnimationSequenceStart = False
+        isRemovePegsAnimationSequenceActive = True
+        isRemovePegsAnimationSequenceDone = False
+
+        # set a delay incremental to each pegs index in the pegs list
+        for i, peg in enumerate(hitPegs):
+            peg.animation.startFadeOut(20 + peg.animation.duration*0.25 * i)
+            
+        animationStartTime = time.time()
+            
+    if isRemovePegsAnimationSequenceActive:
+        tempDt = dt
+        if not delayTimer.isTriggered:
+            tempDt = 0
+            
+        # play sound when a peg has started its animation (startTrigger)
+        for i, peg in enumerate(hitPegs):
+            if peg.animation.startTrigger:
+                if peg.animation.fadeOut:
+                    if configs["SOUND_ENABLED"] and configs["SOUND_VOLUME"] > 0:
+                        playSoundPitch(pegPopSound, volume=configs["SOUND_VOLUME"] + 0.05)
+        
+        # track elapsed animation time and increase the speed if its taking longer
+        # (shouldn't be an issue unless the level has hundreds of pegs or more)
+        elapsedTime = time.time() - animationStartTime
+        if elapsedTime > 5 and elapsedTime < 15:
+            animationFrameScreen = getPegAnimationFrame(hitPegs, tempDt*2)
+        elif elapsedTime > 15 and elapsedTime < 25:
+            animationFrameScreen = getPegAnimationFrame(hitPegs, tempDt*5)
+        elif elapsedTime > 25:
+            animationFrameScreen = getPegAnimationFrame(hitPegs, tempDt*15)
+        else:
+            animationFrameScreen = getPegAnimationFrame(hitPegs, tempDt)
+
+        if len(hitPegs) == 0:
+            # if there are no pegs to remove, set the animation to done
+            isRemovePegsAnimationSequenceDone = True
+            isRemovePegsAnimationSequenceActive = False
+            isRemovePegsAnimationSequenceStart = False
+        
+        # check if the animation is done
+        for peg in hitPegs:
+            if peg.animation.done:
+                isRemovePegsAnimationSequenceDone = True
+            else:
+                isRemovePegsAnimationSequenceDone = False
+                break
+        
+        if isRemovePegsAnimationSequenceDone:
+            isRemovePegsAnimationSequenceActive = False
+            isRemovePegsAnimationSequenceDone = True
                 
     # do not update any game physics or game logic if the game is paused or over
     if not gamePaused and not gameOver:
@@ -690,7 +753,7 @@ while gameRunning:
 
         delayTimer.update()  # prevent the ball from launching instantly after the game is reset
         # if mouse clicked then trigger ball launch
-        if launch_button and not ball.isAlive and delayTimer.isTriggered and len(balls) < 2 and not isNewGameAnimationSequenceActive:
+        if launch_button and not ball.isAlive and delayTimer.isTriggered and len(balls) < 2 and not isNewGameAnimationSequenceActive and not isRemovePegsAnimationSequenceActive:
             if powerUpActive and powerUpType == "guideball":
                 powerUpCount -= 1
                 if powerUpCount < 1:
@@ -1109,6 +1172,19 @@ while gameRunning:
             if powerUpType == "multiball" or powerUpType == "spooky-multiball":
                 powerUpActive = False or cheats
                 powerUpCount = 0
+            
+            # save hit pegs for animation
+            hitPegs = [p for p in pegs if p.isHit]
+
+            # start the peg removal animation sequence
+            isRemovePegsAnimationSequenceStart = True
+            isRemovePegsAnimationSequenceActive = True
+            isRemovePegsAnimationSequenceDone = True
+            
+            animationFrameScreen = createStaticImage(pegs)
+            
+            delayTimer = TimedEvent(0.25)  
+            
             # remove hit pegs
             pegs = [p for p in pegs if not p.isHit]
             for s in pointsEarned:
@@ -1137,12 +1213,14 @@ while gameRunning:
         screen.blit(animationFrameScreen, (0, 0))
     else:
         screen.blit(staticImage, (0, 0))
+        if isRemovePegsAnimationSequenceActive:
+            screen.blit(animationFrameScreen, (0, 0))
     
     # draw back of bucket
     bucketBackImg, bucketFrontImg = bucket.getImage(powerUpType, powerUpActive)
     screen.blit(bucketBackImg, (bucket.pos.x, bucket.pos.y))
     # draw ball(s)
-    if not gameOver:
+    if not gameOver and not isNewGameAnimationSequenceActive and not isRemovePegsAnimationSequenceActive:
         for b in balls:
             screen.blit(ballImg, (b.prevPos.x - ballImg.get_width() /
                         2, b.prevPos.y - ballImg.get_height()/2))
@@ -1153,7 +1231,7 @@ while gameRunning:
     for b in balls:
         if b.isAlive:
             done = False
-    if done and not gameOver and not gamePaused:
+    if done and not gameOver and not gamePaused and not isNewGameAnimationSequenceActive and not isRemovePegsAnimationSequenceActive:
         for fb in trajectory:
             # draw line from each point in the trajectory
             pygame.draw.line(screen, (10, 70, 163), (fb.prevPos.x, fb.prevPos.y), (fb.pos.x, fb.pos.y), 6)
@@ -1265,7 +1343,7 @@ while gameRunning:
         screen.blit(pauseScreen, (0, 0))
         if pauseSelection == "resume":
             gamePaused = False
-            delayTimer = TimedEvent(0.30)
+            delayTimer = TimedEvent(0.50)
         elif pauseSelection == "restart":
             # reset the game
             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
@@ -1273,7 +1351,7 @@ while gameRunning:
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
             gamePaused = False
-            delayTimer = TimedEvent(0.30)
+            delayTimer = TimedEvent(0.50)
             isNewGameAnimationSequenceStart = True
         elif pauseSelection == "load":
             pygame.mixer.music.stop()
@@ -1287,7 +1365,7 @@ while gameRunning:
             if not configs["MUSIC_ENABLED"]:
                 stopMusic()
             gamePaused = False
-            delayTimer = TimedEvent(0.30)
+            delayTimer = TimedEvent(0.50)
             isNewGameAnimationSequenceStart = True
         elif pauseSelection == "quit":
             gameRunning = False
@@ -1335,7 +1413,7 @@ while gameRunning:
             isNewGameAnimationSequenceStart = True
 
             # prevent accidental click on launch
-            delayTimer = TimedEvent(0.30)
+            delayTimer = TimedEvent(0.50)
 
             #change the song
             if configs["MUSIC_ENABLED"]:
@@ -1379,7 +1457,7 @@ while gameRunning:
                             ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
                                 balls,  createPegColors, bucket, pegs, originPegs, quadtree)
                             
-                            delayTimer = TimedEvent(0.30)
+                            delayTimer = TimedEvent(0.50)
                             
                             isNewGameAnimationSequenceStart = True
                         
@@ -1395,7 +1473,7 @@ while gameRunning:
                 isNewGameAnimationSequenceStart = True
                 
                 # prevent accidental click on launch
-                delayTimer = TimedEvent(0.30)
+                delayTimer = TimedEvent(0.50)
 
                 if configs["MUSIC_ENABLED"]:
                     newSong()
@@ -1416,7 +1494,7 @@ while gameRunning:
                 ballsRemaining, powerUpActive, powerUpCount, pitch, pitchRaiseCount, ball, score, pegsHit, pegs, orangeCount, gameOver, alreadyPlayedOdeToJoy, timeScale, longShotBonus, staticImage, quadtree = resetGame(
                     balls,  createPegColors, bucket, pegs, originPegs, quadtree)
 
-                delayTimer = TimedEvent(0.30)
+                delayTimer = TimedEvent(0.50)
 
                 isNewGameAnimationSequenceStart = True
         
