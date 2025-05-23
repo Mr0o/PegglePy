@@ -3,7 +3,7 @@ from random import randint
 # refer to the vectors.py module for information on these functions
 from local.triggerEvents import TimedEvent
 from local.vectors import Vector
-from local.animate import AnimationFadeIn
+from local.animate import AnimationFade
 
 from local.config import pegRad, defaultPegMass, configs
 
@@ -28,10 +28,9 @@ class Peg:
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
         
         # create pop‐in animation
-        self.animation: AnimationFadeIn = AnimationFadeIn(self.pos,
+        self.animation: AnimationFade = AnimationFade(self.pos,
                                    duration=90.0,
                                    start_scale=3.00)
-        self.animation.reset()
 
 
     def reset(self):
