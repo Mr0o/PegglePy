@@ -11,7 +11,7 @@ from local.userConfig import configs
 
 
 pygame.mixer.init(44100,-16,2,4096)
-def playSoundPitch(sound_file, pitch = 1.0) -> None:
+def playSoundPitch(sound_file, pitch = 1.0, volume = configs["SOUND_VOLUME"]) -> None:
     try:
         if configs["SOUND_ENABLED"]:
             # choose a file and make a sound object
@@ -25,7 +25,7 @@ def playSoundPitch(sound_file, pitch = 1.0) -> None:
 
             # take the resampled array, make it an object and stop playing after 2 seconds.
             snd_out = pygame.sndarray.make_sound(snd_resample)
-            snd_out.set_volume(configs["SOUND_VOLUME"]) # set the volume
+            snd_out.set_volume(volume) # set the volume
             snd_out.play()
     except Exception as e:
         if configs["DEBUG_MODE"]:
