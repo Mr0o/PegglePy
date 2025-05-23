@@ -659,7 +659,7 @@ while gameRunning:
 
     if isNewGameAnimationSequenceActive:
         tempDt = dt
-        if not delayTimer.isTriggered:
+        if not delayTimer.isTriggered or gamePaused:
             tempDt = 0
 
         animationFrameScreen = getPegAnimationFrame(pegs, tempDt)
@@ -689,7 +689,7 @@ while gameRunning:
             
     if isRemovePegsAnimationSequenceActive:
         tempDt = dt
-        if not delayTimer.isTriggered:
+        if not delayTimer.isTriggered or gamePaused:
             tempDt = 0
             
         # play sound when a peg has started its animation (startTrigger)
@@ -1135,10 +1135,11 @@ while gameRunning:
 
         # check if their are any orange pegs or if the player has no balls (lol)
         if done and (orangeCount == 0 or ballsRemaining < 1) and gameOver == False:
-            gameOver = True
-            if ballsRemaining < 1 and orangeCount > 0:
-                if configs["SOUND_ENABLED"]:
-                    playSoundPitch(failSound)
+            if isRemovePegsAnimationSequenceDone:
+                gameOver = True
+                if ballsRemaining < 1 and orangeCount > 0:
+                    if configs["SOUND_ENABLED"]:
+                        playSoundPitch(failSound)
 
         # check if the last orange peg has been hit, play ode to joy and change the buckets
         if orangeCount < 1 and not ballsRemaining < 1 and not alreadyPlayedOdeToJoy:
