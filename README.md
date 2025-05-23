@@ -1,6 +1,10 @@
 # PegglePy
 A clone of peggle written in python using pygame
 
+### Changes Log May 2025
+- Added animation sequnce for spawning pegs at the start of the game
+- Added animation sequnce for removing pegs after they've been hit and are being tallied for score
+
 ### Changes Log Febuary 2025
 - Implemented quadtree algorithm for collision detection (doubles the performance in some cases)
 - Added 8 more levels to the game (bringing the total to 10)
