@@ -23,6 +23,7 @@ drumRoll = pygame.mixer.Sound("resources/audio/sounds/drum_roll.ogg")
 cymbal = pygame.mixer.Sound("resources/audio/sounds/cymbal.ogg")
 longShotSound = pygame.mixer.Sound("resources/audio/sounds/long_shot.ogg")
 sighSound = pygame.mixer.Sound("resources/audio/sounds/sigh.ogg")
+pegPopSound = pygame.mixer.Sound("resources/audio/sounds/peg_pop.ogg")
 
 #Background image
 backgroundImg = pygame.image.load("resources/images/background960x720.jpg")
