@@ -6,7 +6,6 @@ from local.config import baseTimeScale
 from local.userConfig import configs
 from local.resources import backgroundImg, bluePegImg, orangePegImg, greenPegImg
 from local.resources import hitBluePegImg, hitOrangePegImg, hitGreenPegImg
-from local.resources import glowingBluePegImg, glowingOrangePegImg, glowingGreenPegImg
 from local.peg import Peg
 from local.ball import Ball
 from local.audio import newSong
@@ -84,25 +83,6 @@ def createStaticCircles(trajectory: list[Ball]) -> pygame.Surface:
         pygame.draw.circle(staticCircles, (0, 220, 10), [fb.pos.x, fb.pos.y], 1)
 
     return staticCircles
-
-# returns the next frame of the animation sequence
-def getNewGamePegAnimationSequenceFrame(pegs: list[Peg], dt: float) -> pygame.Surface:
-    # transparent surface
-    animationFrameScreen = pygame.Surface((configs["WIDTH"], configs["HEIGHT"]), pygame.SRCALPHA)
-    for peg in pegs:
-        if peg.color == "orange":
-            pegImg = orangePegImg
-        elif peg.color == "green":
-            pegImg = greenPegImg
-        else:
-            pegImg = bluePegImg
-                
-        # set animation image
-        peg.animation.set_image(pegImg)
-        peg.animation.update(dt)
-        peg.animation.draw(animationFrameScreen)
-        
-    return animationFrameScreen
 
 
 # quite horrendous, will be fixed in the future... hopefully :)
