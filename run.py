@@ -1010,13 +1010,13 @@ while gameRunning:
                                         playSoundPitch(low_hit_sound, pitch)
                                 pitch -= 0.05  # magic number
                             if pitchRaiseCount == 7:
-                                pitch = 1.32  # magic number
-                            elif pitchRaiseCount > 7 and pitchRaiseCount < 26:
+                                pitch = 1.34  # magic number
+                            elif pitchRaiseCount > 7 and pitchRaiseCount < 28:
                                 if not p.isPowerUp:
                                     if configs["SOUND_ENABLED"]:
                                         playSoundPitch(normal_hit_sound, pitch)
                                 pitch -= 0.045  # magic number
-                            elif pitchRaiseCount >= 26:
+                            elif pitchRaiseCount >= 28:
                                 if not p.isPowerUp:
                                     if configs["SOUND_ENABLED"]:
                                         playSoundPitch(normal_hit_sound, pitch)
