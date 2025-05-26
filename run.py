@@ -683,7 +683,7 @@ while gameRunning:
 
         # set a delay incremental to each pegs index in the pegs list
         for i, peg in enumerate(hitPegs):
-            peg.animation.startFadeOut(20 + peg.animation.duration*0.25 * i)
+            peg.animation.startFadeOut(20 + peg.animation.duration*0.18 * i)
             
         animationStartTime = time.time()
             
@@ -702,9 +702,9 @@ while gameRunning:
         # track elapsed animation time and increase the speed if its taking longer
         # (shouldn't be an issue unless the level has hundreds of pegs or more)
         elapsedTime = time.time() - animationStartTime
-        if elapsedTime > 5 and elapsedTime < 15:
+        if elapsedTime > 10 and elapsedTime < 20:
             animationFrameScreen = getPegAnimationFrame(hitPegs, tempDt*2)
-        elif elapsedTime > 15 and elapsedTime < 25:
+        elif elapsedTime > 20 and elapsedTime < 25:
             animationFrameScreen = getPegAnimationFrame(hitPegs, tempDt*5)
         elif elapsedTime > 25:
             animationFrameScreen = getPegAnimationFrame(hitPegs, tempDt*15)
@@ -851,6 +851,36 @@ while gameRunning:
         # measure performance of the physics calculations loop
         startPhysicsTime = time.time()
         
+        for b in balls:
+            # special check for the last orange peg close call
+            lastOrangePegNotHit = None
+            closeCallFound = False
+            for p in pegs:
+                if p.color == "orange" and not p.isHit and orangeCount == 1:
+                    lastOrangePegNotHit = p
+                    break
+            if lastOrangePegNotHit is not None:
+                largerRadPeg = Peg(lastOrangePegNotHit.pos.x, lastOrangePegNotHit.pos.y)
+                largerRadPeg.radius = lastOrangePegNotHit.radius * 5
+                ballTouchingPeg = isBallTouchingPeg(b, largerRadPeg, dt)
+                if ballTouchingPeg:
+                    closeCallFound = True
+                    if timeScale != closeCallTimeScale and len(balls) < 2:
+                        # only play sound once
+                        if configs["SOUND_ENABLED"]:
+                            playSoundPitch(drumRoll)
+                    timeScale = closeCallTimeScale # slow motion
+                    closeBall = b
+                elif timeScale != baseTimeScale:
+                    closeCallFound = True
+                    # only play sound once
+                    if configs["SOUND_ENABLED"]:
+                        playSoundPitch(sighSound)
+                    timeScale = baseTimeScale
+                    break
+            if closeCallFound:
+                break
+        
         # update ball physics and pegs, additional game logic
         for b in balls:
             if b.isAlive:
@@ -862,24 +892,6 @@ while gameRunning:
                 else:
                     nearbyPegs = pegs
                 for p in nearbyPegs:
-                    # if the current peg is the last remaining orange peg then apply special effects
-                    if p.color == "orange" and orangeCount == 1 and not p.isHit:
-                        largerRadPeg = Peg(p.pos.x, p.pos.y)
-                        largerRadPeg.radius = p.radius * 5
-                        ballTouchingPeg = isBallTouchingPeg(b, largerRadPeg, dt)
-                        if ballTouchingPeg:
-                            if timeScale != closeCallTimeScale and len(balls) < 2:
-                                # only play sound once
-                                if configs["SOUND_ENABLED"]:
-                                    playSoundPitch(drumRoll)
-                            timeScale = closeCallTimeScale # slow motion
-                            closeBall = b
-                        elif timeScale != baseTimeScale:
-                            # only play sound once
-                            if configs["SOUND_ENABLED"]:
-                                playSoundPitch(sighSound)
-                            timeScale = baseTimeScale
-
                     # ball physics and game logic
                     ballTouchingPeg = isBallTouchingPeg(b, p, dt)
                     if ballTouchingPeg:
@@ -1167,7 +1179,8 @@ while gameRunning:
             ballsRemaining -= 1
             pegsHit = 0
             longShotBonus = False
-            timeScale = baseTimeScale
+            if timeScale == closeCallTimeScale:
+                timeScale = baseTimeScale
             # forces the trajectory to be recalculated in case the mouse aim has not changed
             previousAim = Vector(0, 1)
             if powerUpType == "multiball" or powerUpType == "spooky-multiball":
