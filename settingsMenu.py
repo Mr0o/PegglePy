@@ -151,14 +151,21 @@ def settingsMenu(screen: pygame.Surface):
                 
                 # update back button position
                 backButtonPos = Vector(configs["WIDTH"] - 50*buttonScale-20, configs["HEIGHT"] - 50*buttonScale-20)
-                
-        # check if mouse is over debug checkbox
+        
+        # check if mouse is over the animations checkbox
         if mousePos.x > 50 and mousePos.x < 100 and mousePos.y > 650 and mousePos.y < 700:
+            # mouse button is down
+            if mouseDown:
+                configs["ANIMATIONS_ENABLED"] = not configs["ANIMATIONS_ENABLED"]
+                playSoundPitch(buttonClickSound)
+        
+        # check if mouse is over debug checkbox
+        if mousePos.x > 50 and mousePos.x < 100 and mousePos.y > 750 and mousePos.y < 800:
             # mouse button is down
             if mouseDown:
                 configs["DEBUG_MODE"] = not configs["DEBUG_MODE"]
                 playSoundPitch(buttonClickSound)
-                
+
         # draw the background
         screen.blit(altBackgroundImg, (0, 0))
 
@@ -248,10 +255,10 @@ def settingsMenu(screen: pygame.Surface):
         else:
             # draw the checkbox
             pygame.draw.rect(screen, (255, 255, 255), (50, 550, 50, 50), 2)
-        # DEBUG
-        debugLabel = menuButtonFont.render("Show debug info", True, (255, 255, 255))
-        screen.blit(debugLabel, (110, 650))
-        if configs["DEBUG_MODE"]:
+        # ANIMATIONS
+        animationsLabel = menuButtonFont.render("Animations", True, (255, 255, 255))
+        screen.blit(animationsLabel, (110, 650))
+        if configs["ANIMATIONS_ENABLED"]:
             # draw the checkbox
             pygame.draw.rect(screen, (255, 255, 255), (50, 650, 50, 50), 2)
             # draw the x
@@ -260,6 +267,18 @@ def settingsMenu(screen: pygame.Surface):
         else:
             # draw the checkbox
             pygame.draw.rect(screen, (255, 255, 255), (50, 650, 50, 50), 2)
+        # DEBUG
+        debugLabel = menuButtonFont.render("Show debug info", True, (255, 255, 255))
+        screen.blit(debugLabel, (110, 750))
+        if configs["DEBUG_MODE"]:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 750, 50, 50), 2)
+            # draw the x
+            pygame.draw.line(screen, (255, 0, 0), (50, 750), (100, 800), 2)
+            pygame.draw.line(screen, (255, 0, 0), (100, 750), (50, 800), 2)
+        else:
+            # draw the checkbox
+            pygame.draw.rect(screen, (255, 255, 255), (50, 750, 50, 50), 2)
             
 
         # draw the buttons
