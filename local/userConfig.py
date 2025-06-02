@@ -12,7 +12,8 @@ configs = {
     "SOUND_ENABLED": True,
     "SOUND_VOLUME": 0.25,
     "MUSIC_ENABLED": True,
-    "MUSIC_VOLUME": 0.25
+    "MUSIC_VOLUME": 0.25,
+    "ANIMATIONS_ENABLED": True,
 }
 
 defaultConfigs = configs.copy()
@@ -29,7 +30,7 @@ def loadSettings() -> None:
             for line in f:
                 # parse the key and value from the line
                 key, value = line.strip().split("=")
-                if key in ["FULLSCREEN", "DEBUG_MODE", "SOUND_ENABLED", "MUSIC_ENABLED", "VSYNC"]:
+                if key in ["FULLSCREEN", "DEBUG_MODE", "SOUND_ENABLED", "MUSIC_ENABLED", "VSYNC", "ANIMATIONS_ENABLED"]:
                     value = value == "True"
                 elif key in ["SOUND_VOLUME", "MUSIC_VOLUME", "WIDTH", "HEIGHT"]:
                     value = float(value)
