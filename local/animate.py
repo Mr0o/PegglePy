@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from local.peg import Peg
 from local.vectors import Vector
-from local.config import configs
+from local.userConfig import configs
 from local.resources import hitBluePegImg, hitOrangePegImg, hitGreenPegImg
 from local.resources import bluePegImg, orangePegImg, greenPegImg
 
@@ -62,6 +62,10 @@ class AnimationFade:
             self.startTrigger = True
 
     def update(self, dt: float):
+        if configs["ANIMATIONS_ENABLED"] is False:
+            self.done = True
+            self.startTrigger = False
+            return
         if self.delay > 0:
             self.delay -= dt
             if self.delay > 0:
