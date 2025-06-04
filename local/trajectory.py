@@ -1,10 +1,11 @@
 import time
+from math import sqrt, atan, pi
 
 from local.vectors import Vector, subVectors
 from local.ball import Ball
 from local.peg import Peg
 from local.config import LAUNCH_FORCE, trajectoryDepth, queryRectSize
-from local.config import configs
+from local.config import configs, gravity
 from local.collision import isBallTouchingPeg, resolveCollision
 from local.quadtree import QuadtreePegs, Rectangle
 
@@ -144,4 +145,41 @@ def findBestTrajectory(aim: Vector, startPos : Vector, pegs : list[Peg], quadtre
 
     return bestAim, bestScore, bestTrajectory
 
-    
+
+def getLaunchAngles(start: Vector,
+                     target: Vector,
+                     speed: float = LAUNCH_FORCE) -> list[float]:
+    """
+    Compute the two possible launch angles (in radians) required
+    to hit `target` from `start` at given scalar launch `speed`.
+    Returns [low_angle, high_angle], or [] if unreachable.
+    """
+    dx = target.x - start.x
+    # screen y grows DOWN, so invert for physics y-up
+    dy = start.y - target.y
+
+    v2 = speed*speed
+    g  = gravity.y
+
+    # guard vertical shot
+    if abs(dx) < 1e-6:
+        # max height = v^2/(2g)
+        if dy > v2/(2*g):
+            return []     # too high
+        return [pi/2]    # straight up
+
+    # discriminant of v^4 - g*(g x^2 + 2 y v^2)
+    disc = v2*v2 - g*(g*dx*dx + 2*dy*v2)
+    if disc < 0:
+        return []
+
+    sqrt_d = sqrt(disc)
+    # θ = atan( (v^2 ± sqrt(disc)) / (g·x) )
+    low  = atan((v2 - sqrt_d)/(g*dx))
+    high = atan((v2 + sqrt_d)/(g*dx))
+
+    # if target is left of start, shift both angles by pi
+    if dx < 0:
+        low  += pi
+        high += pi
+    return [low, high]
