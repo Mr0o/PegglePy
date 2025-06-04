@@ -1,5 +1,6 @@
 import sys  # used to exit the program immediately
 import time
+from math import cos, sin
 
 ##### local imports #####
 try:
@@ -9,7 +10,7 @@ try:
     from local.config import powerUpType, powerUpActive, powerUpCount, pitch, pitchRaiseCount, trajectoryDepth
     from local.config import ballsRemaining, shouldClear, previousAim
     from local.userConfig import configs, defaultConfigs, saveSettings
-    from local.trajectory import calcTrajectory, findBestTrajectory
+    from local.trajectory import calcTrajectory, findBestTrajectory, getLaunchAngles
     from local.audio import playSoundPitch, loadRandMusic, playMusic, stopMusic, autoPauseMusic, newSong, setMusicVolume
     from local.resources import gameIconImg, backgroundImg, ballImg
     from local.resources import launch_sound, sighSound, longShotSound, low_hit_sound, normal_hit_sound, failSound, drumRoll, pegPopSound
@@ -615,23 +616,30 @@ while gameRunning:
         posX = inputAim.x + ball.pos.x
         posY = inputAim.y + ball.pos.y
     elif not controllerInput:  # mouse
-        inputAim = Vector(mx, my)
-        mouseAim = subVectors(inputAim, ball.pos)
-        # adjust the angle of the mouseAim to account for gravity
-        mouseAim.setAngleDeg(mouseAim.getAngleDeg())
+        # 1) Compute analytic launch angles
+        targetPos = Vector(mx, my)
+        angles = getLaunchAngles(ball.pos, targetPos)
 
-        # print(inputAim.x, inputAim.y)
+        if angles:
+            θ = angles[0]                  # pick the low‐arc solution
+            # screen‐space dir: +x right, +y down
+            dir = Vector(cos(θ), -sin(θ))
+            # build an "aim point" one unit away from the ball
+            launchAim = ball.pos.copy()
+            launchAim.add(dir)
+        else:
+            # fallback: aim directly at the cursor
+            launchAim = targetPos.copy()
 
-        # use angle of reach to find angle needed for the projectile to hit the mouse position
-        # adjustedAngle = findAngleToTarget(ball.pos, Vector(mx, my))
-        # inputAim.setAngleDeg(adjustedAngle)
+        # 2) apply fine‐tune rotation (mouse wheel / backtick tweaks)
+        rel = subVectors(launchAim, ball.pos)
+        rel.setAngleDeg(rel.getAngleDeg() + fineTuneAmount)
+        launchAim = ball.pos.copy()
+        launchAim.add(rel)
 
-        # apply the fine tune amount
-        inputAim.setAngleDeg(inputAim.getAngleDeg() + fineTuneAmount)
+        # 3) write back into posX/posY so the rest of the code picks it up
+        posX, posY = launchAim.x, launchAim.y
 
-        posX = inputAim.x
-        posY = inputAim.y
-        # check if the mouse is clicked (and that the size of the balls collections is less than 1)
         if mouseClicked[0]:
             launch_button = True
 
@@ -732,7 +740,6 @@ while gameRunning:
     # do not update any game physics or game logic if the game is paused or over
     if not gamePaused and not gameOver:
         # use the mouse position as a vector to calculate the path that is being aimed
-        launchAim = Vector(posX, posY)
         # check if the mouse is being moved to determine whether or not to use the fine tune amount
         if mx_rel != 0 and my_rel != 0:
             fineTuneAmount = 0
@@ -1680,13 +1687,10 @@ while gameRunning:
             debugStaticImage = None
             bestTrajectory = None
 
-        # draw line for joystick aim vector
-        if controllerInput and not ball.isAlive and len(balls) < 2:
-            drawLine(ball.pos.x, ball.pos.y, inputAim.x +
-                     ball.pos.x, inputAim.y+ball.pos.y)
-        elif not controllerInput and not ball.isAlive and len(balls) < 2:
-            drawLine(ball.pos.x, ball.pos.y, mouseAim.x +
-                     ball.pos.x, mouseAim.y+ball.pos.y)
+        # draw line for joystick / mouse aim vector
+        # when waiting to launch, draw a line from ball to current aim (posX,posY)
+        if not ball.isAlive and len(balls) < 2:
+            drawLine(ball.pos.x, ball.pos.y, posX, posY)
 
         if controllerInput:
             joystickText = debugFont.render(
