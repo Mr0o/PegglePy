@@ -1,60 +1,11 @@
-from local.vectors import Vector # used for gravity
-
-def installDependencies():
-    try: # check that the dependencies are installed
-        import pygame
-        import numpy
-        import samplerate
-        
-        # check for pygame.IS_CE
-        try:
-            from pygame import IS_CE
-        except ImportError:
-            print("pygame is installed, but pygame-ce is required.") 
-            print("Installing pygame-ce...\n")
-            import subprocess
-            import sys
-            try:
-                #subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "pygame", "-y"])
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-                import pygame
-            except Exception as e:
-                print("ERROR: Failed to install pygame-ce.")
-                print("Details: " + str(e))
-                sys.exit(1)
-            
-    except Exception:
-        # automatically install PegglePy dependencies
-        print("Installing dependencies...")
-
-        # attempt 1
-        import sys
-        import subprocess
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-            import pygame
-            import numpy
-            import samplerate
-        except Exception as e:
-            print("ERROR: Failed to install dependencies.")
-            print("Details: " + str(e))
-            sys.exit(1)
-    
-    return True
-
-
 import sys
 
-# run the function to install the dependencies if the --run-auto-install flag is passed
-if "--run-auto-install" in sys.argv:
-    if installDependencies():
-        print("\nDependencies installed successfully.")
-        print("Game started")
-    exit()
-    
-# skip installing dependencies if the --skip-auto-install flag is passed
-if "--skip-auto-install" not in sys.argv:
-    installDependencies()
+### load user settings ###
+from local.userConfig import configs, loadSettings
+loadSettings()
+
+import local.installDependencies
+from local.vectors import Vector # used for gravity
     
 
 # check if the script has been passed '-h' or '--help' as an argument
@@ -69,11 +20,6 @@ if "-h" in sys.argv or "--help" in sys.argv:
     print(" --run-auto-install \t Automatically install dependencies")
     print(" --skip-auto-install\t Skip automatically installing dependencies")
     sys.exit(0)
-
-
-### load user settings ###
-from local.userConfig import configs, loadSettings
-loadSettings()
 
 import pygame
 
