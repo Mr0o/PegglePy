@@ -165,8 +165,9 @@ def getLaunchAngles(start: Vector,
     if abs(dx) < 1e-6:
         # max height = v^2/(2g)
         if dy > v2/(2*g):
-            return []     # too high
-        return [pi/2]    # straight up
+            # unreachable
+            return []
+        return [3/2*pi]   # 270 degrees, straight down
 
     # discriminant of v^4 - g*(g x^2 + 2 y v^2)
     disc = v2*v2 - g*(g*dx*dx + 2*dy*v2)
