@@ -1254,8 +1254,14 @@ while gameRunning:
             done = False
     if done and not gameOver and not gamePaused and not isNewGameAnimationSequenceActive and not isRemovePegsAnimationSequenceActive:
         for fb in trajectory:
-            # draw line from each point in the trajectory
-            pygame.draw.line(screen, (10, 70, 163), (fb.prevPos.x, fb.prevPos.y), (fb.pos.x, fb.pos.y), 6)
+            # use the new trajectory draw method
+            if configs["USE_OLD_TRAJECTORY"] == False:
+                # draw line from each point in the trajectory
+                pygame.draw.line(screen, (10, 70, 163), (fb.prevPos.x, fb.prevPos.y), (fb.pos.x, fb.pos.y), 6)
+            # use the old trajectory draw method (in case you prefer this one like me)
+            else:
+                # draw a point for each point in the trajectory
+                drawCircle(fb.pos.x, fb.pos.y, 4, (10, 70, 163))
 
     # "zoom in" on the ball by transorming the image
     # scale the image and blit it at the position of the ball
