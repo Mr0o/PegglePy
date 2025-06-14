@@ -92,7 +92,9 @@ class Bucket:
             # Remove the "spooky" fake peg if it exists
             if len(self.fakePegs) > 2:
                 self.fakePegs.pop()  # Remove the last peg
-
+                
+        self.fakePegs[0].vel.x = self.vel.x
+        self.fakePegs[1].vel.x = self.vel.x
 
   
     def reset(self):
