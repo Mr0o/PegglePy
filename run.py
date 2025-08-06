@@ -843,17 +843,17 @@ while gameRunning:
                 ball = newCheatBall
                 
         # if no-gravity powerup is active
-        noGravityPowerUpActive = False
+        isGravityPowerUpActive = False
         if powerUpActive and powerUpType == "no-gravity":
             noGravityPowerUpTimer.update()
-            noGravityPowerUpActive = True
+            isGravityPowerUpActive = True
             if noGravityPowerUpTimer.isTriggered:
-                noGravityPowerUpActive = False
+                isGravityPowerUpActive = False
                 noGravityPowerUpTimer.cancelTimer()
                 powerUpCount -= 1
                 powerUpActive = False or cheats
         else:
-            noGravityPowerUpActive = False
+            isGravityPowerUpActive = False
 
         # measure performance of the physics calculations loop
         startPhysicsTime = time.time()
@@ -1051,7 +1051,7 @@ while gameRunning:
                                 if powerUpType == "zenball":
                                     powerUpCount += 1
                                 if powerUpType == "no-gravity":
-                                    noGravityPowerUpActive = True
+                                    isGravityPowerUpActive = True
 
                             # keep track of points earned
                             # pointsEarned.append(p.points)
@@ -1064,7 +1064,7 @@ while gameRunning:
                                     staticImage, p)
 
                 #if no-gravity powerup is active
-                if noGravityPowerUpActive:
+                if isGravityPowerUpActive:
                     # keep a minimum velocity
                     if b.vel.getMag() < 1.5:
                         b.vel.setMag(1.5)
@@ -1076,7 +1076,7 @@ while gameRunning:
                 if collidedPeg:
                     b = resolveCollision(b, [collidedPeg], dt)
                     
-                b.update(dt, noGravityPowerUpActive)
+                b.update(dt, isGravityPowerUpActive)
 
                 # if active spooky powerup
                 if powerUpActive and (powerUpType == "spooky" or powerUpType == "spooky-multiball"):
@@ -1356,7 +1356,7 @@ while gameRunning:
             powerUpTextColor = (50, 255, 20)
         else:
             powerUpTextColor = (50, 170, 20)
-        if noGravityPowerUpActive:
+        if isGravityPowerUpActive:
             powerUpText = infoFont.render(
                 powerUpType + ": " + str(round(noGravityPowerUpTimer.timeRemaining, 1)), False, powerUpTextColor)
         else:
