@@ -1696,7 +1696,7 @@ while gameRunning:
         # draw line for joystick / mouse aim vector
         # when waiting to launch, draw a line from ball to current aim (posX,posY)
         if not ball.isAlive and len(balls) < 2:
-            drawLine(ball.pos.x, ball.pos.y, posX, posY)
+            drawLine(ball.pos.x, ball.pos.y, mx, my)
 
         if controllerInput:
             joystickText = debugFont.render(
