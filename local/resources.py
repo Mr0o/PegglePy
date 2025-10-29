@@ -79,6 +79,10 @@ glowingBluePegImg = pygame.transform.scale(glowingBluePegImg, (hitPegRad, hitPeg
 glowingOrangePegImg = pygame.transform.scale(glowingOrangePegImg, (hitPegRad, hitPegRad))
 glowingGreenPegImg = pygame.transform.scale(glowingGreenPegImg, (hitPegRad, hitPegRad))
 
+# Bucket
+bucketBackImg = pygame.image.load("resources/images/bucket/back150x28.png")
+bucketFrontImg = pygame.image.load("resources/images/bucket/front150x28.png")
+
 #hitBluePegImg.convert_alpha()
 #hitOrangePegImg.convert_alpha()
 #hitGreenPegImg.convert_alpha()
