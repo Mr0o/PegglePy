@@ -1,11 +1,12 @@
 # run a performance test on the zenball findBestTrajectory function
 from random import randint
 import time
-from local.misc import createPegColors, loadLevel
 from local.trajectory import findBestTrajectory
 from local.vectors import Vector
 from local.userConfig import configs
 from local.quadtree import QuadtreePegs, Rectangle
+from local.loadLevel import loadLevel
+from local.peg import createPegColors
 
 testMaxRange = 40
 testDepth = 1200
