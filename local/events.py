@@ -31,15 +31,15 @@ def postEvent(event: 'Event'):
     eventList.append(event)
     
     if debug:
-        print(f"Event Posted\nEvent: {event.eventType} args: {event.args} data: {event.eventData}")
+        print(f"DEBUG: Event Posted\nEvent: {event.eventType} args: {event.args} data: {event.eventData}")
 
     # call subcribers function
     if not event in subscribers:
         return
     for fn in subscribers[event]:
         if debug:
-            print(f"Function called on event: {event.eventType}")
-            print(f"Function: {fn.__name__}")
+            print(f"DEBUG: Function called on event: {event.eventType}")
+            print(f"DEBUG: Function: {fn.__name__}")
 
         fn()
 
@@ -55,15 +55,15 @@ def postEvent(eventType: str, args=None, eventData=None):
     eventList.append(event)
 
     if debug:
-        print(f"Event Posted\nEvent: {event.eventType} args: {event.args} data: {event.eventData}")
+        print(f"DEBUG: Event Posted\nEvent: {event.eventType} args: {event.args} data: {event.eventData}")
 
     # call subcribers function
     if not event in subscribers:
         return
     for fn in subscribers[event]:
         if debug:
-            print(f"Function called on event: {event.eventType}")
-            print(f"Function: {fn.__name__}")
+            print(f"DEBUG: Function called on event: {event.eventType}")
+            print(f"DEBUG: Function: {fn.__name__}")
 
         fn()
 
