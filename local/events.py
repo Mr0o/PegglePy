@@ -7,7 +7,6 @@ from collections import defaultdict
 
 # get debug from user configs
 from local.userConfig import configs
-debug = configs["DEBUG_MODE"]
 
 # Default value of the dictionary will be list
 subscribers = defaultdict(list)
@@ -30,14 +29,14 @@ def postEvent(event: 'Event'):
     # append event to eventList
     eventList.append(event)
     
-    if debug:
+    if configs["DEBUG_MODE"]:
         print(f"DEBUG: Event Posted\nEvent: {event.eventType} args: {event.args} data: {event.eventData}")
 
     # call subcribers function
     if not event in subscribers:
         return
     for fn in subscribers[event]:
-        if debug:
+        if configs["DEBUG_MODE"]:
             print(f"DEBUG: Function called on event: {event.eventType}")
             print(f"DEBUG: Function: {fn.__name__}")
 
@@ -54,14 +53,14 @@ def postEvent(eventType: str, args=None, eventData=None):
     # append event to eventList
     eventList.append(event)
 
-    if debug:
+    if configs["DEBUG_MODE"]:
         print(f"DEBUG: Event Posted\nEvent: {event.eventType} args: {event.args} data: {event.eventData}")
 
     # call subcribers function
     if not event in subscribers:
         return
     for fn in subscribers[event]:
-        if debug:
+        if configs["DEBUG_MODE"]:
             print(f"DEBUG: Function called on event: {event.eventType}")
             print(f"DEBUG: Function: {fn.__name__}")
 
