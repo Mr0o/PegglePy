@@ -25,7 +25,9 @@ class Bucket:
         self.bucketCenterX = self.bucketBackImg.get_width() / 2
 
         self.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - self.bucketBackImg.get_height())  # position
+        self.prevPos = self.pos.copy()  # previous position
         self.vel = Vector(-bucketVelocity/2, 0)  # velocity
+        self.prevVel = self.vel.copy()  # previous velocity
 
         # fake pegs on edges of bucket, allows the ball to bounce off the bucket
         peg1 = Peg(self.pos.x+34, self.pos.y+30)
@@ -50,6 +52,9 @@ class Bucket:
 
 
     def update(self, dt, powerUp="none", powerActive=False):
+        self.prevPos = self.pos.copy()  # previous position
+        self.prevVel = self.vel.copy()  # previous velocity
+
         # Define the left and right edges based on the bucket's image width
         left_edge = self.back_img_width - 300
         right_edge = configs["WIDTH"] - self.back_img_width
@@ -100,6 +105,8 @@ class Bucket:
     def reset(self):
         self.pos = Vector(configs["WIDTH"]/2, configs["HEIGHT"] - self.bucketBackImg.get_height())  # position
         self.vel = Vector(-bucketVelocity/2, 0)  # velocity
+        self.prevPos = self.pos.copy()  # previous position
+        self.prevVel = self.vel.copy()  # previous velocity
 
         peg1 = Peg(self.pos.x+34, self.pos.y+30)
         peg1.radius = 20
