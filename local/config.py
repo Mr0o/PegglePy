@@ -4,7 +4,6 @@ import sys
 from local.userConfig import configs, loadSettings
 loadSettings()
 
-import local.installDependencies
 from local.vectors import Vector # used for gravity
     
 
