@@ -50,6 +50,49 @@ class Bucket:
             (self.bucketBackImg.get_width() - 34, 30)  # Right fake peg
         ]
 
+    @staticmethod
+    def _advance_motion_phase(t: float, direction: int, delta: float):
+        t += direction * delta
+        if t >= 1.0:
+            return 1.0, -1
+        if t <= 0.0:
+            return 0.0, 1
+        return t, direction
+
+    def predictFakePegPositions(
+        self, steps: int, dt: float
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
+        t = self.t
+        direction = self.t_direction
+        for _ in range(max(0, steps)):
+            t, direction = self._advance_motion_phase(
+                t, direction, self.t_speed * dt
+            )
+
+        left_edge = self.back_img_width - 300
+        right_edge = configs["WIDTH"] - self.back_img_width
+        eased_t = 0.5 - 0.5 * math.cos(math.pi * t)
+        bucket_x = left_edge + (right_edge - left_edge) * eased_t
+        return (
+            (
+                bucket_x + self.fakePegOffsets[0][0],
+                self.pos.y + self.fakePegOffsets[0][1],
+            ),
+            (
+                bucket_x + self.fakePegOffsets[1][0],
+                self.pos.y + self.fakePegOffsets[1][1],
+            ),
+        )
+
+    def predictMarkerPositions(
+        self, steps: int, dt: float
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
+        fake_peg_positions = self.predictFakePegPositions(steps, dt)
+        marker_y = self.pos.y + self.bucketBackImg.get_height() / 2
+        return (
+            (fake_peg_positions[0][0], marker_y),
+            (fake_peg_positions[1][0], marker_y),
+        )
 
     def update(self, dt, powerUp="none", powerActive=False):
         self.prevPos = self.pos.copy()  # previous position
@@ -60,15 +103,9 @@ class Bucket:
         right_edge = configs["WIDTH"] - self.back_img_width
 
         # Update 't' based on 'dt' and direction
-        self.t += self.t_direction * self.t_speed * dt
-
-        # Reverse direction when 't' reaches 0.0 or 1.0
-        if self.t >= 1.0:
-            self.t = 1.0
-            self.t_direction = -1
-        elif self.t <= 0.0:
-            self.t = 0.0
-            self.t_direction = 1
+        self.t, self.t_direction = self._advance_motion_phase(
+            self.t, self.t_direction, self.t_speed * dt
+        )
 
         # Use an easing function to adjust position
         # This function creates smooth acceleration and deceleration

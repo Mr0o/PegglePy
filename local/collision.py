@@ -3,6 +3,7 @@ from local.vectors import Vector
 from local.ball import Ball
 from local.peg import Peg
 from local.config import collisionSampleSize
+from local.quadtree import Rectangle
 
 EPSILON = 0.25  # Tolerance to ignore very slight penetrations
 RESTITUITON = 0.90  # Coefficient of restitution
@@ -33,34 +34,28 @@ def point_to_segment_distance(P: Vector, A: Vector, B: Vector) -> float:
 ###############################################################################
 # Continuous circle vs circle collision detection and resolution with dt.
 ###############################################################################
-def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
-    samples = collisionSampleSize   # number of points to sample along the path
-    # Check the endpoints first
-    startPoint = ball.prevPos.copy()
-    d_start = startPoint.copy()
-    d_start.sub(peg.pos)
-    if d_start.getMag() <= (ball.radius + peg.radius - EPSILON):
-        return True
+def isBallTouchingPeg(
+    ball: Ball, peg: Peg, dt: float, peg_radius_multiplier: float = 1.0
+) -> bool:
+    return _circle_impact(ball, peg, peg_radius_multiplier) is not None
 
-    endPoint = ball.pos.copy()
-    d_end = endPoint.copy()
-    d_end.sub(peg.pos)
-    if d_end.getMag() <= (ball.radius + peg.radius - EPSILON):
-        return True
 
-    # Uniformly sample along the swept path
-    for i in range(1, samples):
-        t = i / samples  # t is the fraction of dt along the path
-        samplePoint = ball.prevPos.copy()
-        delta = ball.pos.copy()
-        delta.sub(ball.prevPos)
-        delta.mult(t)
-        samplePoint.add(delta)
-        d = samplePoint.copy()
-        d.sub(peg.pos)
-        if d.getMag() <= (ball.radius + peg.radius - EPSILON):
-            return True
-    return False
+def getSweptCollisionBounds(ball: Ball, padding: float) -> Rectangle:
+    return Rectangle(
+        (ball.prevPos.x + ball.pos.x) / 2,
+        (ball.prevPos.y + ball.pos.y) / 2,
+        abs(ball.pos.x - ball.prevPos.x) / 2 + padding,
+        abs(ball.pos.y - ball.prevPos.y) / 2 + padding,
+    )
+
+
+def updateSweptCollisionBounds(
+    ball: Ball, padding: float, bounds: Rectangle
+) -> None:
+    bounds.x = (ball.prevPos.x + ball.pos.x) / 2
+    bounds.y = (ball.prevPos.y + ball.pos.y) / 2
+    bounds.w = abs(ball.pos.x - ball.prevPos.x) / 2 + padding
+    bounds.h = abs(ball.pos.y - ball.prevPos.y) / 2 + padding
 
 ###############################################################################
 # Updated circle vs. circle collision resolution using dt.
@@ -69,89 +64,105 @@ def isBallTouchingPeg(ball: Ball, peg: Peg, dt: float) -> bool:
 # also handles multiple collisions with the ball
 ###############################################################################
 def resolveCollision(ball: Ball, pegs: list[Peg], dt: float) -> Ball:
-    # This tolerance is in fractional dt (0 to 1)
-    tol = 1e-3  
-    best_fraction = 1.0  # best time-of-impact as a fraction of dt
+    resolveCollisionAndGetPeg(ball, pegs)
+    return ball
+
+
+def resolveCollisionAndGetPeg(ball: Ball, pegs: list[Peg]) -> Peg | None:
+    best_fraction = 1.0
     best_peg = None
     best_normal = None
 
-    # Check each peg for a collision along the path from prevPos to pos (scaled by dt)
     for peg in pegs:
-        low, high = 0.0, 1.0
-        impact_fraction = None
-        # Binary search along the swept path to determine the time-of-impact fraction
-        while high - low > tol:
-            mid = (low + high) / 2.0
-            samplePoint = ball.prevPos.copy()
-            delta = ball.pos.copy()
-            delta.sub(ball.prevPos)
-            delta.mult(mid)  # 'mid' represents fraction of dt
-            samplePoint.add(delta)
-            d = samplePoint.copy()
-            d.sub(peg.pos)
-            # If the ball is colliding with the peg at this sample point,
-            # consider it a hit (using EPSILON to ignore very slight penetrations)
-            if d.getMag() <= (ball.radius + peg.radius - EPSILON):
-                impact_fraction = mid
-                high = mid
-            else:
-                low = mid
-
-        # Keep the peg with the earliest (smallest fraction) collision
-        if impact_fraction is not None and impact_fraction < best_fraction:
-            best_fraction = impact_fraction
+        impact = _circle_impact(ball, peg)
+        if impact is not None and impact[0] < best_fraction:
+            best_fraction, best_normal = impact
             best_peg = peg
-
-            # Get the collision point along the path using the computed fraction of dt
-            collisionPos = ball.prevPos.copy()
-            delta = ball.pos.copy()
-            delta.sub(ball.prevPos)
-            delta.mult(impact_fraction)
-            collisionPos.add(delta)
-
-            # Compute the collision normal from peg center to collision point.
-            normal = collisionPos.copy()
-            normal.sub(peg.pos)
-            if normal.getMag() != 0:
-                normal.normalize()
-            else:
-                normal = Vector(0, -1)  # fallback normal if the vectors coincide
-            best_normal = normal
 
     # If no collision was detected along the swept path, return the ball unmodified.
     if best_peg is None or best_normal is None:
-        return ball
+        return None
 
-    # With dt in use, best_fraction represents when (within dt) the collision happens.
-    # Recompute collision point if needed (here it’s used to snap the ball correctly):
-    collisionPos = ball.prevPos.copy()
-    delta = ball.pos.copy()
-    delta.sub(ball.prevPos)
-    delta.mult(best_fraction)
-    collisionPos.add(delta)
-
-    # Calculate the final position so that the centers are exactly (ball.radius + peg.radius) apart.
-    final_normal = best_normal.copy()  # work on a fresh copy
-    final_normal.mult(ball.radius + best_peg.radius)
-    finalPos = best_peg.pos.copy()
-    finalPos.add(final_normal)
-    ball.pos = finalPos
+    ball.pos = best_peg.pos.copy()
+    normal_offset = best_normal.copy()
+    normal_offset.mult(ball.radius + best_peg.radius)
+    ball.pos.add(normal_offset)
 
     # Reflect the ball's velocity, but only if it is moving toward the peg.
     # (v_dot_n is computed using the collision normal from our binary search.)
-    v_dot_n = ball.vel.x * best_normal.x + ball.vel.y * best_normal.y
+    relative_velocity = Vector(
+        ball.vel.x - best_peg.vel.x,
+        ball.vel.y - best_peg.vel.y,
+    )
+    v_dot_n = (
+        relative_velocity.x * best_normal.x
+        + relative_velocity.y * best_normal.y
+    )
     # Use a modified bounciness depending on the ball's current speed.
     bounce = BOUNCINESS
-    if ball.vel.getMag() < 2:
+    if relative_velocity.getMag() < 2:
         bounce = BOUNCINESS * 0.30
-    if ball.vel.getMag() < 1:
+    if relative_velocity.getMag() < 1:
         bounce = BOUNCINESS * 0.10
     if v_dot_n < 0:
         correction = best_normal.copy()
         correction.mult((1 + RESTITUITON * bounce) * v_dot_n)
         ball.vel.sub(correction)
 
-    return ball
+    return best_peg
+
+
+def _circle_impact(
+    ball: Ball, peg: Peg, peg_radius_multiplier: float = 1.0
+) -> tuple[float, Vector] | None:
+    peg_previous_position = (
+        peg.previousPos
+        if getattr(peg, "movement", None) is not None
+        else peg.pos
+    )
+    start_x = ball.prevPos.x - peg_previous_position.x
+    start_y = ball.prevPos.y - peg_previous_position.y
+    delta_x = (ball.pos.x - ball.prevPos.x) - (peg.pos.x - peg_previous_position.x)
+    delta_y = (ball.pos.y - ball.prevPos.y) - (peg.pos.y - peg_previous_position.y)
+    radius = ball.radius + peg.radius * peg_radius_multiplier - EPSILON
+    radius_squared = radius * radius
+
+    start_distance_squared = start_x * start_x + start_y * start_y
+    if start_distance_squared <= radius_squared:
+        normal = Vector(start_x, start_y)
+        if normal.getMag() == 0:
+            normal = Vector(0, -1)
+        else:
+            normal.normalize()
+        return 0.0, normal
+
+    movement_squared = delta_x * delta_x + delta_y * delta_y
+    if movement_squared == 0:
+        return None
+
+    start_dot_movement = start_x * delta_x + start_y * delta_y
+    discriminant = (
+        start_dot_movement * start_dot_movement
+        - movement_squared * (start_distance_squared - radius_squared)
+    )
+    if discriminant < 0:
+        return None
+
+    impact_fraction = (
+        -start_dot_movement - sqrt(discriminant)
+    ) / movement_squared
+    if not 0 <= impact_fraction <= 1:
+        return None
+
+    normal = Vector(
+        start_x + delta_x * impact_fraction,
+        start_y + delta_y * impact_fraction,
+    )
+    if normal.getMag() == 0:
+        normal = Vector(0, -1)
+    else:
+        normal.normalize()
+    return impact_fraction, normal
 
 ###############################################################################
 # Continuous line collision detection and resolution with dt.

@@ -7,11 +7,13 @@ except ImportError:
     print("Please install tkinter")
     tkinterInstalled = False
 
-import pickle # sort of abusing pickle to save the level data (it works, but I dont really think pickle is meant for this)
+from collections.abc import Callable
 
 from local.userConfig import configs
 
 from local.peg import Peg, createPegColors
+from local.level_format import read_level_records, write_level_file
+from local.moving_peg import MovingPegPath
 
 if tkinterInstalled:
     # This function is no longer used, it was replaced with the new level select menu
@@ -92,47 +94,89 @@ else:
         return None
 
 
-def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list[Peg], str]:
+ProgressCallback = Callable[[float, str], None]
+
+
+def loadData(
+    filePath: str | None = None,
+    centerPegs: bool = True,
+    progress_callback: ProgressCallback | None = None,
+    peg_limit: int | None = None,
+) -> tuple[list[Peg], str]:
+    if peg_limit is not None and peg_limit <= 0:
+        raise ValueError("peg_limit must be greater than zero")
+
+    if progress_callback is not None:
+        progress_callback(0.0, "Reading level data")
+
     if filePath == None:
         filePath = fileSelectWindow()
 
-    posList = createDefaultPegsPos()
+    records = [
+        {"x": x, "y": y}
+        for x, y in createDefaultPegsPos()
+    ]
     if filePath != None:
         try:
-            with open(filePath, 'rb') as f:
-                posList = pickle.load(f)
-
-        except Exception: # if the file selected is invalid generate the default level and use it instead
-            if configs["DEBUG_MODE"]:
-                print("WARN: Unable to open file: \"" + str(filePath) + "\". using default level (No file created or loaded)")
-
-            posList = createDefaultPegsPos()
+            records, _ = read_level_records(filePath)
+        except (OSError, ValueError, TypeError) as error:
+            print(f"WARN: Unable to read level file {filePath!r}: {error}; using the default level")
+            records = [
+                {"x": x, "y": y}
+                for x, y in createDefaultPegsPos()
+            ]
 
     # if no file was selected
     elif filePath == None and configs["DEBUG_MODE"]:
         print("WARN: No file selected, using default level (No file created or loaded)")
         
+    if peg_limit is not None and len(records) > peg_limit:
+        sample_count = len(records)
+        if peg_limit == 1:
+            records = records[:1]
+        else:
+            records = [
+                records[index * (sample_count - 1) // (peg_limit - 1)]
+                for index in range(peg_limit)
+            ]
+
+    if progress_callback is not None:
+        progress_callback(0.15, "Creating pegs")
 
     # using x and y tuple, create list of peg objects
     pegs = []
-    for xyPos in posList:
-        x, y = xyPos
-        pegs.append(Peg(x, y))
+    total_pegs = len(records)
+    for index, record in enumerate(records):
+        peg = Peg(record["x"], record["y"])
+        motion = record.get("motion")
+        if motion is not None:
+            peg.set_movement(
+                MovingPegPath(
+                    motion["points"],
+                    motion["speed"],
+                    motion["type"],
+                    motion["easing"],
+                    motion["traversal"],
+                )
+            )
+        pegs.append(peg)
+        if progress_callback is not None and total_pegs:
+            progress_callback(
+                0.15 + 0.45 * (index + 1) / total_pegs,
+                "Creating pegs",
+            )
     
-    if centerPegs:
+    if centerPegs and pegs:
         # adjust the positions of every peg to be centered on the screen based on configs["WIDTH"] and configs["HEIGHT"]
-        # get the position of the left most peg
-        leftMostPeg = pegs[0]
-        for peg in pegs:
-            if peg.pos.x < leftMostPeg.pos.x:
-                leftMostPeg = peg
-        rightMostPeg = pegs[0]
-        for peg in pegs:
-            if peg.pos.x > rightMostPeg.pos.x:
-                rightMostPeg = peg
-
-        # find the center of the left most and right most pegs
-        centerOfLeftAndRightPegs = (leftMostPeg.pos.x + rightMostPeg.pos.x)/2
+        x_coordinates = [
+            coordinate
+            for peg in pegs
+            for coordinate in (
+                [peg.pos.x]
+                + ([] if peg.movement is None else [x for x, _ in peg.movement.points])
+            )
+        ]
+        centerOfLeftAndRightPegs = (min(x_coordinates) + max(x_coordinates)) / 2
         # find the center of the screen
         screenCenter = configs["WIDTH"]/2
         # find the difference between the center of the screen and the center of the left and right most pegs
@@ -140,49 +184,53 @@ def loadData(filePath: str | None = None, centerPegs: bool = True) -> tuple[list
 
         # adjust the position of every peg by the difference
         for peg in pegs:
-            peg.pos.x += difference
+            peg.translate(difference, 0)
         
         
-        # Do same process again for the Y axis
-        topMostPeg = pegs[0]
-        for peg in pegs:
-            if peg.pos.y < topMostPeg.pos.y:
-                topMostPeg = peg
-        bottomMostPeg = pegs[0]
-        for peg in pegs:
-            if peg.pos.y > bottomMostPeg.pos.y:
-                bottomMostPeg = peg
-            
-        # find the center of the top most and bottom most pegs
-        centerOfTopAndBottomPegs = (topMostPeg.pos.y + bottomMostPeg.pos.y)/2
+        y_coordinates = [
+            coordinate
+            for peg in pegs
+            for coordinate in (
+                [peg.pos.y]
+                + ([] if peg.movement is None else [y for _, y in peg.movement.points])
+            )
+        ]
+        centerOfTopAndBottomPegs = (min(y_coordinates) + max(y_coordinates)) / 2
         # find the center of the screen
         screenCenter = configs["HEIGHT"]/2
         # find the difference between the center of the screen and the center of the top and bottom most pegs
         difference = screenCenter - centerOfTopAndBottomPegs
         
         # adjust the position of every peg by the difference
-        for peg in pegs:
-            peg.pos.y += difference
+        for index, peg in enumerate(pegs):
+            peg.translate(0, difference)
+            if progress_callback is not None:
+                progress_callback(
+                    0.6 + 0.4 * (index + 1) / len(pegs),
+                    "Centering level",
+                )
 
 
-    
+    if progress_callback is not None:
+        progress_callback(1.0, "Level data ready")
+
     return pegs, filePath
 
 
-def saveData(pegs: list[Peg], filePath: str | None = None):
+def saveData(pegs: list[Peg], filePath: str | None = None) -> str | None:
     if filePath == None:
         filePath = fileSaveWindow()
 
-    posList = getPegPosList(pegs)
+    if filePath is None:
+        return None
+
     try:
-        # create a new pickle file
-        with open(filePath, 'wb') as f:
-            pickle.dump(posList, f)
-    except Exception as e:
+        write_level_file(pegs, filePath)
+    except (OSError, TypeError, ValueError) as e:
         if configs["DEBUG_MODE"]:
             print("ERROR: Unable to save file: \"" + str(filePath) + "\". Exception: " + str(e))
             print("Check that the file path is valid and that you have write permissions")
-        return str(Exception)
+        return str(e)
 
 
 
@@ -344,8 +392,8 @@ def createDefaultPegsPos():
     return posList
 
 
-def loadLevel(filePath = None) -> tuple[list[Peg], list[Peg], int]:
-    # load the pegs from a level file (pickle)
+def loadLevel(filePath = None) -> tuple[list[Peg], list[Peg], int, str]:
+    # Load either a versioned JSON level or a legacy pickle level.
     pegs, levelFileName = loadData(filePath)
     originPegs = pegs.copy()
 
@@ -368,24 +416,44 @@ def loadLevel(filePath = None) -> tuple[list[Peg], list[Peg], int]:
     return pegs, originPegs, orangeCount, levelFileName
 
 
-def loadDefaultLevel() -> tuple[list[Peg], list[Peg], int]:
+def loadDefaultLevel(
+    progress_callback: ProgressCallback | None = None,
+) -> tuple[list[Peg], list[Peg], int, str]:
     pegsPosList = createDefaultPegsPos()
+    if progress_callback is not None:
+        progress_callback(0.0, "Creating default level")
+
     # using x and y tuple, create list of peg objects
     pegs = []
-    for xyPos in pegsPosList:
+    total_pegs = len(pegsPosList)
+    for index, xyPos in enumerate(pegsPosList):
         x, y = xyPos
         pegs.append(Peg(x, y))
+        if progress_callback is not None and total_pegs:
+            progress_callback(
+                0.8 * (index + 1) / total_pegs,
+                "Creating default level",
+            )
 
     originPegs = pegs.copy()
 
     pegs = createPegColors(pegs)
+    if progress_callback is not None:
+        progress_callback(0.85, "Assigning peg colors")
 
     orangeCount = 0
-    for peg in pegs:
+    for index, peg in enumerate(pegs):
         if peg.color == "orange":
             orangeCount += 1
+        if progress_callback is not None and pegs:
+            progress_callback(
+                0.85 + 0.14 * (index + 1) / len(pegs),
+                "Counting orange pegs",
+            )
 
     levelFileName = "Default"
+    if progress_callback is not None:
+        progress_callback(1.0, "Level data ready")
 
     return pegs, originPegs, orangeCount, levelFileName
 

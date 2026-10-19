@@ -1,16 +1,25 @@
+from __future__ import annotations
+
 from random import randint
+from typing import TYPE_CHECKING
 
 # refer to the vectors.py module for information on these functions
 from local.triggerEvents import TimedEvent
 from local.vectors import Vector
 from local.animate import AnimationFade
+from local.moving_peg import MovingPegPath
 
 from local.config import pegRad, defaultPegMass, configs
+
+if TYPE_CHECKING:
+    from local.ball import Ball
 
 class Peg:
     def __init__(self, x : int, y : int, color = "blue"):
         self.pos = Vector(x, y)  # position
+        self.previousPos = self.pos.copy()
         self.vel = Vector(0, 0)  # velocity, used for collision calculation
+        self.movement: MovingPegPath | None = None
 
         self.radius = pegRad
 
@@ -26,6 +35,7 @@ class Peg:
         self.points = 10
 
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
+        self.ballStuckBalls: set[Ball] = set()
         
         # create pop‐in animation
         self.animation: AnimationFade = AnimationFade(self.pos,
@@ -35,6 +45,10 @@ class Peg:
 
     def reset(self):
         self.vel = Vector(0, 0)  # velocity, used for collision calculation
+        if self.movement is not None:
+            self.movement.reset()
+            self.pos = self.movement.current_position()
+        self.previousPos = self.pos.copy()
 
         self.radius = pegRad
 
@@ -52,6 +66,88 @@ class Peg:
         self.pegScreenLocations = [] # list of screen segment locations (it is possible for a peg to cross multiple segments)
 
         self.ballStuckTimer = TimedEvent() # used for when the ball gets stuck
+        self.ballStuckBalls = set()
+
+    def set_movement(self, movement: MovingPegPath | None) -> None:
+        self.movement = movement
+        if movement is not None:
+            self.pos = movement.current_position()
+            self.previousPos = self.pos.copy()
+
+    def update_movement(self, delta_seconds: float) -> bool:
+        if self.movement is None:
+            return False
+        self.previousPos = self.pos.copy()
+        self.pos = self.movement.advance(delta_seconds)
+        if delta_seconds > 0:
+            self.vel = Vector(
+                (self.pos.x - self.previousPos.x) / delta_seconds,
+                (self.pos.y - self.previousPos.y) / delta_seconds,
+            )
+        else:
+            self.vel = Vector(0, 0)
+        return self.pos.x != self.previousPos.x or self.pos.y != self.previousPos.y
+
+    def translate(self, dx: float, dy: float) -> None:
+        self.pos.x += dx
+        self.pos.y += dy
+        self.previousPos = self.pos.copy()
+        if self.movement is not None:
+            self.movement.translate(dx, dy)
+
+    def clone_for_prediction(self) -> Peg:
+        clone = Peg(self.pos.x, self.pos.y, self.color)
+        clone.radius = self.radius
+        clone.vel = self.vel.copy()
+        clone.isHit = self.isHit
+        clone.isVisible = self.isVisible
+        clone.isPowerUp = self.isPowerUp
+        clone.isOrange = self.isOrange
+        clone.points = self.points
+        if self.movement is not None:
+            clone.set_movement(self.movement.copy())
+            clone.pos = self.pos.copy()
+            clone.previousPos = clone.pos.copy()
+        return clone
+
+    def cancel_ball_stuck_timer(self):
+        self.ballStuckTimer.cancelTimer()
+        self.ballStuckBalls.clear()
+
+    def validate_ball_stuck_timer(self):
+        if not self.ballStuckTimer.isActive:
+            return
+
+        for ball in tuple(self.ballStuckBalls):
+            contact_distance = self.radius + ball.radius + 0.25
+            dx = ball.pos.x - self.pos.x
+            dy = ball.pos.y - self.pos.y
+            if (
+                not ball.isAlive
+                or ball.vel.getMag() > 1.5
+                or dx * dx + dy * dy > contact_distance * contact_distance
+            ):
+                self.ballStuckBalls.discard(ball)
+
+        if not self.ballStuckBalls:
+            self.cancel_ball_stuck_timer()
+
+    def update_ball_stuck_timer(self, ball: Ball, duration: float) -> bool:
+        if self.ballStuckTimer.isTriggered:
+            return True
+
+        if ball.vel.getMag() > 1.5:
+            self.ballStuckBalls.discard(ball)
+            if not self.ballStuckBalls:
+                self.cancel_ball_stuck_timer()
+            return False
+
+        if not self.ballStuckTimer.isActive:
+            self.ballStuckTimer.setTimer(duration)
+        self.ballStuckBalls.add(ball)
+
+        self.ballStuckTimer.update()
+        return self.ballStuckTimer.isTriggered
 
 
     def set_color(self, color: str):

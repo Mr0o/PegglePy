@@ -1,4 +1,6 @@
 # refer to the vectors.py module for information on these functions
+from math import sqrt
+
 from local.vectors import Vector
 
 from local.config import gravity, maxBallVelocity, ballRad, defaultBallMass
@@ -38,20 +40,29 @@ class Ball:
         self.vel.add(fcopy)
 
     def update(self, dt: float = 1, zeroGravity = False):
-        self.prevPos = self.pos.copy()
-        self.prevAcc = self.acc.copy()
-        self.prevVel = self.vel.copy()
-        
-        if not zeroGravity:
-            gravityCopy = gravity.copy()
-            gravityCopy.mult(dt)
-            self.applyForce(gravityCopy)
-        
-        self.vel.add(Vector(self.acc.x * dt, self.acc.y * dt))
-        self.pos.add(Vector(self.vel.x * dt, self.vel.y * dt))
-        self.acc.mult(0)
+        self.prevPos.x = self.pos.x
+        self.prevPos.y = self.pos.y
+        self.prevAcc.x = self.acc.x
+        self.prevAcc.y = self.acc.y
+        self.prevVel.x = self.vel.x
+        self.prevVel.y = self.vel.y
 
-        self.vel.limitMag(maxBallVelocity) #stop the ball from going crazy, this resolves the occasional physics glitches
+        if not zeroGravity:
+            self.vel.x += gravity.x * dt
+            self.vel.y += gravity.y * dt
+
+        self.vel.x += self.acc.x * dt
+        self.vel.y += self.acc.y * dt
+        self.pos.x += self.vel.x * dt
+        self.pos.y += self.vel.y * dt
+        self.acc.x = 0
+        self.acc.y = 0
+
+        velocity_squared = self.vel.x * self.vel.x + self.vel.y * self.vel.y
+        if velocity_squared >= maxBallVelocity * maxBallVelocity:
+            velocity_scale = maxBallVelocity / sqrt(velocity_squared)
+            self.vel.x *= velocity_scale
+            self.vel.y *= velocity_scale
 
         # if ball collided with wall or has fallen through the floor
         if self.pos.x > (configs["WIDTH"] - self.radius) or self.pos.x < self.radius:
