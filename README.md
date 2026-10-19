@@ -2,8 +2,9 @@
 A clone of peggle written in python using pygame
 
 ### Changes Log May 2025
-- Added animation sequnce for spawning pegs at the start of the game
-- Added animation sequnce for removing pegs after they've been hit and are being tallied for score
+- Added animation sequence for spawning pegs at the start of the game
+- Very large levels use a progressive reveal for spawning to avoid animating every peg individually
+- Added animation sequence for removing pegs after they've been hit and are being tallied for score
 
 ### Changes Log Febuary 2025
 - Implemented quadtree algorithm for collision detection (doubles the performance in some cases)
@@ -67,6 +68,13 @@ pip3 install -r requirements.txt
 ```
 Tkinter may need to be installed separately on linux
 
+### Automated simulated tests
+Run the Pygame integration tests from the repository root with:
+```
+python -m unittest discover -s tests -v
+```
+The tests use Pygame's dummy video/audio drivers and scripted mouse/keyboard input; they do not require a display or physical controller.
+
 To skip the automated installation of the dependencies, you can pass the arguement '--skip-auto-install' when running the game
 ```
 python3 run.py --skip-auto-install
@@ -93,7 +101,7 @@ python3 run.py --skip-auto-install
 ### Power ups
 - "spooky"    : When the ball reaches the bottom of the screen, it will start back at the top
 - "multiball" : A second ball will be spwaned in the game wherever you hit the green peg
-- "zenball"   : When you launch the ball on your next turn, the computer will calculate the best possible move and adjust your aim
+- "zenball"   : Searches sampled launch angles for up to 4 seconds, choosing the highest-scoring path and favoring a bucket catch when scores tie
 - "guideball" : For the next 3 turns, you will get a better aim trajectory visual
 - "spooky-multiball" : A combination of the spooky and multiball powerups
 - "no-gravity" : The ball will experience zero gravity for the next 10 seconds
@@ -118,7 +126,8 @@ python3 run.py --skip-auto-install
 - To change the current powerup, press 3
 - To show the quadtree debug, press 4 (must have debug enabled)
 - To disable or enable the quadtree algorithm, press 5 (You should leave it enabled, but disabling is useful to compare performance)
-- To show full calculated trajectory, press 7 (must have debug enabled) (this can also be useful for cheating, lol)
+- To show rolling performance metrics, press 6 (shows latest, p95, and max times in a two-column overlay refreshed 4 times per second; per-frame readings are sampled every frame and become 0 when that work is skipped; setup readings show their last call; yellow/red indicate elevated/high p95 times with thresholds tuned by metric; nested metrics should not be added together)
+- To show the full calculated trajectory with swept peg collisions and moving bucket edges, press 7 (must have debug enabled) (this can also be useful for cheating, lol)
 - To enable a perfomance hack (speedHack), press 8
 - to show the timer values on all the pegs, press 9 (must have debug enabled)
 - To enable slow motion, press 0
@@ -145,6 +154,15 @@ python3 run.py --run-auto-install
 ```
 python3 run.py --skip-auto-install
 ```
+
+### Moving pegs and level files
+Newly saved `.lvl` files use the versioned JSON format and can store moving-peg paths. Existing pickled `.lvl` files remain readable. To convert legacy files into a separate output directory without overwriting the originals, run:
+```
+python3 convert_legacy_levels.py ./levels ./converted-levels
+```
+Use `--overwrite` only when you intend to replace files in the destination.
+
+The level editor toolbar provides **Select** (drag pegs), **Peg** (click or drag to place pegs), **Moving** (click route points to create a moving path), **Path** (drag a moving peg's route points), **Erase**, and **Save/Load** buttons. The **Moving** menu sets the number of route points (2–12), path traversal (**Ping-pong** or **Loop**), and easing (**Linear**, **Ease-in**, **Ease-out**, or **Ease-in-out**); changes apply to the selected moving peg or act as defaults for the next one created. The same menu enables a live movement preview for the selected peg or all moving pegs. New moving pegs travel at 2 pixels per physics step by default (roughly bucket speed); while selected, use `+`/`-` to adjust speed in 0.5-pixel steps. Moving pegs have a subtle cyan tint to distinguish them. The **Shapes** dropdown offers Line, Circle, Rectangle, Triangle, and Freehand tools: select one, drag out its bounds (or draw a freehand line), and pegs are generated along the outline. The developer debug panel and the performance panel shown with **6** can both be dragged anywhere on their panels.
 
 
 I started this project after thinking that recreating Peggle would be simple and fun. Turns out it was actually quite challenging. But I learned a lot in the making of this. The end result is a clone of Peggle that I am proud of, however the resulting code is something I am less proud of. That is to say that it has become a mess. Each new feature was essentially hacked into it. If I did this again, I would work on a better foundational architecture, where each new feature is modular and can be easily added, removed or changed. Although some things are kinda broken or straight up missing, this is pretty much finished. I might still make some minor updates in the future though. Thanks for checking this out!
