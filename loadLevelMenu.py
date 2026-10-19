@@ -1,6 +1,7 @@
 import pygame
 import time
 import os
+from collections.abc import Callable
 
 from local.config import configs
 from local.resources import *
@@ -9,6 +10,11 @@ from local.audio import playSoundPitch, newSong
 from local.loadLevel import loadData, loadDefaultLevel
 from local.peg import Peg, createPegColors
 import re
+
+MAX_LEVEL_PREVIEW_PEGS = 5000
+LEVEL_DATA_PROGRESS_END = 0.55
+LOADING_SCREEN_DELAY = 1.0
+LOADING_SCREEN_UPDATE_INTERVAL = 0.1
 
 
 def getLevelName(levelFilePath: str) -> str:
@@ -57,23 +63,176 @@ def natural_key(filePath: str):
         return (primary, [int(text) if text.isdigit() else text.lower() for text in re.split('(\d+)', name)])
 
 
-def loadLevel(levelFilePath) -> tuple[list[Peg], list[Peg], int]:
+def loadLevel(
+    levelFilePath: str,
+    progress_callback: Callable[[float, str], None] | None = None,
+) -> tuple[list[Peg], list[Peg], int, str]:
     # load the pegs from a level file (pickle)
-    pegs, levelFileName = loadData(levelFilePath)
+    def report_data_progress(progress: float, status: str) -> None:
+        if progress_callback is not None:
+            progress_callback(progress * 0.7, status)
+
+    pegs, levelFileName = loadData(
+        levelFilePath, progress_callback=report_data_progress
+    )
     originPegs = pegs.copy()
 
+    if progress_callback is not None:
+        progress_callback(0.72, "Assigning peg colors")
     pegs = createPegColors(pegs)
 
     orangeCount = 0
-    for peg in pegs:
+    for index, peg in enumerate(pegs):
         if peg.color == "orange":
             orangeCount += 1
+        if progress_callback is not None and pegs:
+            progress_callback(
+                0.72 + 0.27 * (index + 1) / len(pegs),
+                "Counting orange pegs",
+            )
 
-    return pegs, originPegs, orangeCount, getLevelName(levelFilePath)
+    if progress_callback is not None:
+        progress_callback(1.0, "Rendering level...")
+    return pegs, originPegs, orangeCount, getLevelName(levelFileName)
+
+
+def drawLoadingScreen(
+    screen: pygame.Surface,
+    level_name: str,
+    progress: float,
+    status: str,
+) -> None:
+    progress = min(max(progress, 0.0), 1.0)
+    screen.blit(altBackgroundImg, (0, 0))
+
+    title = menuButtonFont.render(f"Loading {level_name}", True, (255, 255, 255))
+    status_text = infoFont.render(status, True, (220, 220, 220))
+    percent_text = infoFont.render(
+        f"{round(progress * 100)}%", True, (255, 255, 255)
+    )
+    screen_rect = screen.get_rect()
+    center_x = screen_rect.centerx
+    gap_title_status = 24
+    gap_status_bar = 24
+    gap_bar_percent = 14
+    bar_width = min(600, screen_rect.width - 80)
+    bar_height = 24
+    content_height = (
+        title.get_height()
+        + gap_title_status
+        + status_text.get_height()
+        + gap_status_bar
+        + bar_height
+        + gap_bar_percent
+        + percent_text.get_height()
+    )
+    content_top = screen_rect.centery - content_height // 2
+    title_y = content_top
+    status_y = title_y + title.get_height() + gap_title_status
+    bar_rect = pygame.Rect(
+        center_x - bar_width // 2,
+        status_y + status_text.get_height() + gap_status_bar,
+        bar_width,
+        bar_height,
+    )
+    percent_y = bar_rect.bottom + gap_bar_percent
+
+    screen.blit(title, (center_x - title.get_width() // 2, title_y))
+    screen.blit(
+        status_text,
+        (center_x - status_text.get_width() // 2, status_y),
+    )
+    pygame.draw.rect(screen, (35, 35, 50), bar_rect, border_radius=8)
+    fill_rect = bar_rect.copy()
+    fill_rect.width = round(bar_width * progress)
+    if fill_rect.width:
+        pygame.draw.rect(screen, (0, 180, 255), fill_rect, border_radius=8)
+    screen.blit(
+        percent_text,
+        (center_x - percent_text.get_width() // 2, percent_y),
+    )
+    pygame.display.flip()
+    pygame.event.pump()
+
+
+class LoadingScreenProgress:
+    def __init__(self, screen: pygame.Surface, level_name: str = "level"):
+        self.screen = screen
+        self.level_name = level_name
+        self.started_at: float | None = None
+        self.last_draw_time = 0.0
+        self.last_progress_percent = -1
+        self.last_status = ""
+        self.has_drawn = False
+
+    def set_level(self, level_name: str) -> None:
+        self.level_name = level_name
+
+    @staticmethod
+    def _check_for_quit() -> None:
+        if pygame.event.peek(pygame.QUIT):
+            pygame.quit()
+            raise SystemExit
+
+    def begin(self, level_name: str | None = None) -> None:
+        if level_name is not None:
+            self.level_name = level_name
+        self.started_at = time.perf_counter()
+        self.last_draw_time = 0.0
+        self.last_progress_percent = -1
+        self.last_status = ""
+        self.has_drawn = False
+
+    def show_immediately(self, progress: float, status: str) -> None:
+        progress = min(max(progress, 0.0), 1.0)
+        now = time.perf_counter()
+        self.last_draw_time = now
+        self.last_progress_percent = round(progress * 100)
+        self.last_status = status
+        self.has_drawn = True
+        drawLoadingScreen(self.screen, self.level_name, progress, status)
+
+    def __call__(self, progress: float, status: str) -> None:
+        self._check_for_quit()
+        progress = min(max(progress, 0.0), 1.0)
+        progress_percent = round(progress * 100)
+        now = time.perf_counter()
+        if self.started_at is None:
+            self.started_at = now
+        if now - self.started_at < LOADING_SCREEN_DELAY:
+            return
+
+        if self.has_drawn and (
+            progress_percent == self.last_progress_percent
+            and status == self.last_status
+        ):
+            return
+
+        is_complete = progress >= 1.0
+        if (
+            self.has_drawn
+            and now - self.last_draw_time < LOADING_SCREEN_UPDATE_INTERVAL
+            and not is_complete
+        ):
+            return
+
+        self.last_draw_time = now
+        self.last_progress_percent = progress_percent
+        self.last_status = status
+        self.has_drawn = True
+        drawLoadingScreen(self.screen, self.level_name, progress, status)
 
 
 # this menu will be used to load levels
-def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -> tuple[list[Peg], list[Peg], int]:
+def loadLevelMenu(
+    screen: pygame.Surface,
+    debug: bool = configs["DEBUG_MODE"],
+) -> tuple[list[Peg], list[Peg], int, str]:
+    loading_progress = LoadingScreenProgress(screen)
+
+    def render_progress(progress: float, status: str) -> None:
+        loading_progress(progress * LEVEL_DATA_PROGRESS_END, status)
+
     # check if music is already playing
     if not pygame.mixer.music.get_busy():
         # play menu music
@@ -115,7 +274,8 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
     # if there are no levels in the levels folder, load the default level
     if len(levelsList) == 0:
         print("WARN: No levels found, loading default level...")
-        return loadDefaultLevel()
+        loading_progress.set_level("Default")
+        return loadDefaultLevel(progress_callback=render_progress)
 
     # create a list of pygame.Surface objects and load the level preview images
     levelPreviewImgSizeW = configs["WIDTH"]*0.3
@@ -126,7 +286,11 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
     levelPreviewImgs: list[pygame.Surface] = []
     for i in range(len(levelsList)):
         levelFilePath = levelsList[i]
-        pegs = loadData(levelFilePath, False)[0]
+        pegs = loadData(
+            levelFilePath,
+            False,
+            peg_limit=MAX_LEVEL_PREVIEW_PEGS,
+        )[0]
         # create a surface to draw the level preview on
         levelPreviewImg = pygame.Surface((int(levelPreviewImgSizeW), int(levelPreviewImgSizeH)))
 
@@ -135,12 +299,15 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
         levelPreviewImg.blit(scaledBackgroundImg, (0, 0))
 
         # scale the peg image
-        p = pegs[0]
-        #scaledPegImg = pygame.transform.scale(p.pegImg.copy(), (int(p.pegImg.get_width()*levelPreviewImgScaleW), int(p.pegImg.get_height()*levelPreviewImgScaleH)))
         scaledPegImg = pygame.transform.scale(bluePegImg.copy(), (int(bluePegImg.get_width()*levelPreviewImgScaleW), int(bluePegImg.get_height()*levelPreviewImgScaleH)))
-        # draw the pegs
         for peg in pegs:
-            levelPreviewImg.blit(scaledPegImg, (peg.pos.x*levelPreviewImgScaleW, peg.pos.y*levelPreviewImgScaleW))
+            levelPreviewImg.blit(
+                scaledPegImg,
+                (
+                    peg.pos.x * levelPreviewImgScaleW,
+                    peg.pos.y * levelPreviewImgScaleH,
+                ),
+            )
         
         # add the level preview image to the list    
         levelPreviewImgs.append(levelPreviewImg)
@@ -397,21 +564,16 @@ def loadLevelMenu(screen: pygame.Surface, debug: bool = configs["DEBUG_MODE"]) -
         # check if the user has made a selection
         if selection != "none":
             if selection == "mainMenu":
-                return loadDefaultLevel()
+                loading_progress.set_level("Default")
+                return loadDefaultLevel(progress_callback=render_progress)
                 #return [], [], 0, selection
             if configs["SOUND_ENABLED"]:
                 playSoundPitch(buttonClickSound)
-            # draw a loading screen
-            # draw the background
-            screen.blit(altBackgroundImg, (0, 0))
-            # draw the title
-            menuTitle = menuFont.render("Loading...", True, (255, 255, 255))
-            screen.blit(menuTitle, (configs["WIDTH"]/2 - menuTitle.get_width()/2, configs["HEIGHT"]/2 - menuTitle.get_height()/2))
-
-            pegs, originPegs, orangeCount, levelFileName = loadLevel(selection)
-            if len(pegs) > 400:
-                # update display (draw loading screen)
-                pygame.display.update()
+            loading_progress.set_level(getLevelName(selection))
+            render_progress(0.0, "Starting")
+            pegs, originPegs, orangeCount, levelFileName = loadLevel(
+                selection, progress_callback=render_progress
+            )
 
             return pegs, originPegs, orangeCount, getLevelName(selection)
 

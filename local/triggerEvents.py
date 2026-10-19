@@ -23,11 +23,13 @@ class TimedEvent:
         self.isTriggered = False
         self.currentTime = time.time()
         self.triggerTime = self.currentTime + timer
+        self.timeRemaining = timer
 
 
     def cancelTimer(self):
         self.isActive = False
         self.isTriggered = False
+        self.timeRemaining = 0.0
 
 
     def update(self):
