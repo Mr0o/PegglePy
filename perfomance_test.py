@@ -16,7 +16,7 @@ runTest = False
 if __name__ == "__main__":
     import sys
     # take testMaxRange, testDepth, testRunTime and runTest as arguments
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 5:
         testMaxRange = int(sys.argv[1])
         testDepth = int(sys.argv[2])
         testRunTime = int(sys.argv[3])
@@ -54,7 +54,15 @@ if __name__ == "__main__":
         i = 0
         while(time.time() < runStart + testRunTime):
             start = time.time()
-            findBestTrajectory(aim, startPos, pegs, testMaxRange, testDepth, quadtree, 0.016)
+            findBestTrajectory(
+                aim,
+                startPos,
+                pegs,
+                quadtree,
+                0.016,
+                testMaxRange,
+                testDepth,
+            )
             end = time.time()
             print(f"({i+1}) Time taken: {end-start} secs")
             times.append(end-start)
@@ -127,7 +135,6 @@ if __name__ == "__main__":
         print("\nResults:")
         print(f"Max range: {maxRange}")
         print(f"Depth: {int(depth)}")
-
 
 
 
